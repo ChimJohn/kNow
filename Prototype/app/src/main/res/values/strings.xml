@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Prototype</string>
+    <string name="logo_for_loading_screen">Logo for loading screen</string>
+    <string name="brandname_for_loading_screen">brandname for loading screen</string>
+</resources>
