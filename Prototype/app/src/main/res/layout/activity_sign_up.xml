@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="340dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="10dp">
+
+        <EditText
+            android:id="@+id/etEmailSignUp"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="sans-serif"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:padding="10dp"
+            android:textSize="15sp"/>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="340dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="10dp">
+
+        <EditText
+            android:id="@+id/etPasswordSignUp"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="sans-serif"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:textSize="15sp"/>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="340dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="10dp">
+
+        <EditText
+            android:id="@+id/etRepeatPasswordSignUp"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="sans-serif"
+            android:hint="Repeat Password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:textSize="15sp"/>
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/btnCreateAccount"
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#6ACC2C00"
+        android:text="Create Account"
+        android:textColor="@android:color/white" />
+</LinearLayout>

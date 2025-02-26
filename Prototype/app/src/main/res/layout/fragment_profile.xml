@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProfileFragment">
+
+    <!-- Scrollable Page -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="20dp">
+
+            <!-- Profile Picture Section -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <!-- Profile Picture inside a Circle -->
+                <FrameLayout
+                    android:layout_width="95dp"
+                    android:layout_height="95dp"
+                    android:layout_marginTop="60dp">
+
+                    <!-- Circular Background -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/circle_background"
+                        android:clipToOutline="true" />
+
+                    <!-- Profile Image -->
+                    <ImageView
+                        android:id="@+id/profilePicture"
+                        android:layout_width="65dp"
+                        android:layout_height="65dp"
+                        android:layout_gravity="center"
+                        android:adjustViewBounds="true"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_profilepic" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Nathan Keith"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/profileDetails"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\@kith14 · 1.2K followers"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray"
+                    android:layout_marginTop="5dp" />
+            </LinearLayout>
+
+            <!-- Maps Section (Centered) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Maps"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center" />
+
+                <!-- Container for Map Buttons -->
+                <LinearLayout
+                    android:id="@+id/mapsContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_gravity="center">
+
+                    <LinearLayout
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:background="@drawable/circle_background"
+                        android:gravity="center"
+                        android:layout_marginEnd="20dp">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_food" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:background="@drawable/circle_background"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_attractions" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Stories Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="30dp"
+                android:paddingHorizontal="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Stories"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center" />
+
+                <!-- Stories Grid -->
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:columnCount="3"
+                    android:rowCount="2"
+                    android:layout_gravity="center">
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="120dp"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/rounded_rectangle"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_post11" />
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="120dp"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/rounded_rectangle"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_post12" />
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="120dp"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/rounded_rectangle"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_post13" />
+                </GridLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

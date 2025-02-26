@@ -1,36 +1,45 @@
 package com.prototypes.prototype;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-
-import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final int SPLASH_TIME_OUT = 2000; // 2000 ms = 2s (For loading)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+
+        // Load ExploreFragment by default when the app starts
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ExploreFragment())
+                    .commit();
+        }
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+
+            if (item.getItemId() == R.id.explore) {
+                selectedFragment = new ExploreFragment();
+            } else if (item.getItemId() == R.id.upload) {
+                selectedFragment = new UploadFragment();
+            } else if (item.getItemId() == R.id.profile) {
+                selectedFragment = new ProfileFragment();
+            }
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+            }
+
+            return true;
         });
-
-        // Delayed transition to LoginActivity
-        new Handler().postDelayed(() -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish(); // Close splash screen
-        }, SPLASH_TIME_OUT);
     }
 }
