@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "452711821328",
+    "project_id": "know-b486a",
+    "storage_bucket": "know-b486a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452711821328:android:886219115951dabce0da95",
+        "android_client_info": {
+          "package_name": "com.prototypes.prototype"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvOOGtU4aEZVgsQ6dwZPZ0jVC0ETOo1CE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
