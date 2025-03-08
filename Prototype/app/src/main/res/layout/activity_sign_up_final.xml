@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    tools:context=".Sign_up_final">
+
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
@@ -46,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Welcome! Please enter your details."
+            android:text="You're almost there!"
             android:textColor="@color/grey"
             android:textSize="14sp"
             android:fontFamily="@font/inter_medium"
@@ -56,6 +59,7 @@
 
     </LinearLayout>
 
+    <!-- Input Fields Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,23 +70,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="60dp">
 
-        <!-- Username Label -->
+        <!-- Email Label -->
         <TextView
-            android:id="@+id/usernameLabel"
+            android:id="@+id/emailLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Username"
+            android:text="Email"
             android:textSize="14sp"
             android:fontFamily="@font/inter_medium"
             android:textColor="@color/grey"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Username Input -->
+        <!-- Email Input -->
         <EditText
-            android:id="@+id/etUsername"
+            android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Choose a undername"
+            android:hint="@string/enter_your_email"
             android:paddingHorizontal="16dp"
             android:background="@drawable/custom_input"
             android:inputType="textEmailAddress"
@@ -90,24 +94,47 @@
             android:fontFamily="@font/inter_regular"
             android:layout_marginTop="14dp"/>
 
+        <!-- Password Label -->
+        <TextView
+            android:id="@+id/passwordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            android:textSize="14sp"
+            android:textColor="@color/grey"
+            android:fontFamily="@font/inter_medium"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="14dp"/>
 
-        <!-- Next Button -->
+        <!-- Password Input -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_your_password"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/custom_input"
+            android:inputType="textPassword"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_regular"
+            android:layout_marginTop="14dp"/>
+
+
+        <!-- SignUp Button -->
         <Button
-            android:id="@+id/btnNext"
+            android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@drawable/squarebtn"
             android:fontFamily="@font/inter_semibold"
             android:padding="10dp"
-            android:text="Next"
+            android:text="Sign Up"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textAllCaps="false"/>
 
 
-
     </LinearLayout>
 
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
