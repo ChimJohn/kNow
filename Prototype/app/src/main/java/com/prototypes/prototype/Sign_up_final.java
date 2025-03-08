@@ -67,7 +67,7 @@ public class Sign_up_final extends AppCompatActivity {
 
                                     Intent intent = new Intent(Sign_up_final.this, LoginActivity.class);
                                     startActivity(intent);
-                                    finish();`
+                                    finish();
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Toast.makeText(Sign_up_final.this, "Authentication failed.",
