@@ -83,7 +83,7 @@
 
         <!-- Email Input -->
         <EditText
-            android:id="@+id/etEmail"
+            android:id="@+id/etSignUpEmail"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:hint="@string/enter_your_email"
@@ -108,7 +108,7 @@
 
         <!-- Password Input -->
         <EditText
-            android:id="@+id/etPassword"
+            android:id="@+id/etSignUpPassword"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:hint="@string/enter_your_password"
