@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.login;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +16,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.prototypes.prototype.MainActivity;
+import com.prototypes.prototype.R;
+import com.prototypes.prototype.signup.SignUpActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
