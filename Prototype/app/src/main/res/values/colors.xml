@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="black">#252422</color>
+    <color name="grey">#CC252422</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_highlight">#C8FFE0E0</color>
     <color name="teal">#C895F8D8</color>
     <color name="green">#C8B5FFAB</color>
-    <color name="grey">#C8787878</color>
 </resources>

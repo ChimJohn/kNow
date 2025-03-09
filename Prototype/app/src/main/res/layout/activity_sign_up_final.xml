@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity"
-    android:background="@android:color/white">
+    tools:context=".Sign_up_final">
 
     <LinearLayout
         android:id="@+id/headerContainer"
@@ -36,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="@string/log_in_to_your_account"
+            android:text="Create an account"
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:fontFamily="@font/inter_bold"
@@ -50,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="@string/welcome_back_please_enter_your_details"
+            android:text="You're almost there!"
             android:textColor="@color/grey"
             android:textSize="14sp"
             android:fontFamily="@font/inter_medium"
@@ -84,7 +83,7 @@
 
         <!-- Email Input -->
         <EditText
-            android:id="@+id/etEmail"
+            android:id="@+id/etSignUpEmail"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:hint="@string/enter_your_email"
@@ -109,7 +108,7 @@
 
         <!-- Password Input -->
         <EditText
-            android:id="@+id/etPassword"
+            android:id="@+id/etSignUpPassword"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:hint="@string/enter_your_password"
@@ -121,48 +120,21 @@
             android:layout_marginTop="14dp"/>
 
 
-        <!-- Login Button -->
+        <!-- SignUp Button -->
         <Button
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@drawable/squarebtn"
             android:fontFamily="@font/inter_semibold"
             android:padding="10dp"
-            android:text="@string/login"
+            android:text="Sign Up"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textAllCaps="false"/>
 
 
-        <!-- Sign Up Link -->
-        <TextView
-            android:id="@+id/btnSignUp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/no_account_yet_sign_up_here"
-            android:textSize="14sp"
-            android:fontFamily="@font/inter_medium"
-            android:textColor="@color/black"
-            android:layout_marginTop="60dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Forgot Password -->
-        <TextView
-            android:id="@+id/btnForgotPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/forgot_password"
-            android:textSize="14sp"
-            android:fontFamily="@font/inter_regular"
-            android:textColor="@color/grey"
-            android:layout_marginTop="30dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
