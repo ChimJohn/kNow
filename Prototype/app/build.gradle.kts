@@ -43,36 +43,30 @@ dependencies {
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation(libs.google.firebase.auth)
-
-    implementation(libs.appcompat.v161)
-    implementation(libs.play.services.maps.v1820)
-
-    implementation(libs.constraintlayout.v221)
-    implementation(libs.material.v180)
-    implementation(libs.activity.ktx)
-    implementation(libs.camera.core)
-    implementation(libs.camera.lifecycle)
-    implementation(libs.camera.view)
-
-    implementation (libs.camera.core.v130)
-    implementation (libs.androidx.camera.camera2)
-    implementation (libs.androidx.camera.lifecycle.v130)
-    implementation (libs.androidx.camera.view.v130)
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.maps)
+    implementation(libs.firebase.common)
     implementation(libs.firebase.auth)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-    implementation(libs.firebase.common)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.v115)
-    androidTestImplementation(libs.androidx.espresso.core.v351)
+    implementation(libs.play.services.maps.v1820)
+
+    implementation(libs.activity.ktx)
+    implementation(libs.camera.core)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.view)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation(libs.play.services.maps)
+
+    implementation(libs.androidx.camera.camera2)
+
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit.v115)
+    androidTestImplementation(libs.androidx.espresso.core.v351)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

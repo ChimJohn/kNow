@@ -137,20 +137,29 @@
 
 
         <!-- Sign Up Link -->
+
+        <!-- Forgot Password -->
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="346dp"
+            android:layout_height="65dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <TextView
             android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:fontFamily="@font/inter_medium"
             android:gravity="center"
             android:text="@string/no_account_yet_sign_up_here"
-            android:textSize="14sp"
-            android:fontFamily="@font/inter_medium"
             android:textColor="@color/black"
-            android:layout_marginTop="60dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Forgot Password -->
         <TextView
             android:id="@+id/btnForgotPassword"
             android:layout_width="match_parent"
@@ -163,6 +172,7 @@
             android:layout_marginTop="30dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
