@@ -1,9 +1,15 @@
 package com.prototypes.prototype;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -12,6 +18,10 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 public class ExploreFragment extends Fragment {
 
@@ -36,25 +46,56 @@ public class ExploreFragment extends Fragment {
         // Set up the map
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(GoogleMap mMap) {
-                googleMap = mMap;
+            public void onMapReady(@NonNull GoogleMap map) {
 
                 // Apply minimal map styling
-                googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
+                map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
 
-                // Default location: Singapore (No Marker)
+                // Default location: Singapore
                 LatLng singapore = new LatLng(1.3521, 103.8198);
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
 
                 // Remove Google default POIs and labels
-                googleMap.getUiSettings().setMapToolbarEnabled(false);
-                googleMap.getUiSettings().setCompassEnabled(false);
-                googleMap.getUiSettings().setRotateGesturesEnabled(false);
-                googleMap.getUiSettings().setTiltGesturesEnabled(false);
+                map.getUiSettings().setMapToolbarEnabled(false);
+                map.getUiSettings().setCompassEnabled(false);
+                map.getUiSettings().setRotateGesturesEnabled(false);
+                map.getUiSettings().setTiltGesturesEnabled(false);
+
+                // Create a TextView and customize it
+                TextView textView = new TextView(requireContext());
+                textView.setText("Hello!!");
+                textView.setTextSize(18);  // Set the text size
+                textView.setBackgroundColor(Color.BLACK);
+                textView.setTextColor(Color.YELLOW);
+
+                // Convert TextView to BitmapDescriptor
+                BitmapDescriptor bitmapDescriptor = createBitmapDescriptorFromTextView(textView);
+
+                // Add marker with the custom icon
+                map.addMarker(
+                        new MarkerOptions()
+                                .position(singapore)
+                                .icon(bitmapDescriptor));
             }
         });
 
         return rootView;
+    }
+
+    // Method to convert TextView to BitmapDescriptor
+    private BitmapDescriptor createBitmapDescriptorFromTextView(TextView textView) {
+        // Measure and layout the TextView
+        textView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        textView.layout(0, 0, textView.getMeasuredWidth(), textView.getMeasuredHeight());
+
+        // Create a Bitmap from the TextView
+        Bitmap bitmap = Bitmap.createBitmap(textView.getMeasuredWidth(), textView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        textView.draw(canvas);
+
+        // Return a BitmapDescriptor from the Bitmap
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     // Lifecycle Methods for Proper Map Handling

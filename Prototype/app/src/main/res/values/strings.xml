@@ -12,4 +12,6 @@
     <string name="login">Login</string>
     <string name="no_account_yet_sign_up_here">No account yet? <b>Sign up here</b></string>
     <string name="forgot_password"><u>Forgot Password</u></string>
+    <string name="default_web_client_id">452711821328-i4e377v02gsiupgtk7asnistkgdqg6cc.apps.googleusercontent.com</string>
+
 </resources>

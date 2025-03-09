@@ -37,21 +37,18 @@ android {
 }
 
 dependencies {
-    // Import the BoM for the Firebase platform
-    implementation(platform(libs.firebase.bom))
 
-    // Add the dependency for the Firebase Authentication library
-    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.com.google.firebase.firebase.auth)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+
     implementation(libs.google.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)
     implementation(libs.firebase.common)
     implementation(libs.firebase.auth)
     implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
-    implementation(libs.googleid)
-
-    implementation(libs.play.services.maps.v1820)
 
     implementation(libs.activity.ktx)
     implementation(libs.camera.core)
@@ -69,4 +66,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core.v351)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+
 }
