@@ -47,6 +47,10 @@ dependencies {
     // Added to fix upload fragement error
     implementation("com.google.guava:guava:31.0.1-android")
 
+    // URL to Img
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
 
