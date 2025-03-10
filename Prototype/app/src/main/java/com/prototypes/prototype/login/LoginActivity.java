@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.prototypes.prototype.MainActivity;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.signup.SignUpActivity;
 
 public class LoginActivity extends AppCompatActivity {
@@ -26,14 +27,13 @@ public class LoginActivity extends AppCompatActivity {
     EditText etEmail, etPassword;
     Button btnLogin;
     TextView btnSignUp, btnForgotPassword;
-    FirebaseAuth mAuth;
 
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
+        if(firebaseAuthManager.getCurrentUser() != null){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login); // Ensure the correct XML file is set
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
 
         // Reference UI elements
         etEmail = findViewById(R.id.etEmail);
@@ -60,23 +60,19 @@ public class LoginActivity extends AppCompatActivity {
                 String email = etEmail.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
 
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                firebaseAuthManager.loginUser(email, password, new FirebaseAuthManager.AuthCallback() {
+                    @Override
+                    public void onSuccess(FirebaseUser user) {
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 

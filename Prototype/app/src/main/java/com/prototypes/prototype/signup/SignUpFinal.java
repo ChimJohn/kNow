@@ -18,24 +18,22 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.login.LoginActivity;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.user.User;
 
 public class SignUpFinal extends AppCompatActivity {
     TextView tvEmail, tvPassword;
-    FirebaseAuth mAuth;
     Button btnSignUp;
     String username;
-
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_up_final);
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
 //        UI elements
         tvEmail = findViewById(R.id.etSignUpEmail);
         tvPassword = findViewById(R.id.etSignUpPassword);
@@ -61,32 +59,27 @@ public class SignUpFinal extends AppCompatActivity {
                     return;
                 }
 
-                mAuth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    Toast.makeText(SignUpFinal.this, "Account created.",
-                                            Toast.LENGTH_SHORT).show();
+                firebaseAuthManager.registerUser(email, password, new FirebaseAuthManager.AuthCallback() {
+                    @Override
+                    public void onSuccess(FirebaseUser user) {
+                        Toast.makeText(SignUpFinal.this, "Account created.",
+                                Toast.LENGTH_SHORT).show();
 
-                                    User newuser = new User(username, email);
-                                    // Insert new user to Firestore
-                                    db.collection("Users").document(user.getUid()).set(newuser);
+                        User newuser = new User(username, email);
+                        // Insert new user to Firestore
+                        db.collection("Users").document(firebaseAuthManager.getCurrentUser().getUid()).set(newuser);
 
-
-                                    Intent intent = new Intent(SignUpFinal.this, LoginActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Toast.makeText(SignUpFinal.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-
+                        // Navigate
+                        Intent intent = new Intent(SignUpFinal.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(SignUpFinal.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
 
             }
         });
