@@ -22,11 +22,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Source;
 import com.prototypes.prototype.user.User;
 
+import java.util.List;
+
 public class ProfileFragment extends Fragment {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     DocumentSnapshot document;
     String name, username, profile;
+    List<String> followersList;
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers;
     User user;
@@ -40,8 +43,16 @@ public class ProfileFragment extends Fragment {
         imgProfile = view.findViewById(R.id.imageProfile);
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
+        tvFollowers = view.findViewById(R.id.tvFollowers);
 
         // Get user details
+        loadUserDetails();
+
+        // Load user gallery
+        return view;
+    }
+
+    public void loadUserDetails(){
         DocumentReference docRef = db.collection("Users").document("hh8PYvfd5wONjq3Xk508kgvDBjE3");
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -56,7 +67,16 @@ public class ProfileFragment extends Fragment {
                         name = user.getName();
                         username = user.getUsername();
                         profile = user.getProfile();
+                        followersList = user.getFollowers();
 
+                        if (followersList == null){
+                            Log.d("Debug", "No Users");
+                            tvFollowers.setText("0 followers");
+
+                        }else{
+                            Log.d("Debug", "Number of followers: " + Integer.toString(followersList.size()));
+                            tvFollowers.setText(String.format("%d followers", followersList.size()));
+                        }
                         // Populate UI Elements
                         Glide.with(ProfileFragment.this)
                                 .load(profile)
@@ -74,7 +94,5 @@ public class ProfileFragment extends Fragment {
                 }
             }
         });
-
-        return view;
     }
 }

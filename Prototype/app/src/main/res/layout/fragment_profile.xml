@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".ProfileFragment"
     android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp">
 
     <androidx.cardview.widget.CardView
         android:layout_marginTop="45dp"
@@ -60,6 +61,58 @@
             android:textColor="@color/grey"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/squarebtn_outline"
+            android:text="Edit Maps"
+            android:fontFamily="@font/inter_semibold"
+            android:textColor="@color/black"
+            android:textAllCaps="false"/>
+
+        <Button
+            android:layout_marginStart="16px"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/squarebtn"
+            android:text="Edit Profile"
+            android:fontFamily="@font/inter_semibold"
+            android:textColor="@color/white"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="24dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stories"
+            android:fontFamily="@font/inter_bold"
+            android:textSize="20dp"
+            android:textColor="@color/black"/>
+
+        <!-- Photo Gallery Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/gallery_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="3"
+            tools:listitem="@layout/item_gallery_image" />
+
+    </LinearLayout>
 
 
 
