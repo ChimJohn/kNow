@@ -65,6 +65,7 @@ public class ExploreFragment extends Fragment {
 
                 // Create a TextView and customize it
                 ClusterManager<StoryCluster> clusterManager = new ClusterManager<>(requireContext(), map);
+                clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), map, clusterManager));
                 map.setOnCameraIdleListener(clusterManager);
                 map.setOnMarkerClickListener(clusterManager);
 
