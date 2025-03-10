@@ -1,0 +1,30 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="2dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/marker_background">
+
+    <!-- Top Section: Image -->
+    <ImageView
+        android:id="@+id/iv_marker_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="@string/todo"
+        android:scaleType="centerInside"
+        android:background="@color/white"
+        android:src="@drawable/marker_background"
+        android:padding="4dp"/>
+
+    <!-- Bottom Section: Text -->
+    <TextView
+        android:id="@+id/tv_marker_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/placeholder"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:padding="4dp"/>
+</LinearLayout>

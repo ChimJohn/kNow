@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    implementation(libs.android.maps.utils)
     implementation(libs.google.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)

@@ -22,6 +22,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.maps.android.clustering.ClusterManager;
+
 
 public class ExploreFragment extends Fragment {
 
@@ -62,20 +64,19 @@ public class ExploreFragment extends Fragment {
                 map.getUiSettings().setTiltGesturesEnabled(false);
 
                 // Create a TextView and customize it
-                TextView textView = new TextView(requireContext());
-                textView.setText("Hello!!");
-                textView.setTextSize(18);  // Set the text size
-                textView.setBackgroundColor(Color.BLACK);
-                textView.setTextColor(Color.YELLOW);
+                ClusterManager<StoryCluster> clusterManager = new ClusterManager<>(requireContext(), map);
+                map.setOnCameraIdleListener(clusterManager);
+                map.setOnMarkerClickListener(clusterManager);
 
-                // Convert TextView to BitmapDescriptor
-                BitmapDescriptor bitmapDescriptor = createBitmapDescriptorFromTextView(textView);
+                // Add multiple markers
+                for (int i = 0; i < 20; i++) {
+                    double lat = 1.3521 + (Math.random() * 0.1 - 0.05);
+                    double lng = 103.8198 + (Math.random() * 0.1 - 0.05);
+                    StoryCluster item = new StoryCluster(lat, lng, "Marker " + i, "Snippet " + i);
+                    clusterManager.addItem(item);
+                }
 
-                // Add marker with the custom icon
-                map.addMarker(
-                        new MarkerOptions()
-                                .position(singapore)
-                                .icon(bitmapDescriptor));
+                clusterManager.cluster(); // Update clusters
             }
         });
 
