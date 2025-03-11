@@ -63,10 +63,11 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login); // Ensure the correct XML file is set
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
-
+        mAuth = FirebaseAuth.getInstance();
         // Reference UI elements
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);

@@ -44,7 +44,9 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.guava)
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.com.google.firebase.firebase.auth)
     implementation(libs.credentials.play.services.auth)
