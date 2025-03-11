@@ -153,7 +153,7 @@ public class UploadFragment extends Fragment {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
-                        uploadImageToFirebaseStorage(savedUri);
+                        uploadImageToFirebaseStorage(savedUri); //Image Upload func executed
                         requireActivity().runOnUiThread(() ->
                                 Toast.makeText(requireContext(), "Photo saved: " + savedUri, Toast.LENGTH_SHORT).show()
                         );
@@ -166,6 +166,8 @@ public class UploadFragment extends Fragment {
                 }
         );
     }
+
+    //Actual image (not url) saved in Firebase Storage
     private void uploadImageToFirebaseStorage(Uri uri) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference = storage.getReference("media/" + UUID.randomUUID().toString());
@@ -192,6 +194,7 @@ public class UploadFragment extends Fragment {
                 });
     }
 
+    //Image URL to be saved in Firestore
     private void saveUrlToFirestore(String url) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, Object> data = new HashMap<>();
