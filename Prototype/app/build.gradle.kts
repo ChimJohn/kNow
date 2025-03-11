@@ -44,6 +44,8 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-auth")
 
+    implementation ("com.google.firebase:firebase-storage")
+
     // Added to fix upload fragement error
     implementation("com.google.guava:guava:31.0.1-android")
 
@@ -71,6 +73,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation("com.google.firebase:firebase-storage:21.0.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
