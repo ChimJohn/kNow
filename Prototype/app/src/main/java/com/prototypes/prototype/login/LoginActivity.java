@@ -35,9 +35,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.prototypes.prototype.MainActivity;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.signup.SignUpActivity;
 
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.prototypes.prototype.user.User;
 
 import java.util.concurrent.Executors;
 
@@ -45,9 +47,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText etEmail, etPassword;
     Button btnLogin;
     TextView btnSignUp, btnForgotPassword;
-    FirebaseAuth mAuth;
     SignInButton btnGoogleSignIn;
-    private CredentialManager credentialManager;
+//    private CredentialManager credentialManager;
 
     @Override
     public void onStart() {
@@ -65,45 +66,37 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.login); // Ensure the correct XML file is set
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
-        mAuth = FirebaseAuth.getInstance();
+        setContentView(R.layout.login);
         // Reference UI elements
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp); // Fix: Change Button to TextView
         btnForgotPassword = findViewById(R.id.btnForgotPassword); // Fix: Change Button to TextView
         btnGoogleSignIn = findViewById(R.id.sign_in_button);
-        credentialManager = CredentialManager.create(getBaseContext());
 
+        etEmail = findViewById(R.id.etEmail);
+        etPassword = findViewById(R.id.etPassword);
+//        credentialManager = CredentialManager.create(getBaseContext());
+
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email = etEmail.getText().toString().trim();
                 String password = etPassword.getText().toString().trim();
-                if (password.isEmpty() || email.isEmpty() ){
-                    Toast.makeText(LoginActivity.this, "Email or password is blank!",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                firebaseAuthManager.loginUser(email, password, new FirebaseAuthManager.AuthCallback() {
+                    @Override
+                    public void onSuccess(FirebaseUser user) {
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
             }
         });
 
@@ -124,77 +117,77 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        btnGoogleSignIn.setOnClickListener(v -> {
-            launchCredentialManager();
-        });
-    }
+//        btnGoogleSignIn.setOnClickListener(v -> {
+//            launchCredentialManager();
+//        });
+//    }
 
-    private void launchCredentialManager() {
-        // [START create_credential_manager_request]
-        // Instantiate a Google sign-in request
-        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(true)
-                .setServerClientId(getString(R.string.default_web_client_id))
-                .build();
-        // Create the Credential Manager request
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
-                .build();
-        // [END create_credential_manager_request]
-        // Launch Credential Manager UI
-        credentialManager.getCredentialAsync(
-                getBaseContext(),
-                request,
-                new CancellationSignal(),
-                Executors.newSingleThreadExecutor(),
-                new CredentialManagerCallback<>() {
-                    @Override
-                    public void onResult(GetCredentialResponse result) {
-                        // Extract credential from the result returned by Credential Manager
-                        handleSignIn(result.getCredential());
-                    }
-                    @Override
-                    public void onError(@NonNull GetCredentialException e) {
-                        Log.e(TAG, "Couldn't retrieve user's credentials: " + e.getLocalizedMessage());
-                    }
-                }
-        );
-    }
-    private void handleSignIn(Credential credential) {
-        // Check if credential is of type CustomCredential and type is Google ID
-        if (credential instanceof CustomCredential) {
-            CustomCredential customCredential = (CustomCredential) credential;
-            if (customCredential.getType().equals(TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
-                // Create Google ID Token
-                Bundle credentialData = customCredential.getData();
-                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credentialData);
-                // Sign in to Firebase using the token
-                firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
-            } else {
-                Log.w(TAG, "Credential type is not Google ID Token!");
-            }
-        } else {
-            Log.w(TAG, "Credential is not of type CustomCredential!");
-        }
-    }
-    private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
-                        Log.d(TAG, "signInWithCredential:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        // If sign in fails, display a message to the user
-                        Log.w(TAG, "signInWithCredential:failure", task.getException());
-//                        updateUI(null);
-                    }
-                });
-    }
+//    private void launchCredentialManager() {
+//        // [START create_credential_manager_request]
+//        // Instantiate a Google sign-in request
+//        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+//                .setFilterByAuthorizedAccounts(true)
+//                .setServerClientId(getString(R.string.default_web_client_id))
+//                .build();
+//        // Create the Credential Manager request
+//        GetCredentialRequest request = new GetCredentialRequest.Builder()
+//                .addCredentialOption(googleIdOption)
+//                .build();
+//        // [END create_credential_manager_request]
+//        // Launch Credential Manager UI
+//        credentialManager.getCredentialAsync(
+//                getBaseContext(),
+//                request,
+//                new CancellationSignal(),
+//                Executors.newSingleThreadExecutor(),
+//                new CredentialManagerCallback<>() {
+//                    @Override
+//                    public void onResult(GetCredentialResponse result) {
+//                        // Extract credential from the result returned by Credential Manager
+//                        handleSignIn(result.getCredential());
+//                    }
+//                    @Override
+//                    public void onError(@NonNull GetCredentialException e) {
+//                        Log.e(TAG, "Couldn't retrieve user's credentials: " + e.getLocalizedMessage());
+//                    }
+//                }
+//        );
+//    }
+//    private void handleSignIn(Credential credential) {
+//        // Check if credential is of type CustomCredential and type is Google ID
+//        if (credential instanceof CustomCredential) {
+//            CustomCredential customCredential = (CustomCredential) credential;
+//            if (customCredential.getType().equals(TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
+//                // Create Google ID Token
+//                Bundle credentialData = customCredential.getData();
+//                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credentialData);
+//                // Sign in to Firebase using the token
+//                firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
+//            } else {
+//                Log.w(TAG, "Credential type is not Google ID Token!");
+//            }
+//        } else {
+//            Log.w(TAG, "Credential is not of type CustomCredential!");
+//        }
+//    }
+//    private void firebaseAuthWithGoogle(String idToken) {
+//        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+//        mAuth.signInWithCredential(credential)
+//                .addOnCompleteListener(this, task -> {
+//                    if (task.isSuccessful()) {
+//                        // Sign in success, update UI with the signed-in user's information
+//                        Log.d(TAG, "signInWithCredential:success");
+//                        FirebaseUser user = mAuth.getCurrentUser();
+//                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+//                        startActivity(intent);
+//                        finish();
+//                    } else {
+//                        // If sign in fails, display a message to the user
+//                        Log.w(TAG, "signInWithCredential:failure", task.getException());
+////                        updateUI(null);
+//                    }
+//                });
+//    }
 
 //    private void signOut() {
 //        // Firebase sign out
@@ -217,8 +210,5 @@ public class LoginActivity extends AppCompatActivity {
 //                        Log.e(TAG, "Couldn't clear user credentials: " + e.getLocalizedMessage());
 //                    }
 //                });
-//    }
-
-
-
+    }
 }
