@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.com.google.firebase.firebase.auth)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.crashlytics.buildtools)
 
     implementation(libs.android.maps.utils)
     implementation(libs.google.firebase.auth)

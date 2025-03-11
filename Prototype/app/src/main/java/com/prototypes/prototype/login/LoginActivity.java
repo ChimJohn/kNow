@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.login;
 
 import static android.content.ContentValues.TAG;
 import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;
@@ -32,6 +32,10 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.prototypes.prototype.MainActivity;
+import com.prototypes.prototype.R;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.signup.SignUpActivity;
 
 import com.google.firebase.auth.GoogleAuthProvider;
 
@@ -49,8 +53,8 @@ public class LoginActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
+        if(firebaseAuthManager.getCurrentUser() != null){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -61,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login); // Ensure the correct XML file is set
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
 
         // Reference UI elements
         etEmail = findViewById(R.id.etEmail);

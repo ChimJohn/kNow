@@ -3,6 +3,7 @@ package com.prototypes.prototype;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +34,7 @@ public class ExploreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
-
+        Log.d("Debug", "Explore page.");
         // Initialize MapView
         mapView = rootView.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
