@@ -8,6 +8,8 @@
     tools:context=".login.LoginActivity"
     android:background="@android:color/white">
 
+    <!-- Input Fields Container -->
+
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
@@ -16,6 +18,7 @@
         android:orientation="vertical"
         android:padding="24dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -24,7 +27,7 @@
             android:id="@+id/logoImage"
             android:layout_width="36dp"
             android:layout_height="45dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="50dp"
             android:src="@drawable/showuplogo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,10 +39,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:fontFamily="@font/inter_bold"
             android:text="@string/log_in_to_your_account"
             android:textColor="@android:color/black"
             android:textSize="20sp"
-            android:fontFamily="@font/inter_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/logoImage" />
@@ -50,17 +53,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
+            android:fontFamily="@font/inter_medium"
             android:text="@string/welcome_back_please_enter_your_details"
             android:textColor="@color/grey"
             android:textSize="14sp"
-            android:fontFamily="@font/inter_medium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/titleText" />
 
     </LinearLayout>
 
-    <!-- Input Fields Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -69,7 +71,7 @@
         app:layout_constraintTop_toBottomOf="@id/headerContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="30dp">
 
         <!-- Email Label -->
         <TextView
@@ -137,20 +139,29 @@
 
 
         <!-- Sign Up Link -->
+
+        <!-- Forgot Password -->
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="346dp"
+            android:layout_height="65dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <TextView
             android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/inter_medium"
             android:gravity="center"
             android:text="@string/no_account_yet_sign_up_here"
-            android:textSize="14sp"
-            android:fontFamily="@font/inter_medium"
             android:textColor="@color/black"
-            android:layout_marginTop="60dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Forgot Password -->
         <TextView
             android:id="@+id/btnForgotPassword"
             android:layout_width="match_parent"
@@ -163,6 +174,7 @@
             android:layout_marginTop="30dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

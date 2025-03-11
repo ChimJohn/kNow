@@ -19,6 +19,8 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Logo -->
+
+        <!-- Title: "Log in to your account" -->
         <ImageView
             android:id="@+id/logoImage"
             android:layout_width="36dp"
@@ -29,7 +31,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Title: "Log in to your account" -->
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
