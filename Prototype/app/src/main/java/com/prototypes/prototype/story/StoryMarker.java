@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.story;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
+
+import com.prototypes.prototype.R;
 
 public class StoryMarker extends LinearLayout{
     private TextView textView;
@@ -26,12 +28,12 @@ public class StoryMarker extends LinearLayout{
 
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.story_marker, this, true);
-        textView = findViewById(R.id.tv_marker_text);
+//        textView = findViewById(R.id.tv_marker_text);
         imageView = findViewById(R.id.iv_marker_icon);
     }
 
     public void setMarkerText(String text) {
-        textView.setText(text);
+//        textView.setText(text);
     }
 
     public void setMarkerImage(@DrawableRes int drawableRes) {

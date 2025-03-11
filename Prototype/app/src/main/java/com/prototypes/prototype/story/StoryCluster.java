@@ -1,11 +1,10 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.story;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
-import com.google.maps.android.clustering.ClusterManager;
 
 public class StoryCluster implements ClusterItem {
     private final LatLng position;

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+<!--    <solid android:color="#f0f0f0"/> &lt;!&ndash; Background &ndash;&gt;-->
+    <solid android:color="@color/black"/> <!-- Background -->
+
+    <size android:width="60dp" android:height="60dp"/> <!-- Ensures it's a circle -->
+
+    <padding android:left="8dp" android:top="8dp" android:right="8dp" android:bottom="8dp"/>
+</shape>

@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.story;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,8 +7,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-import com.google.maps.android.clustering.ClusterItem;
-import com.prototypes.prototype.StoryCluster;
 
 public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
     private final Context context;
