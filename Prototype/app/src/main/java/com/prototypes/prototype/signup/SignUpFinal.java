@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.login.LoginActivity;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.user.User;
@@ -28,12 +29,16 @@ public class SignUpFinal extends AppCompatActivity {
     Button btnSignUp;
     String username;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_up_final);
+
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
+        FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
+
 //        UI elements
         tvEmail = findViewById(R.id.etSignUpEmail);
         tvPassword = findViewById(R.id.etSignUpPassword);
@@ -49,30 +54,40 @@ public class SignUpFinal extends AppCompatActivity {
                 String email = tvEmail.getText().toString();
                 String password = tvPassword.getText().toString().trim();
 
+                // Check if email is empty
                 if (TextUtils.isEmpty(email)){
                     Toast.makeText(SignUpFinal.this, "Enter email", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
+                // Check if password is empty
                 if (TextUtils.isEmpty(password)){
                     Toast.makeText(SignUpFinal.this, "Enter password", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // Register user
                 firebaseAuthManager.registerUser(email, password, new FirebaseAuthManager.AuthCallback() {
                     @Override
                     public void onSuccess(FirebaseUser user) {
                         Toast.makeText(SignUpFinal.this, "Account created.",
                                 Toast.LENGTH_SHORT).show();
 
+                        // Create user object and add to firestore
                         User newuser = new User(username, email);
-                        // Insert new user to Firestore
-                        db.collection("Users").document(firebaseAuthManager.getCurrentUser().getUid()).set(newuser);
-
-                        // Navigate
-                        Intent intent = new Intent(SignUpFinal.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
+                        firestoreManager.writeDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), newuser, new FirestoreManager.FirestoreCallback() {
+                            @Override
+                            public void onSuccess() {
+                                // Navigate
+                                Intent intent = new Intent(SignUpFinal.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(SignUpFinal.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                     @Override
                     public void onFailure(Exception e) {

@@ -20,6 +20,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Source;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.user.User;
 
 import java.util.List;
@@ -27,17 +29,19 @@ import java.util.List;
 public class ProfileFragment extends Fragment {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    DocumentSnapshot document;
+//    DocumentSnapshot document;
     String name, username, profile;
     List<String> followersList;
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers;
-    User user;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         Log.d("Debug", "User page.");
+
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this.getActivity());
+        FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
 
         // Get UI elements
         imgProfile = view.findViewById(R.id.imageProfile);
@@ -46,53 +50,37 @@ public class ProfileFragment extends Fragment {
         tvFollowers = view.findViewById(R.id.tvFollowers);
 
         // Get user details
-        loadUserDetails();
-
-        // Load user gallery
-        return view;
-    }
-
-    public void loadUserDetails(){
-        DocumentReference docRef = db.collection("Users").document("hh8PYvfd5wONjq3Xk508kgvDBjE3");
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//        loadUserDetails();
+        firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    document = task.getResult();
-                    if (document.exists()) {
-                        Log.d("Debug", "DocumentSnapshot data: " + document.getData());
+            public void onSuccess(User user) {
+                name = user.getName();
+                username = user.getUsername();
+                profile = user.getProfile();
+                followersList = user.getFollowers();
 
-                        // Convert user to class
-                        user = document.toObject(User.class);
-                        name = user.getName();
-                        username = user.getUsername();
-                        profile = user.getProfile();
-                        followersList = user.getFollowers();
+                if (followersList == null){
+                    Log.d("Debug", "No Users");
+                    tvFollowers.setText("0 followers");
 
-                        if (followersList == null){
-                            Log.d("Debug", "No Users");
-                            tvFollowers.setText("0 followers");
-
-                        }else{
-                            Log.d("Debug", "Number of followers: " + Integer.toString(followersList.size()));
-                            tvFollowers.setText(String.format("%d followers", followersList.size()));
-                        }
-                        // Populate UI Elements
-                        Glide.with(ProfileFragment.this)
-                                .load(profile)
-                                .into(imgProfile); //TODO: add buffering img
-                        tvName.setText(name);
-                        tvHandle.setText(username);
-
-
-
-                    } else {
-                        Log.d("Debug", "No such document");
-                    }
-                } else {
-                    Log.d("Debug", "get failed with ", task.getException());
+                }else{
+                    Log.d("Debug", "Number of followers: " + Integer.toString(followersList.size()));
+                    tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
+                // Populate UI Elements
+                Glide.with(ProfileFragment.this)
+                        .load(profile)
+                        .into(imgProfile); //TODO: add buffering img
+                tvName.setText(name);
+                tvHandle.setText(username);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Debug", "get failed with ", e);
             }
         });
+        // Load user gallery
+        return view;
     }
 }
