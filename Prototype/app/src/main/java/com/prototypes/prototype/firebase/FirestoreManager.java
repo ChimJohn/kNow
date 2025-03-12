@@ -6,6 +6,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FirestoreManager<T> {
     private FirebaseFirestore db;
     private Class<T> type;
@@ -40,6 +43,24 @@ public class FirestoreManager<T> {
 
     }
 
+    public void queryDocuments(String collection, String filterField, String filterValue ,FirestoreQueryCallback<T> callback) {
+        db.collection(collection)
+                .whereEqualTo(filterField, filterValue)
+//                .orderBy(orderByField)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<T> resultList = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        T object = document.toObject(type);
+                        if (object != null) {
+                            resultList.add(object);
+                        }
+                    }
+                    callback.onSuccess(resultList);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // Delete a document
     public void deleteDocument(String collection, String documentId, FirestoreCallback callback) {
         db.collection(collection).document(documentId)
@@ -55,6 +76,12 @@ public class FirestoreManager<T> {
 
     public interface FirestoreReadCallback<T> {
         void onSuccess(T object);
+        void onFailure(Exception e);
+    }
+
+    // Callback interface for queries
+    public interface FirestoreQueryCallback<T> {
+        void onSuccess(ArrayList<T> results);
         void onFailure(Exception e);
     }
 }

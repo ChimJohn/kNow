@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="12px">
+        android:layout_marginTop="12dp">
 
         <TextView
             android:id="@+id/tvHandle"
@@ -108,13 +108,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="3"
-            tools:listitem="@layout/item_gallery_image" />
+            app:spanCount="3" />
 
     </LinearLayout>
 
-
+    <TextView
+        android:id="@+id/tvNoPhotos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:gravity="center"
+        android:text="No stories available"
+        android:textColor="@color/grey"
+        android:layout_marginTop="16dp"
+        android:textSize="16dp"
+        android:fontFamily="@font/inter_semibold"/>
 
 
 

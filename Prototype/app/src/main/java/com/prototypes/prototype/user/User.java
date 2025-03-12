@@ -10,6 +10,7 @@ public class User {
     private String profile;
     private List<String> followers;
     private List<String> following;
+    private List<String> stories;
 
     public User(){};
 
@@ -71,6 +72,14 @@ public class User {
 
     public void setProfile(String profile) {
         this.profile = profile;
+    }
+
+    public List<String> getStories() {
+        return stories;
+    }
+
+    public void setStories(List<String> stories) {
+        this.stories = stories;
     }
 
 }
