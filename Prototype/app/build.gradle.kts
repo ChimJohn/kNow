@@ -46,6 +46,8 @@ android {
 dependencies {
     implementation(libs.guava)
     implementation(libs.glide)
+    implementation(libs.firebase.storage)
+    implementation (libs.google.firebase.storage)
     annotationProcessor(libs.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.com.google.firebase.firebase.auth)
