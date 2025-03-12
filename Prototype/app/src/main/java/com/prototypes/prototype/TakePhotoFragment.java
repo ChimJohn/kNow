@@ -43,7 +43,7 @@ import com.google.firebase.storage.UploadTask;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
-public class UploadFragment extends Fragment {
+public class TakePhotoFragment extends Fragment {
 
     private Preview preview;
     private ImageCapture imageCapture;
@@ -58,6 +58,7 @@ public class UploadFragment extends Fragment {
     private boolean isFrontCamera = false;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
+
 
     @Nullable
     @Override
@@ -153,12 +154,8 @@ public class UploadFragment extends Fragment {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
-                        uploadImageToFirebaseStorage(savedUri); //Image Upload func executed
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(requireContext(), "Photo saved: " + savedUri, Toast.LENGTH_SHORT).show()
-                        );
+                        openStoryUploadFragment(savedUri);
                     }
-
                     @Override
                     public void onError(@NonNull ImageCaptureException exception) {
                         Log.e("UploadFragment", "Photo capture failed: " + exception.getMessage());
@@ -167,61 +164,21 @@ public class UploadFragment extends Fragment {
         );
     }
 
+    private void openStoryUploadFragment(Uri photoUri) {
+        StoryUploadFragment previewFragment = StoryUploadFragment.newInstance(photoUri);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, previewFragment) // Change this to your actual container ID
+                .addToBackStack(null) // Allows going back to the previous screen
+                .commit();
+    }
+
     //Actual image (not url) saved in Firebase Storage
-    private void uploadImageToFirebaseStorage(Uri uri) {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageReference = storage.getReference("media/" + UUID.randomUUID().toString());
-
-        storageReference.putFile(uri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        storageReference.getDownloadUrl()
-                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri downloadUri) {
-                                        String url = downloadUri.toString();
-                                        saveUrlToFirestore(url);
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("UploadFragment", "Upload failed: " + e.getMessage());
-                    }
-                });
-    }
-
-    //Image URL to be saved in Firestore
-    private void saveUrlToFirestore(String url) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> data = new HashMap<>();
-        data.put("imageUrl", url);
-
-        db.collection("media").document()
-                .set(data)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("UploadFragment", "Image URL saved to Firestore");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("UploadFragment", "Failed to save URL to Firestore: " + e.getMessage());
-                    }
-                });
-    }
-
     private void toggleFlash() {
         if (camera == null || !camera.getCameraInfo().hasFlashUnit()) {
             Toast.makeText(requireContext(), "Flash not available", Toast.LENGTH_SHORT).show();
             return;
         }
-
         isFlashOn = !isFlashOn;
         camera.getCameraControl().enableTorch(isFlashOn);
     }

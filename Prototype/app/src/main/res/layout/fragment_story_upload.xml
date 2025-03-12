@@ -8,33 +8,77 @@
     android:background="@android:color/white">
 
     <!-- Image Preview -->
+
+    <!-- Caption Input -->
+
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="454dp"
+        android:layout_width="270dp"
+        android:layout_height="338dp"
         android:background="@android:color/darker_gray"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_profile" />
 
-    <!-- Caption Input -->
     <EditText
         android:id="@+id/captionEditText"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="@android:drawable/editbox_background"
         android:hint="Enter your caption..."
         android:padding="12dp"
         android:textSize="16sp" />
 
-    <!-- Save Button -->
+    <!-- CheckBoxes Row -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="0dp"
+        android:gravity="center">
+
+        <CheckBox
+            android:id="@+id/checkBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:button="@null"
+            android:padding="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="0dp"
+            android:text="None"
+            android:textSize="18sp" />
+
+        <CheckBox
+            android:id="@+id/checkBox2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:button="@null"
+            android:padding="10dp"
+            android:text="Food"
+            android:textSize="18sp" />
+
+        <CheckBox
+            android:id="@+id/checkBox3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:button="@null"
+            android:padding="10dp"
+            android:layout_marginStart="20dp"
+            android:text="Attractions"
+            android:textSize="18sp" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload Story"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/black"
+        android:text="Upload Story"
         android:textColor="@android:color/white"
         android:textSize="16sp" />
 </LinearLayout>
