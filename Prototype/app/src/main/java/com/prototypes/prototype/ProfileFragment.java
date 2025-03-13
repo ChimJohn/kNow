@@ -21,6 +21,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Source;
+import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.media.Stories;
@@ -30,6 +31,7 @@ import com.prototypes.prototype.user.User;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
@@ -52,7 +54,7 @@ public class ProfileFragment extends Fragment {
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this.getActivity());
         FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
         FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Stories.class);
-
+        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
 
         // Get UI elements
         imgProfile = view.findViewById(R.id.imageProfile);
@@ -71,6 +73,7 @@ public class ProfileFragment extends Fragment {
                 followersList = user.getFollowers();
                 stories = user.getStories();
 
+                // Populate UI Elements
                 if (followersList == null){
                     Log.d(TAG, "User has no followers");
                     tvFollowers.setText("0 followers");
@@ -79,7 +82,6 @@ public class ProfileFragment extends Fragment {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
-                // Populate UI Elements
                 Glide.with(ProfileFragment.this)
                         .load(profile)
                         .into(imgProfile); //TODO: add buffering img
@@ -109,6 +111,21 @@ public class ProfileFragment extends Fragment {
                     }
                 });
 
+                // Retrieve all maps
+                firestoreMapManager.queryDocuments("Map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+                    @Override
+                    public void onSuccess(ArrayList<CustomMap> customMaps) {
+                        // Testing please delete later
+                        for (CustomMap i: customMaps){
+                            Log.d(TAG, i.getName());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+
+                    }
+                });
             }
             @Override
             public void onFailure(Exception e) {
