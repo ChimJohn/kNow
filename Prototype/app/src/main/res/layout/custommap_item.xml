@@ -5,7 +5,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:paddingEnd="24dp">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cvCustomMap"
@@ -13,7 +14,8 @@
         android:layout_height="70dp"
         app:cardCornerRadius="100dp"
         app:cardElevation="0dp"
-        app:cardMaxElevation="1dp">
+        app:cardMaxElevation="10dp"
+        android:foreground="@drawable/custom_map_item">
 
         <ImageView
             android:id="@+id/ivCustomMap"
