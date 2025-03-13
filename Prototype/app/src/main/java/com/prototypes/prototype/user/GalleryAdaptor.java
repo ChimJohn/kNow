@@ -36,6 +36,13 @@ public class GalleryAdaptor extends RecyclerView.Adapter<GalleryAdaptor.GalleryV
     @Override
     public void onBindViewHolder(@NonNull GalleryAdaptor.GalleryViewHolder holder, int position) {
         Stories story = storiesArrayList.get(position);
+        int totalWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
+        int itemWidth = totalWidth / 3;
+
+        ViewGroup.LayoutParams layoutParams = holder.galleryImg.getLayoutParams();
+        layoutParams.width = itemWidth;
+        holder.galleryImg.setLayoutParams(layoutParams);
+
         Glide.with(context)
                 .load(story.getImageUrl())
                 .into(holder.galleryImg); //TODO: add buffering img
