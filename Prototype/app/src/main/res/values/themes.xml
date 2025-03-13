@@ -1,9 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.Prototype" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Base.Theme.Prototype" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@android:color/white</item>  <!-- Set to white or any color -->
     </style>
 
-    <style name="Theme.Prototype" parent="Base.Theme.Prototype" />
+    <style name="Theme.Prototype" parent="Base.Theme.Prototype">
+        <item name="android:statusBarColor">@android:color/white</item>      <!-- Optional: If you want to change the status bar color too -->
+    </style>
+
 </resources>

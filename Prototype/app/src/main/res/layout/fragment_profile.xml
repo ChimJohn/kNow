@@ -75,26 +75,29 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:orientation="horizontal">
+
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:paddingVertical="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/squarebtn_outline"
                 android:text="Edit Maps"
                 android:fontFamily="@font/inter_semibold"
+                android:textAllCaps="false"
                 android:textColor="@color/black"
-                android:textAllCaps="false"/>
+                style="@style/OutlinedButton"/>
 
             <Button
                 android:layout_marginStart="16px"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:paddingVertical="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/squarebtn"
                 android:text="Edit Profile"
                 android:fontFamily="@font/inter_semibold"
+                android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textAllCaps="false"/>
+                style="@style/SolidButton" />
 
         </LinearLayout>
 

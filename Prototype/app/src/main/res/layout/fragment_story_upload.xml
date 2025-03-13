@@ -14,7 +14,7 @@
         android:layout_height="454dp"
         android:background="@android:color/darker_gray"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_profile" />
+        android:src="@drawable/user_icon" />
 
     <!-- Caption Input -->
     <EditText

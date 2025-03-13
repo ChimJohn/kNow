@@ -1,8 +1,12 @@
 package com.prototypes.prototype;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowInsetsController;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -14,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+//        bottomNavigationView.setItemBackgroundResource(R.color.white);
 
         // Load ExploreFragment by default when the app starts
         if (savedInstanceState == null) {

@@ -37,10 +37,18 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
     @Override
     public void onBindViewHolder(@NonNull CustomMapAdaptor.MapViewHolder holder, int position) {
         CustomMap customMap = customMapArrayList.get(position);
-        holder.customMapTxt.setText(customMap.getName());
-        Glide.with(context)
-                .load(customMap.getImageUrl())
-                .into(holder.customMapImg); //TODO: add buffering img
+
+        if (position == 0){
+            holder.customMapTxt.setText(customMap.getName());
+            Glide.with(context)
+                    .load(R.drawable.add_map_icon)
+                    .into(holder.customMapImg);
+        }else{
+            holder.customMapTxt.setText(customMap.getName());
+            Glide.with(context)
+                    .load(customMap.getImageUrl())
+                    .into(holder.customMapImg); //TODO: add buffering img
+        }
     }
 
     @Override
@@ -56,5 +64,10 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
             customMapImg = itemView.findViewById(R.id.ivCustomMap);
             customMapTxt = itemView.findViewById(R.id.tvCustomMap);
         }
+    }
+
+    public void addItemToTop(CustomMap map) {
+        customMapArrayList.add(0, map); // Insert at the top
+        notifyItemInserted(0);
     }
 }

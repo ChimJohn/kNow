@@ -6,4 +6,5 @@
     <color name="light_highlight">#C8FFE0E0</color>
     <color name="teal">#C895F8D8</color>
     <color name="green">#C8B5FFAB</color>
+    <color name="inactive">#8E8E93</color>
 </resources>

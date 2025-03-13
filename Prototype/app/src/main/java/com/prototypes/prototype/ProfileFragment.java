@@ -121,6 +121,10 @@ public class ProfileFragment extends Fragment {
                         Log.d(TAG, "firestoreMapManager failed: "+ customMaps.size());
                         customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                         mapRecyclerView.setAdapter(customMapAdaptor);
+
+                        // Create "Add" map element
+                        CustomMap addMap = new CustomMap("Add", null, null);
+                        customMapAdaptor.addItemToTop(addMap);
                     }
 
                     @Override
