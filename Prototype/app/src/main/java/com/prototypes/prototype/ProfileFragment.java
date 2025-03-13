@@ -22,6 +22,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Source;
 import com.prototypes.prototype.custommap.CustomMap;
+import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.media.Stories;
@@ -41,8 +42,9 @@ public class ProfileFragment extends Fragment {
     List<String> followersList, stories;
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers;
-    RecyclerView recyclerView;
+    RecyclerView galleryRecyclerView, mapRecyclerView;
     GalleryAdaptor galleryAdaptor;
+    CustomMapAdaptor customMapAdaptor;
     private static final String TAG = "Profile Fragment";
 
     @Nullable
@@ -61,7 +63,8 @@ public class ProfileFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
-        recyclerView = view.findViewById(R.id.gallery_recycler_view);
+        galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
+        mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
 
         // Get user details
         firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {
@@ -93,21 +96,21 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void onSuccess(ArrayList<Stories> storyList) {
                         if (storyList.isEmpty()) {
-                            recyclerView.setVisibility(View.GONE);
+                            galleryRecyclerView.setVisibility(View.GONE);
                             TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
                             tvNoPhotos.setVisibility(View.VISIBLE);
                         } else {
-                            recyclerView.setVisibility(View.VISIBLE);
+                            galleryRecyclerView.setVisibility(View.VISIBLE);
                             TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
                             tvNoPhotos.setVisibility(View.GONE);
 
                             galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                            recyclerView.setAdapter(galleryAdaptor);
+                            galleryRecyclerView.setAdapter(galleryAdaptor);
                         }
                     }
                     @Override
                     public void onFailure(Exception e) {
-                        Log.d(TAG, "firestoreStoriesManager failed: ", e);
+                        Log.d(TAG, "firestoreStoriesManager failed: " + e);
                     }
                 });
 
@@ -115,21 +118,20 @@ public class ProfileFragment extends Fragment {
                 firestoreMapManager.queryDocuments("Map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
                     @Override
                     public void onSuccess(ArrayList<CustomMap> customMaps) {
-                        // Testing please delete later
-                        for (CustomMap i: customMaps){
-                            Log.d(TAG, i.getName());
-                        }
+                        Log.d(TAG, "firestoreMapManager failed: "+ customMaps.size());
+                        customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                        mapRecyclerView.setAdapter(customMapAdaptor);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-
+                        Log.d(TAG, "firestoreMapManager failed: "+ e);
                     }
                 });
             }
             @Override
             public void onFailure(Exception e) {
-                Log.d(TAG, "firestoreManager failed: ", e);
+                Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
         return view;
