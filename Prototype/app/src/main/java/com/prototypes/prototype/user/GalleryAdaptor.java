@@ -39,9 +39,19 @@ public class GalleryAdaptor extends RecyclerView.Adapter<GalleryAdaptor.GalleryV
         int totalWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
         int itemWidth = totalWidth / 3;
 
+        int spacing = (int) (6 * holder.itemView.getContext().getResources().getDisplayMetrics().density);
+
+
         ViewGroup.LayoutParams layoutParams = holder.galleryImg.getLayoutParams();
         layoutParams.width = itemWidth;
+
+        // Set margins for spacing between items
+        RecyclerView.LayoutParams recyclerViewParams = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
+        recyclerViewParams.setMargins(spacing, spacing, spacing, spacing);  // Add margins
+
         holder.galleryImg.setLayoutParams(layoutParams);
+        holder.itemView.setLayoutParams(recyclerViewParams);
+
 
         Glide.with(context)
                 .load(story.getImageUrl())
