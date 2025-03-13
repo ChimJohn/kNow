@@ -46,22 +46,25 @@ android {
 dependencies {
     implementation(libs.guava)
     implementation(libs.glide)
-    implementation(libs.firebase.storage)
-    implementation (libs.google.firebase.storage)
+
     annotationProcessor(libs.compiler)
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.com.google.firebase.firebase.auth)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.crashlytics.buildtools)
-
-    implementation(libs.android.maps.utils)
-    implementation(libs.google.firebase.auth)
-    implementation(libs.play.services.auth)
-    implementation(libs.play.services.maps)
     implementation(libs.firebase.common)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.google.firebase.auth)
+    implementation (libs.google.firebase.storage)
+
+    implementation(libs.android.maps.utils)
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     implementation(libs.credentials)
 
     implementation(libs.activity.ktx)
