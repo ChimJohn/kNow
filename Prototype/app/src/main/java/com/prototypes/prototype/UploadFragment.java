@@ -39,7 +39,7 @@ public class UploadFragment extends Fragment {
     private ImageCapture imageCapture;
     private CameraSelector cameraSelector;
     private Camera camera;
-    private ExecutorService cameraExecutor;
+    private final ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
 
     private androidx.camera.view.PreviewView cameraPreview;
     private ImageButton btnCapture, btnFlash, btnFlip, btnClose;
@@ -60,7 +60,6 @@ public class UploadFragment extends Fragment {
         btnFlip = rootView.findViewById(R.id.btnFlip);
         btnClose = rootView.findViewById(R.id.btnClose);
 
-        cameraExecutor = Executors.newSingleThreadExecutor();
 
         // Register Permission Request
         requestPermissionLauncher = registerForActivityResult(
@@ -104,23 +103,14 @@ public class UploadFragment extends Fragment {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 preview = new Preview.Builder().build();
-                imageCapture = new ImageCapture.Builder().build();
-
+                imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build();
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
                         .build();
-
                 cameraProvider.unbindAll();
-
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
-
-                // Prevent crash by checking if cameraPreview is available
-                if (cameraPreview.getSurfaceProvider() != null) {
-                    preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
-                } else {
-                    Log.e("UploadFragment", "Camera Preview SurfaceProvider is null");
-                }
-
+                cameraPreview.getSurfaceProvider();
+                preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
             } catch (Exception e) {
                 Log.e("UploadFragment", "CameraX initialization failed", e);
             }
@@ -140,12 +130,15 @@ public class UploadFragment extends Fragment {
 
         imageCapture.takePicture(outputOptions, cameraExecutor,
                 new ImageCapture.OnImageSavedCallback() {
+
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(requireContext(), "Photo saved: " + savedUri, Toast.LENGTH_SHORT).show()
-                        );
+                        Log.d("UploadFragment", "Photo saved: " + savedUri); // Add logging to check
+                        requireActivity().runOnUiThread(() -> {
+                            Log.d("UploadFragment", "Running on UI thread"); // Check if this gets printed
+                            Toast.makeText(requireContext(), "Photo saved: " + savedUri, Toast.LENGTH_SHORT).show();
+                        });
                     }
 
                     @Override
