@@ -50,6 +50,10 @@ public class FirestoreManager<T> {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     ArrayList<T> resultList = new ArrayList<>();
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        callback.onEmpty(resultList);
+                        return;
+                    }
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         T object = document.toObject(type);
                         if (object != null) {
@@ -81,6 +85,7 @@ public class FirestoreManager<T> {
 
     // Callback interface for queries
     public interface FirestoreQueryCallback<T> {
+        void onEmpty(ArrayList<T> results);
         void onSuccess(ArrayList<T> results);
         void onFailure(Exception e);
     }

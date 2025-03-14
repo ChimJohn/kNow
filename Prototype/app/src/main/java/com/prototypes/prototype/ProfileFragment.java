@@ -94,19 +94,19 @@ public class ProfileFragment extends Fragment {
                 // Retrieve all media related to user
                 firestoreStoriesManager.queryDocuments("Media", "creator", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Stories>() {
                     @Override
-                    public void onSuccess(ArrayList<Stories> storyList) {
-                        if (storyList.isEmpty()) {
-                            galleryRecyclerView.setVisibility(View.GONE);
-                            TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
-                            tvNoPhotos.setVisibility(View.VISIBLE);
-                        } else {
-                            galleryRecyclerView.setVisibility(View.VISIBLE);
-                            TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
-                            tvNoPhotos.setVisibility(View.GONE);
+                    public void onEmpty(ArrayList<Stories> storyList) {
+                        galleryRecyclerView.setVisibility(View.GONE);
+                        TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
+                        tvNoPhotos.setVisibility(View.VISIBLE);
+                    }
 
-                            galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                            galleryRecyclerView.setAdapter(galleryAdaptor);
-                        }
+                    @Override
+                    public void onSuccess(ArrayList<Stories> storyList) {
+                        galleryRecyclerView.setVisibility(View.VISIBLE);
+                        TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
+                        tvNoPhotos.setVisibility(View.GONE);
+                        galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
+                        galleryRecyclerView.setAdapter(galleryAdaptor);
                     }
                     @Override
                     public void onFailure(Exception e) {
@@ -117,8 +117,17 @@ public class ProfileFragment extends Fragment {
                 // Retrieve all maps
                 firestoreMapManager.queryDocuments("Map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
                     @Override
+                    public void onEmpty(ArrayList<CustomMap> customMaps) {
+                        Log.d(TAG, "Number of Custom Maps: 0");
+                        customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                        mapRecyclerView.setAdapter(customMapAdaptor);
+                        // Create "Add" map element
+                        CustomMap addMap = new CustomMap("Add", null, null);
+                        customMapAdaptor.addItemToTop(addMap);
+                    }
+                    @Override
                     public void onSuccess(ArrayList<CustomMap> customMaps) {
-                        Log.d(TAG, "firestoreMapManager failed: "+ customMaps.size());
+                        Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
                         customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                         mapRecyclerView.setAdapter(customMapAdaptor);
 
