@@ -135,7 +135,8 @@
             android:text="@string/login"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:textAllCaps="false"/>
+            android:textAllCaps="false"
+            style="@style/SolidButton"/>
 
 
         <!-- Sign Up Link -->

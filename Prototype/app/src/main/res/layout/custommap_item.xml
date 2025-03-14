@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvCustomMap"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        app:cardCornerRadius="100dp"
+        app:cardElevation="0dp"
+        app:cardMaxElevation="1dp">
+
+        <ImageView
+            android:id="@+id/ivCustomMap"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvCustomMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Map"
+        android:fontFamily="@font/inter_medium"
+        android:textColor="@color/black"
+        android:textSize="14dp"/>
+
+</LinearLayout>

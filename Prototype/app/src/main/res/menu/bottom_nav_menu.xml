@@ -5,18 +5,18 @@
     <item
         android:id="@+id/explore"
         android:title="Explore"
-        android:icon="@drawable/nav_explore"
+        android:icon="@drawable/home_icon"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/upload"
         android:title="Upload"
-        android:icon="@drawable/nav_upload"
+        android:icon="@drawable/upload_icon"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/profile"
         android:title="Profile"
-        android:icon="@drawable/nav_profile"
+        android:icon="@drawable/user_icon"
         app:showAsAction="ifRoom"/>
 </menu>

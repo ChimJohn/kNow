@@ -10,6 +10,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.WindowInsetsController;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -36,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         startLocationUpdates();
+//        bottomNavigationView.setItemBackgroundResource(R.color.white);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
