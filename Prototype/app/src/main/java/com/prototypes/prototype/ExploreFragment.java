@@ -83,7 +83,7 @@ public class ExploreFragment extends Fragment {
                     }
                 });
 
-                // Add multiple markers
+                // Add multiple markers randomly remove this after proper fetching of images from firestore
                 for (int i = 0; i < 20; i++) {
                     double lat = 1.3521 + (Math.random() * 0.1 - 0.05);
                     double lng = 103.8198 + (Math.random() * 0.1 - 0.05);

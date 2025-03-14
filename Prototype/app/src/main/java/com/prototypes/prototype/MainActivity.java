@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -25,14 +26,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
+    private LocationViewModel locationViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
         setContentView(R.layout.main);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         startLocationUpdates();
 
         if (savedInstanceState == null) {
@@ -68,16 +70,17 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             // Permissions granted, start location tracking
-        LocationRequest locationRequest = new LocationRequest.Builder(10000)  // Interval in milliseconds (10 seconds)
+        LocationRequest locationRequest = new LocationRequest.Builder(5000)  // Interval in milliseconds (10 seconds)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)  // Set priority for accuracy
                 .build();
 
         locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
+            public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 if (!locationResult.getLocations().isEmpty()) {
                     Location location = locationResult.getLastLocation();
+                    assert location != null;
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
                     Log.d("Location", "Latitude: " + latitude + ", Longitude: " + longitude);
