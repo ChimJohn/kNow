@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -34,6 +35,7 @@ public class StoryUploadFragment extends Fragment {
     private EditText captionEditText;
     private Button saveButton;
     private static final String ARG_PHOTO_URI = "photoUri";
+    private CurrentLocationViewModel currentLocationViewModel;
     private Uri photoUri;
 
     public static StoryUploadFragment newInstance(Uri photoUri) {
@@ -48,6 +50,7 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_story_upload, container, false);
+        currentLocationViewModel = new ViewModelProvider(this).get(CurrentLocationViewModel.class);
 
         imageView = rootView.findViewById(R.id.imageView);
         captionEditText = rootView.findViewById(R.id.captionEditText);

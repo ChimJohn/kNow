@@ -30,47 +30,43 @@
         android:textSize="16sp" />
 
     <!-- CheckBoxes Row -->
-    <LinearLayout
+    <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="0dp"
-        android:gravity="center">
+        android:orientation="horizontal">
 
-        <CheckBox
-            android:id="@+id/checkBox1"
+        <RadioButton
+            android:id="@+id/radioNone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:button="@null"
-            android:padding="10dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="0dp"
+            android:background="@drawable/category_radio_selector"
             android:text="None"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"/>
 
-        <CheckBox
-            android:id="@+id/checkBox2"
+        <RadioButton
+            android:id="@+id/radioFood"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:button="@null"
-            android:padding="10dp"
+            android:background="@drawable/category_radio_selector"
             android:text="Food"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"/>
 
-        <CheckBox
-            android:id="@+id/checkBox3"
+        <RadioButton
+            android:id="@+id/radioAttractions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:button="@null"
-            android:padding="10dp"
-            android:layout_marginStart="20dp"
+            android:background="@drawable/category_radio_selector"
             android:text="Attractions"
-            android:textSize="18sp" />
-    </LinearLayout>
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"/>
+    </RadioGroup>
+
 
     <Button
         android:id="@+id/saveButton"

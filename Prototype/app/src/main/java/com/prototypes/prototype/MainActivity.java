@@ -10,12 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.WindowInsetsController;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,14 +27,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
-    private LocationViewModel locationViewModel;
+    private CurrentLocationViewModel currentLocationViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+        currentLocationViewModel = new ViewModelProvider(this).get(CurrentLocationViewModel.class);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         startLocationUpdates();
 //        bottomNavigationView.setItemBackgroundResource(R.color.white);
@@ -90,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
                     assert location != null;
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
+                    currentLocationViewModel.setCurrentLocation(location);
+
                     Log.d("Location", "Latitude: " + latitude + ", Longitude: " + longitude);
                 }
             }
