@@ -1,7 +1,10 @@
 package com.prototypes.prototype;
 
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,33 +15,42 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
-
 
 public class ExploreFragment extends Fragment {
 
     private MapView mapView;
     private GoogleMap googleMap;
+    private CurrentLocationViewModel currentLocationViewModel;
+    private Marker gpsMarker;
+    private Circle pulsatingCircle;
+    private ValueAnimator pulseAnimator;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
         Log.d("Debug", "Explore page.");
-        // Initialize MapView
+
         mapView = rootView.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-        mapView.onResume(); // Needed to display the map immediately
+        mapView.onResume();
 
         try {
             MapsInitializer.initialize(requireActivity().getApplicationContext());
@@ -46,25 +58,29 @@ public class ExploreFragment extends Fragment {
             e.printStackTrace();
         }
 
-        // Set up the map
+        // Initialize ViewModel
+        currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull GoogleMap map) {
+                googleMap = map;
+                googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
 
-                // Apply minimal map styling
-                map.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
-
-                // Default location: Singapore
                 LatLng singapore = new LatLng(1.3521, 103.8198);
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
 
-                // Remove Google default POIs and labels
-                map.getUiSettings().setMapToolbarEnabled(false);
-                map.getUiSettings().setCompassEnabled(false);
-                map.getUiSettings().setRotateGesturesEnabled(false);
-                map.getUiSettings().setTiltGesturesEnabled(false);
+                googleMap.getUiSettings().setMapToolbarEnabled(false);
+                googleMap.getUiSettings().setCompassEnabled(false);
+                googleMap.getUiSettings().setRotateGesturesEnabled(false);
+                googleMap.getUiSettings().setTiltGesturesEnabled(false);
 
-                // Create a TextView and customize it
+                // Observe location updates from ViewModel
+                currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
+                    if (location != null) {
+                        updateGpsMarker(location);
+                    }
+                });
                 ClusterManager<StoryCluster> clusterManager = new ClusterManager<>(requireContext(), map);
                 clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), map, clusterManager));
                 map.setOnCameraIdleListener(clusterManager);
@@ -82,8 +98,6 @@ public class ExploreFragment extends Fragment {
                         return true;
                     }
                 });
-
-                // Add multiple markers
                 for (int i = 0; i < 20; i++) {
                     double lat = 1.3521 + (Math.random() * 0.1 - 0.05);
                     double lng = 103.8198 + (Math.random() * 0.1 - 0.05);
@@ -98,23 +112,46 @@ public class ExploreFragment extends Fragment {
         return rootView;
     }
 
-    // Method to convert TextView to BitmapDescriptor
-    private BitmapDescriptor createBitmapDescriptorFromTextView(TextView textView) {
-        // Measure and layout the TextView
-        textView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        textView.layout(0, 0, textView.getMeasuredWidth(), textView.getMeasuredHeight());
+    private void updateGpsMarker(Location location) {
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        // Create a Bitmap from the TextView
-        Bitmap bitmap = Bitmap.createBitmap(textView.getMeasuredWidth(), textView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        textView.draw(canvas);
+        if (gpsMarker == null) {
+            gpsMarker = googleMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title("You are here")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        } else {
+            gpsMarker.setPosition(latLng);
+        }
 
-        // Return a BitmapDescriptor from the Bitmap
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
+        // Add pulsating effect
+        if (pulsatingCircle == null) {
+            pulsatingCircle = googleMap.addCircle(new CircleOptions()
+                    .center(latLng)
+                    .radius(50) // Initial radius in meters
+                    .strokeWidth(0f)
+                    .fillColor(Color.argb(70, 0, 0, 255)));
+
+            startPulsatingEffect();
+        } else {
+            pulsatingCircle.setCenter(latLng);
+        }
+
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
-    // Lifecycle Methods for Proper Map Handling
+    private void startPulsatingEffect() {
+        pulseAnimator = ValueAnimator.ofFloat(50, 100);
+        pulseAnimator.setDuration(1000);
+        pulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        pulseAnimator.setRepeatMode(ValueAnimator.REVERSE);
+        pulseAnimator.addUpdateListener(animation -> {
+            float animatedValue = (float) animation.getAnimatedValue();
+            pulsatingCircle.setRadius(animatedValue);
+        });
+        pulseAnimator.start();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -137,5 +174,23 @@ public class ExploreFragment extends Fragment {
         if (mapView != null) {
             mapView.onDestroy();
         }
+        if (pulseAnimator != null) {
+            pulseAnimator.cancel();
+        }
+    }
+
+    private BitmapDescriptor createBitmapDescriptorFromTextView(TextView textView) {
+        // Measure and layout the TextView
+        textView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        textView.layout(0, 0, textView.getMeasuredWidth(), textView.getMeasuredHeight());
+
+        // Create a Bitmap from the TextView
+        Bitmap bitmap = Bitmap.createBitmap(textView.getMeasuredWidth(), textView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        textView.draw(canvas);
+
+        // Return a BitmapDescriptor from the Bitmap
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 }
