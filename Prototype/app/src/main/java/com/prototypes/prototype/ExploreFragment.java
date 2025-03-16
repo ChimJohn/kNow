@@ -74,26 +74,12 @@ public class ExploreFragment extends Fragment {
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull GoogleMap map) {
+
                 googleMap = map;
                 googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
 
                 LatLng singapore = new LatLng(1.3521, 103.8198);
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 15));
-
-                googleMap.getUiSettings().setMapToolbarEnabled(false);
-                googleMap.getUiSettings().setCompassEnabled(false);
-                googleMap.getUiSettings().setRotateGesturesEnabled(false);
-                googleMap.getUiSettings().setTiltGesturesEnabled(false);
-
-                // Initialize the ClusterManager
-                clusterManager = new ClusterManager<>(requireContext(), googleMap);
-                clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
-                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
-                algorithm.setMaxDistanceBetweenClusteredItems(10); // Decrease the distance (default is ~100dp)
-                clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
-                googleMap.setOnCameraIdleListener(clusterManager);
-                googleMap.setOnMarkerClickListener(clusterManager);
-                // Observe location updates from ViewModel
                 currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                     if (location != null) {
                         updateGpsMarker(location);
@@ -103,6 +89,21 @@ public class ExploreFragment extends Fragment {
                         isFirstLocationUpdate = false;
                     }
                 });
+                googleMap.getUiSettings().setMapToolbarEnabled(false);
+                googleMap.getUiSettings().setCompassEnabled(false);
+                googleMap.getUiSettings().setRotateGesturesEnabled(false);
+                googleMap.getUiSettings().setTiltGesturesEnabled(false);
+
+                // Initialize the ClusterManager
+                clusterManager = new ClusterManager<>(requireContext(), googleMap);
+                clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
+                googleMap.setOnCameraIdleListener(clusterManager);
+                googleMap.setOnMarkerClickListener(clusterManager);
+                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+                algorithm.setMaxDistanceBetweenClusteredItems(80); // Adjust clustering sensitivity
+                clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
+                // Observe location updates from ViewModel
+
 
                 // Fetch the data from Firebase
                 fetchMarkersData();
@@ -133,6 +134,7 @@ public class ExploreFragment extends Fragment {
                                 clusterManager.addItem(storyCluster);
                             }
                         }
+                        clusterManager.cluster();
                     } else {
                         Log.e("ExploreFragment", "Error getting documents: ", task.getException());
                     }
