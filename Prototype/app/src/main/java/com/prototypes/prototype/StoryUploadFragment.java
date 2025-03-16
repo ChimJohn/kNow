@@ -80,8 +80,12 @@ public class StoryUploadFragment extends Fragment {
         saveButton.setOnClickListener(v -> {
             String caption = captionEditText.getText().toString();
             uploadImageToFirebaseStorage(photoUri, caption);
+            ExploreFragment exploreFragment = new ExploreFragment();
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, exploreFragment) // Replace with the correct container ID
+                    .addToBackStack(null) // Optional, allows going back to previous fragment
+                    .commit();
             Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
-            requireActivity().getSupportFragmentManager().popBackStack();
         });
 
         Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
@@ -134,6 +138,7 @@ public class StoryUploadFragment extends Fragment {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+
                         Log.d("UploadFragment", "Image URL saved to Firestore");
                     }
                 })

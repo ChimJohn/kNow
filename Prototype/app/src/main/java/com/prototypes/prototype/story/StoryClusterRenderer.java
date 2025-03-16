@@ -20,8 +20,8 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
     protected void onBeforeClusterItemRendered(StoryCluster item, MarkerOptions markerOptions) {
         // Create custom StoryMarker view
         StoryMarker storyMarker = new StoryMarker(context);
-        storyMarker.setMarkerText(item.getTitle());
-        storyMarker.setMarkerImage(0);
+//        storyMarker.setMarkerText(item.getTitle());
+        storyMarker.setMarkerImage(context, item.getImageUrl());
 
         // Convert to Bitmap
         Bitmap markerBitmap = storyMarker.getMarkerBitmap();

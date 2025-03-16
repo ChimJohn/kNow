@@ -10,13 +10,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.MapView;
@@ -30,9 +30,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
+import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
+import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
+
 
 public class ExploreFragment extends Fragment {
 
@@ -42,6 +48,9 @@ public class ExploreFragment extends Fragment {
     private Marker gpsMarker;
     private Circle pulsatingCircle;
     private ValueAnimator pulseAnimator;
+    private FirebaseFirestore db;
+    private ClusterManager<StoryCluster> clusterManager;
+    private boolean isFirstLocationUpdate = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,6 +69,7 @@ public class ExploreFragment extends Fragment {
 
         // Initialize ViewModel
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+        db = FirebaseFirestore.getInstance();
 
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -68,48 +78,66 @@ public class ExploreFragment extends Fragment {
                 googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
 
                 LatLng singapore = new LatLng(1.3521, 103.8198);
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 15));
 
                 googleMap.getUiSettings().setMapToolbarEnabled(false);
                 googleMap.getUiSettings().setCompassEnabled(false);
                 googleMap.getUiSettings().setRotateGesturesEnabled(false);
                 googleMap.getUiSettings().setTiltGesturesEnabled(false);
 
+                // Initialize the ClusterManager
+                clusterManager = new ClusterManager<>(requireContext(), googleMap);
+                clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
+                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+                algorithm.setMaxDistanceBetweenClusteredItems(10); // Decrease the distance (default is ~100dp)
+                clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
+                googleMap.setOnCameraIdleListener(clusterManager);
+                googleMap.setOnMarkerClickListener(clusterManager);
                 // Observe location updates from ViewModel
                 currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                     if (location != null) {
                         updateGpsMarker(location);
+                        if (isFirstLocationUpdate) {
+                            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16));
+                        }
+                        isFirstLocationUpdate = false;
                     }
                 });
-                ClusterManager<StoryCluster> clusterManager = new ClusterManager<>(requireContext(), map);
-                clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), map, clusterManager));
-                map.setOnCameraIdleListener(clusterManager);
-                map.setOnMarkerClickListener(clusterManager);
-                clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<StoryCluster>() {
-                    @Override
-                    public boolean onClusterItemClick(StoryCluster storyCluster) {
-                        // Handle the marker click
-                        String title = storyCluster.getTitle();
 
-                        // Example: Show a Toast message when the marker is clicked
-                        Toast.makeText(requireActivity(), "Clicked: " + title, Toast.LENGTH_SHORT).show();
-
-                        // Return true if you've handled the click, false otherwise
-                        return true;
-                    }
-                });
-                for (int i = 0; i < 20; i++) {
-                    double lat = 1.3521 + (Math.random() * 0.1 - 0.05);
-                    double lng = 103.8198 + (Math.random() * 0.1 - 0.05);
-                    StoryCluster item = new StoryCluster(lat, lng, "Marker " + i, "Snippet " + i);
-                    clusterManager.addItem(item);
-                }
-
-                clusterManager.cluster(); // Update clusters
+                // Fetch the data from Firebase
+                fetchMarkersData();
             }
         });
 
         return rootView;
+    }
+
+    private void fetchMarkersData() {
+        db.collection("media")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot documentSnapshots = task.getResult();
+                        if (documentSnapshots != null) {
+                            for (QueryDocumentSnapshot documentSnapshot : documentSnapshots) {
+                                String caption = documentSnapshot.getString("caption");
+                                String category = documentSnapshot.getString("category");
+                                String imageUrl = documentSnapshot.getString("imageUrl");
+                                double latitude = documentSnapshot.getDouble("latitude");
+                                double longitude = documentSnapshot.getDouble("longitude");
+
+                                // Create a StoryCluster for each document
+                                StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, imageUrl);
+
+                                // Add the cluster item
+                                clusterManager.addItem(storyCluster);
+                            }
+                        }
+                        clusterManager.cluster(); // Update clusters
+                    } else {
+                        Log.e("ExploreFragment", "Error getting documents: ", task.getException());
+                    }
+                });
     }
 
     private void updateGpsMarker(Location location) {
@@ -137,7 +165,7 @@ public class ExploreFragment extends Fragment {
             pulsatingCircle.setCenter(latLng);
         }
 
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+//        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
     private void startPulsatingEffect() {
@@ -177,20 +205,5 @@ public class ExploreFragment extends Fragment {
         if (pulseAnimator != null) {
             pulseAnimator.cancel();
         }
-    }
-
-    private BitmapDescriptor createBitmapDescriptorFromTextView(TextView textView) {
-        // Measure and layout the TextView
-        textView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        textView.layout(0, 0, textView.getMeasuredWidth(), textView.getMeasuredHeight());
-
-        // Create a Bitmap from the TextView
-        Bitmap bitmap = Bitmap.createBitmap(textView.getMeasuredWidth(), textView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        textView.draw(canvas);
-
-        // Return a BitmapDescriptor from the Bitmap
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 }

@@ -10,11 +10,13 @@ public class StoryCluster implements ClusterItem {
     private final LatLng position;
     private final String title;
     private final String snippet;
+    private final String imageUrl;
 
-    public StoryCluster(double lat, double lng, String title, String snippet) {
+    public StoryCluster(double lat, double lng, String title, String snippet, String imageUrl) {
         position = new LatLng(lat, lng);
         this.title = title;
         this.snippet = snippet;
+        this.imageUrl = imageUrl;
     }
 
     @NonNull
@@ -26,6 +28,10 @@ public class StoryCluster implements ClusterItem {
     @Override
     public String getTitle() {
         return title;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     @Override

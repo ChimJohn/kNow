@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
 
 public class StoryMarker extends LinearLayout{
@@ -28,18 +29,18 @@ public class StoryMarker extends LinearLayout{
 
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.story_marker, this, true);
-//        textView = findViewById(R.id.tv_marker_text);
         imageView = findViewById(R.id.iv_marker_icon);
     }
 
-    public void setMarkerText(String text) {
+//    public void setMarkerText(String text) {
 //        textView.setText(text);
-    }
+//    }
 
-    public void setMarkerImage(@DrawableRes int drawableRes) {
-        imageView.setImageResource(drawableRes);
+    public void setMarkerImage(Context context, String imageUrl) {
+        Glide.with(context)
+                .load(imageUrl)
+                .into(imageView);
     }
-
     // Convert View to Bitmap (for efficient Google Maps rendering)
     public Bitmap getMarkerBitmap() {
         measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
