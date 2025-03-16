@@ -14,4 +14,7 @@ public class CurrentLocationViewModel extends ViewModel {
     public LiveData<Location> getCurrentLocation(){
         return currentLocation;
     }
+    public Location getLastKnownLocation() {
+        return currentLocation.getValue();
+    }
 }

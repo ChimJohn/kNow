@@ -44,7 +44,8 @@
             android:text="None"
             android:textSize="18sp"
             android:button="@null"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:checked="true"/>
 
         <RadioButton
             android:id="@+id/radioFood"

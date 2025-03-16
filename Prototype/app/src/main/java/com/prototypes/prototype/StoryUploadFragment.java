@@ -2,6 +2,7 @@ package com.prototypes.prototype;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,20 +12,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +40,12 @@ public class StoryUploadFragment extends Fragment {
     private ImageView imageView;
     private EditText captionEditText;
     private Button saveButton;
+    private RadioGroup categoryRadioGroup;
     private static final String ARG_PHOTO_URI = "photoUri";
     private CurrentLocationViewModel currentLocationViewModel;
+    private FirebaseAuthManager firebaseAuthManager;
     private Uri photoUri;
+    double lat, lng;
 
     public static StoryUploadFragment newInstance(Uri photoUri) {
         StoryUploadFragment fragment = new StoryUploadFragment();
@@ -50,10 +59,12 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_story_upload, container, false);
-        currentLocationViewModel = new ViewModelProvider(this).get(CurrentLocationViewModel.class);
+        currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+        firebaseAuthManager = new FirebaseAuthManager(requireActivity());
 
         imageView = rootView.findViewById(R.id.imageView);
         captionEditText = rootView.findViewById(R.id.captionEditText);
+        categoryRadioGroup = rootView.findViewById(R.id.radioGroup); // Get the RadioGroup
         saveButton = rootView.findViewById(R.id.saveButton);
 
         // Get the photo URI from arguments
@@ -73,6 +84,10 @@ public class StoryUploadFragment extends Fragment {
             requireActivity().getSupportFragmentManager().popBackStack();
         });
 
+        Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
+        Log.d("LocationUpdate", "Last known location: " + lastKnownLocation);
+        lat = lastKnownLocation.getLatitude();
+        lng = lastKnownLocation.getLongitude();
         return rootView;
     }
 
@@ -88,8 +103,9 @@ public class StoryUploadFragment extends Fragment {
                                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                     @Override
                                     public void onSuccess(Uri downloadUri) {
+                                        String selectedCategory = getSelectedCategory();
                                         String url = downloadUri.toString();
-                                        saveUrlToFirestore(url, caption);
+                                        saveUrlToFirestore(firebaseAuthManager.getCurrentUser().getUid(), url, caption, selectedCategory, lat, lng);
                                     }
                                 });
                     }
@@ -103,11 +119,15 @@ public class StoryUploadFragment extends Fragment {
     }
 
     //Image URL to be saved in Firestore
-    private void saveUrlToFirestore(String url, String caption) {
+    private void saveUrlToFirestore(String userId, String url, String caption, String selectedCategory, Double lat, Double lng) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, Object> data = new HashMap<>();
+        data.put("user",userId);
         data.put("imageUrl", url);
         data.put("caption", caption);
+        data.put("category", selectedCategory);
+        data.put("latitude", lat);
+        data.put("longitude", lng);
 
         db.collection("media").document()
                 .set(data)
@@ -124,5 +144,17 @@ public class StoryUploadFragment extends Fragment {
                     }
                 });
     }
+    private String getSelectedCategory() {
+        int selectedId = categoryRadioGroup.getCheckedRadioButtonId();
+        if (selectedId == R.id.radioNone) {
+            return "None";
+        } else if (selectedId == R.id.radioFood) {
+            return "Food";
+        } else if (selectedId == R.id.radioAttractions) {
+            return "Attractions";
+        }
+        return "None"; // Default category if none is selected
+    }
+
 
 }
