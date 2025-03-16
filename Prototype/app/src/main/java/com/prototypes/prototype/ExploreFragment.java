@@ -133,7 +133,6 @@ public class ExploreFragment extends Fragment {
                                 clusterManager.addItem(storyCluster);
                             }
                         }
-                        clusterManager.cluster(); // Update clusters
                     } else {
                         Log.e("ExploreFragment", "Error getting documents: ", task.getException());
                     }
@@ -142,7 +141,6 @@ public class ExploreFragment extends Fragment {
 
     private void updateGpsMarker(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
         if (gpsMarker == null) {
             gpsMarker = googleMap.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -151,7 +149,6 @@ public class ExploreFragment extends Fragment {
         } else {
             gpsMarker.setPosition(latLng);
         }
-
         // Add pulsating effect
         if (pulsatingCircle == null) {
             pulsatingCircle = googleMap.addCircle(new CircleOptions()
@@ -164,8 +161,6 @@ public class ExploreFragment extends Fragment {
         } else {
             pulsatingCircle.setCenter(latLng);
         }
-
-//        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
     }
 
     private void startPulsatingEffect() {
