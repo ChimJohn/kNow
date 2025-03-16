@@ -8,33 +8,74 @@
     android:background="@android:color/white">
 
     <!-- Image Preview -->
+
+    <!-- Caption Input -->
+
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="454dp"
+        android:layout_width="270dp"
+        android:layout_height="338dp"
         android:background="@android:color/darker_gray"
         android:scaleType="centerCrop"
         android:src="@drawable/user_icon" />
 
-    <!-- Caption Input -->
     <EditText
         android:id="@+id/captionEditText"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="@android:drawable/editbox_background"
         android:hint="Enter your caption..."
         android:padding="12dp"
         android:textSize="16sp" />
 
-    <!-- Save Button -->
+    <!-- CheckBoxes Row -->
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioNone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/category_radio_selector"
+            android:text="None"
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/radioFood"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/category_radio_selector"
+            android:text="Food"
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"/>
+
+        <RadioButton
+            android:id="@+id/radioAttractions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/category_radio_selector"
+            android:text="Attractions"
+            android:textSize="18sp"
+            android:button="@null"
+            android:padding="10dp"/>
+    </RadioGroup>
+
+
     <Button
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload Story"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/black"
+        android:text="Upload Story"
         android:textColor="@android:color/white"
         android:textSize="16sp" />
 </LinearLayout>

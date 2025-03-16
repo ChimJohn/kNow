@@ -24,22 +24,32 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
-
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class UploadFragment extends Fragment {
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+
+public class TakePhotoFragment extends Fragment {
 
     private Preview preview;
     private ImageCapture imageCapture;
     private CameraSelector cameraSelector;
     private Camera camera;
-    private final ExecutorService cameraExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService cameraExecutor;
 
     private androidx.camera.view.PreviewView cameraPreview;
     private ImageButton btnCapture, btnFlash, btnFlip, btnClose;
@@ -48,6 +58,7 @@ public class UploadFragment extends Fragment {
     private boolean isFrontCamera = false;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
+
 
     @Nullable
     @Override
@@ -60,6 +71,7 @@ public class UploadFragment extends Fragment {
         btnFlip = rootView.findViewById(R.id.btnFlip);
         btnClose = rootView.findViewById(R.id.btnClose);
 
+        cameraExecutor = Executors.newSingleThreadExecutor();
 
         // Register Permission Request
         requestPermissionLauncher = registerForActivityResult(
@@ -103,14 +115,23 @@ public class UploadFragment extends Fragment {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 preview = new Preview.Builder().build();
-                imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build();
+                imageCapture = new ImageCapture.Builder().build();
+
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
                         .build();
+
                 cameraProvider.unbindAll();
+
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
-                cameraPreview.getSurfaceProvider();
-                preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
+
+                // Prevent crash by checking if cameraPreview is available
+                if (cameraPreview.getSurfaceProvider() != null) {
+                    preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
+                } else {
+                    Log.e("UploadFragment", "Camera Preview SurfaceProvider is null");
+                }
+
             } catch (Exception e) {
                 Log.e("UploadFragment", "CameraX initialization failed", e);
             }
@@ -130,17 +151,11 @@ public class UploadFragment extends Fragment {
 
         imageCapture.takePicture(outputOptions, cameraExecutor,
                 new ImageCapture.OnImageSavedCallback() {
-
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
-                        Log.d("UploadFragment", "Photo saved: " + savedUri); // Add logging to check
-                        requireActivity().runOnUiThread(() -> {
-                            Log.d("UploadFragment", "Running on UI thread"); // Check if this gets printed
-                            Toast.makeText(requireContext(), "Photo saved: " + savedUri, Toast.LENGTH_SHORT).show();
-                        });
+                        openStoryUploadFragment(savedUri);
                     }
-
                     @Override
                     public void onError(@NonNull ImageCaptureException exception) {
                         Log.e("UploadFragment", "Photo capture failed: " + exception.getMessage());
@@ -149,12 +164,21 @@ public class UploadFragment extends Fragment {
         );
     }
 
+    private void openStoryUploadFragment(Uri photoUri) {
+        StoryUploadFragment previewFragment = StoryUploadFragment.newInstance(photoUri);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, previewFragment) // Change this to your actual container ID
+                .addToBackStack(null) // Allows going back to the previous screen
+                .commit();
+    }
+
+    //Actual image (not url) saved in Firebase Storage
     private void toggleFlash() {
         if (camera == null || !camera.getCameraInfo().hasFlashUnit()) {
             Toast.makeText(requireContext(), "Flash not available", Toast.LENGTH_SHORT).show();
             return;
         }
-
         isFlashOn = !isFlashOn;
         camera.getCameraControl().enableTorch(isFlashOn);
     }
