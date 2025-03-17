@@ -15,7 +15,8 @@
         app:cardCornerRadius="100dp"
         app:cardElevation="0dp"
         app:cardMaxElevation="10dp"
-        android:foreground="@drawable/custom_map_item">
+        android:foreground="@drawable/custom_map_item"
+        android:padding="5dp">
 
         <ImageView
             android:id="@+id/ivCustomMap"

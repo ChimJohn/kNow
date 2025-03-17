@@ -48,6 +48,16 @@
             android:layout_height="match_parent"/>
     </androidx.cardview.widget.CardView>
 
+    <TextView
+        android:id="@+id/tvSetCover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set cover"
+        android:fontFamily="@font/inter_semibold"
+        android:textSize="14dp"
+        android:textColor="@color/orange"
+        android:layout_marginTop="14dp"/>
+
     <EditText
         android:id="@+id/etMapName"
         android:layout_width="match_parent"
