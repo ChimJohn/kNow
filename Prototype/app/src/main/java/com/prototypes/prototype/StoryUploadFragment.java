@@ -16,6 +16,9 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.firestore.FieldValue;
+import java.util.Date;
+
 
 
 import androidx.annotation.NonNull;
@@ -135,6 +138,7 @@ public class StoryUploadFragment extends Fragment {
         data.put("category", selectedCategory);
         data.put("latitude", lat);
         data.put("longitude", lng);
+        data.put("timestamp", FieldValue.serverTimestamp()); // Firestore server timestamp
 
         db.collection("media").document()
                 .set(data)

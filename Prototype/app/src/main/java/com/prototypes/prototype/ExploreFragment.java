@@ -106,8 +106,9 @@ public class ExploreFragment extends Fragment {
                         Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
                         return false;  // Allow normal click behavior
                     }
-                });                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
-                algorithm.setMaxDistanceBetweenClusteredItems(80); // Adjust clustering sensitivity
+                });
+                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+                algorithm.setMaxDistanceBetweenClusteredItems(30); // Adjust clustering sensitivity
                 clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
                 // Observe location updates from ViewModel
 
