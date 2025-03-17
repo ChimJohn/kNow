@@ -19,11 +19,14 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.AdvancedMarker;
+import com.google.android.gms.maps.model.AdvancedMarkerOptions;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultAdvancedMarkersClusterRenderer;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.clustering.Cluster;
 
@@ -31,7 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
+public class StoryClusterRenderer extends DefaultAdvancedMarkersClusterRenderer<StoryCluster> {
     private final Context context;
     private final ClusterManager<StoryCluster> clusterManager;
     private final Map<StoryCluster, BitmapDescriptor> iconCache = new HashMap<>(); // Store loaded icons
@@ -43,18 +46,30 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
     }
 
     @Override
-    protected void onBeforeClusterItemRendered(StoryCluster item, @NonNull MarkerOptions markerOptions) {
-
-        // Set default marker while the image is loading
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-
-        // Check if image is already cached
-        if (iconCache.containsKey(item)) {
-            markerOptions.icon(iconCache.get(item));
-        } else {
-            loadMarkerImage(item);
-        }
+    protected void onBeforeClusterRendered(@NonNull Cluster<StoryCluster> cluster,
+                                           @NonNull AdvancedMarkerOptions markerOptions) {
+        BitmapDescriptor clusterIcon = getClusterIcon(cluster.getSize());
+        markerOptions.icon(clusterIcon);
     }
+
+    @Override
+    protected void onClusterUpdated(@NonNull Cluster<StoryCluster> cluster, AdvancedMarker marker) {
+        BitmapDescriptor clusterIcon = getClusterIcon(cluster.getSize());
+        marker.setIcon(clusterIcon);
+    }
+
+    /**
+     * Generates a cluster icon with the number of items in the cluster.
+     */
+    private BitmapDescriptor getClusterIcon(int clusterSize) {
+        // Create a view dynamically or use a predefined layout
+        StoryMarker storyMarker = new StoryMarker(context);
+        Bitmap clusterBitmap = storyMarker.createClusterIcon(clusterSize);
+
+        return BitmapDescriptorFactory.fromBitmap(clusterBitmap);
+    }
+
+
     @Override
     protected void onClusterItemRendered(StoryCluster item, @NonNull Marker marker) {
         Log.d("MarkerStatus", "Rendering marker: " + item.getTitle());

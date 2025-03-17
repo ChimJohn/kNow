@@ -98,6 +98,7 @@ public class ExploreFragment extends Fragment {
                 clusterManager = new ClusterManager<>(requireContext(), googleMap);
                 clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
                 googleMap.setOnCameraIdleListener(clusterManager);
+                googleMap.setOnMarkerClickListener(clusterManager);
 
                 clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<StoryCluster>() {
                     @Override

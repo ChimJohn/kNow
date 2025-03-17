@@ -3,26 +3,23 @@ package com.prototypes.prototype.story;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
-import android.graphics.drawable.Drawable;
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
 
-public class StoryMarker extends LinearLayout{
-    private TextView textView;
+public class StoryMarker extends LinearLayout {
     private ImageView imageView;
 
     public StoryMarker(Context context) {
@@ -37,27 +34,43 @@ public class StoryMarker extends LinearLayout{
 
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.story_marker, this, true);
-//        textView = findViewById(R.id.tv_marker_text);
         imageView = findViewById(R.id.iv_marker_icon);
     }
 
     // Asynchronously load image into the ImageView and return a bitmap
-    // Directly set the image to the marker
     public void setMarkerImage(Context context, String imageUrl, CustomTarget<Bitmap> target) {
         Glide.with(context)
                 .asBitmap()
-                .override(250, 250) // Resize the image to your desired size
+                .override(250, 250) // Resize the image to fit marker
                 .load(imageUrl)
                 .into(target);
     }
 
-    // Convert the view into a bitmap (used for the marker icon)
-//    public Bitmap getMarkerBitmap() {
-//        measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-//        layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
-//        Bitmap bitmap = Bitmap.createBitmap(getMeasuredWidth(), getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-//        Canvas canvas = new Canvas(bitmap);
-//        draw(canvas);
-//        return bitmap;
-//    }
+    // Generate a bitmap for cluster markers with a count label
+    public Bitmap createClusterIcon(int clusterSize) {
+        int size = 100; // Set fixed size for cluster icons
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        // Draw background circle
+        Paint circlePaint = new Paint();
+        circlePaint.setAntiAlias(true);
+        circlePaint.setColor(Color.BLUE);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, circlePaint);
+
+        // Draw text in the center
+        Paint textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(40);
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        // Center the text
+        float x = size / 2f;
+        float y = (size / 2f) - ((textPaint.descent() + textPaint.ascent()) / 2f);
+        canvas.drawText(String.valueOf(clusterSize), x, y, textPaint);
+
+        return bitmap;
+    }
 }
