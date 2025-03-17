@@ -20,6 +20,8 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
+import androidx.camera.core.resolutionselector.AspectRatioStrategy;
+import androidx.camera.core.resolutionselector.ResolutionSelector;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -109,13 +111,30 @@ public class TakePhotoFragment extends Fragment {
 
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
-                ProcessCameraProvider.getInstance(requireActivity()); // Ensure Fragment is fully attached
+                ProcessCameraProvider.getInstance(requireActivity());
 
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                preview = new Preview.Builder().build();
-                imageCapture = new ImageCapture.Builder().build();
+
+                // Create a ResolutionSelector with 16:9 aspect ratio
+                ResolutionSelector resolutionSelector = new ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+                        // Optional: If you want more control over resolution
+                        // .setResolutionStrategy(new ResolutionStrategy(
+                        //     new Size(1280, 720),
+                        //     ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
+                        .build();
+
+                // Apply the same ResolutionSelector to both preview and image capture
+                preview = new Preview.Builder()
+                        .setResolutionSelector(resolutionSelector)
+                        .build();
+
+                imageCapture = new ImageCapture.Builder()
+                        .setResolutionSelector(resolutionSelector)
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .build();
 
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
@@ -125,7 +144,6 @@ public class TakePhotoFragment extends Fragment {
 
                 camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
 
-                // Prevent crash by checking if cameraPreview is available
                 if (cameraPreview.getSurfaceProvider() != null) {
                     preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
                 } else {
@@ -137,6 +155,7 @@ public class TakePhotoFragment extends Fragment {
             }
         }, ContextCompat.getMainExecutor(requireActivity()));
     }
+
 
     private void takePhoto() {
         if (imageCapture == null) {

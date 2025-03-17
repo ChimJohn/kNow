@@ -104,7 +104,16 @@ public class ExploreFragment extends Fragment {
                     @Override
                     public boolean onClusterItemClick(StoryCluster storyCluster) {
                         Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
-                        return false;  // Allow normal click behavior
+                        // Create and show the story view dialog
+                        StoryViewDialogFragment dialogFragment = StoryViewDialogFragment.newInstance(
+                                storyCluster.getTitle(),
+                                storyCluster.getSnippet(),
+                                storyCluster.getImageUrl()
+                        );
+                        dialogFragment.show(getChildFragmentManager(), "story_view");
+
+                        return true; // Consume the event
+                        //return false;  // Allow normal click behavior
                     }
                 });
                 NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
