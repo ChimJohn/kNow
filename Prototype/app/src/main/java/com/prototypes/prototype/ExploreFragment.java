@@ -98,6 +98,7 @@ public class ExploreFragment extends Fragment {
                 clusterManager = new ClusterManager<>(requireContext(), googleMap);
                 clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
                 googleMap.setOnCameraIdleListener(clusterManager);
+
                 clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<StoryCluster>() {
                     @Override
                     public boolean onClusterItemClick(StoryCluster storyCluster) {
@@ -109,12 +110,10 @@ public class ExploreFragment extends Fragment {
                 clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
                 // Observe location updates from ViewModel
 
-
                 // Fetch the data from Firebase
                 fetchMarkersData();
             }
         });
-
         return rootView;
     }
 
@@ -131,10 +130,8 @@ public class ExploreFragment extends Fragment {
                                 String imageUrl = documentSnapshot.getString("imageUrl");
                                 double latitude = documentSnapshot.getDouble("latitude");
                                 double longitude = documentSnapshot.getDouble("longitude");
-
                                 // Create a StoryCluster for each document
                                 StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, imageUrl);
-
                                 // Add the cluster item
                                 clusterManager.addItem(storyCluster);
                             }

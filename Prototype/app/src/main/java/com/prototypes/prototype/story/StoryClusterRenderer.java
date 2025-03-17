@@ -51,7 +51,6 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
         // Check if image is already cached
         if (iconCache.containsKey(item)) {
             markerOptions.icon(iconCache.get(item));
-            clusterManager.cluster();
         } else {
             loadMarkerImage(item);
         }
@@ -80,14 +79,14 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(circularBitmap);
                 // Cache the icon
                 iconCache.put(item, icon);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    clusterManager.getMarkerCollection().getMarkers().forEach(marker -> {
-                        if (marker.getTitle() != null && marker.getTitle().equals(item.getTitle())) {
-                            marker.setIcon(icon);
-                        }
-                    });
+                clusterManager.setAnimation(true); // Enable animation (if necessary)
+                for (Marker marker : clusterManager.getMarkerCollection().getMarkers()) {
+                    if (marker.getTitle() != null && marker.getTitle().equals(item.getTitle())) {
+                        marker.setIcon(icon); // Set the correct icon
+                    }
                 }
-                clusterManager.cluster();
+                clusterManager.cluster(); // Trigger clustering again
+
             }
 
             @Override

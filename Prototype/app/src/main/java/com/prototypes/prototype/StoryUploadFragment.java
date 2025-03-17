@@ -14,6 +14,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,7 +43,7 @@ public class StoryUploadFragment extends Fragment {
     private ImageView imageView;
     private EditText captionEditText;
     private Button saveButton;
-    private RadioGroup categoryRadioGroup;
+    private ChipGroup categoryChipGroup;
     private static final String ARG_PHOTO_URI = "photoUri";
     private CurrentLocationViewModel currentLocationViewModel;
     private FirebaseAuthManager firebaseAuthManager;
@@ -64,7 +67,7 @@ public class StoryUploadFragment extends Fragment {
 
         imageView = rootView.findViewById(R.id.imageView);
         captionEditText = rootView.findViewById(R.id.captionEditText);
-        categoryRadioGroup = rootView.findViewById(R.id.radioGroup); // Get the RadioGroup
+        categoryChipGroup = rootView.findViewById(R.id.chipGroup); // Get the RadioGroup
         saveButton = rootView.findViewById(R.id.saveButton);
 
         // Get the photo URI from arguments
@@ -150,16 +153,17 @@ public class StoryUploadFragment extends Fragment {
                 });
     }
     private String getSelectedCategory() {
-        int selectedId = categoryRadioGroup.getCheckedRadioButtonId();
-        if (selectedId == R.id.radioNone) {
+        int selectedId = categoryChipGroup.getCheckedChipId(); // Get selected chip ID
+        if (selectedId == R.id.chipNone) {
             return "None";
-        } else if (selectedId == R.id.radioFood) {
+        } else if (selectedId == R.id.chipFood) {
             return "Food";
-        } else if (selectedId == R.id.radioAttractions) {
+        } else if (selectedId == R.id.chipAttraction) {
             return "Attractions";
         }
         return "None"; // Default category if none is selected
     }
+
 
 
 }

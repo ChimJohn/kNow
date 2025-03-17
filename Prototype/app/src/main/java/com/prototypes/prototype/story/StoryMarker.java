@@ -46,7 +46,7 @@ public class StoryMarker extends LinearLayout{
     public void setMarkerImage(Context context, String imageUrl, CustomTarget<Bitmap> target) {
         Glide.with(context)
                 .asBitmap()
-                .override(190, 190) // Resize the image to your desired size
+                .override(250, 250) // Resize the image to your desired size
                 .load(imageUrl)
                 .into(target);
     }
