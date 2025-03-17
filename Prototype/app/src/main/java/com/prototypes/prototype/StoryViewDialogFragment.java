@@ -1,0 +1,83 @@
+package com.prototypes.prototype;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+
+public class StoryViewDialogFragment extends DialogFragment {
+
+    public static StoryViewDialogFragment newInstance(String title, String snippet, String imageUrl) {
+        StoryViewDialogFragment fragment = new StoryViewDialogFragment();
+        Bundle args = new Bundle();
+        args.putString("title", title);
+        args.putString("snippet", snippet);
+        args.putString("imageUrl", imageUrl);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        }
+        return inflater.inflate(R.layout.fragment_story_view, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ImageView imageView = view.findViewById(R.id.story_image);
+        TextView titleTextView = view.findViewById(R.id.story_title);
+        TextView snippetTextView = view.findViewById(R.id.story_snippet);
+
+        if (getArguments() != null) {
+            String title = getArguments().getString("title");
+            String snippet = getArguments().getString("snippet");
+            String imageUrl = getArguments().getString("imageUrl");
+
+            titleTextView.setText(title);
+            snippetTextView.setText(snippet);
+
+            // Load image with Glide with improved configuration
+            RequestOptions options = new RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .centerInside();
+
+            Glide.with(requireContext())
+                    .load(imageUrl)
+                    .apply(options)
+                    .into(imageView);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            );
+        }
+    }
+}
