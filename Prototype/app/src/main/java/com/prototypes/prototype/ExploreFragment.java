@@ -98,9 +98,14 @@ public class ExploreFragment extends Fragment {
                 clusterManager = new ClusterManager<>(requireContext(), googleMap);
                 clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
                 googleMap.setOnCameraIdleListener(clusterManager);
-                googleMap.setOnMarkerClickListener(clusterManager);
-                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
-                algorithm.setMaxDistanceBetweenClusteredItems(40); // Adjust clustering sensitivity
+                clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<StoryCluster>() {
+                    @Override
+                    public boolean onClusterItemClick(StoryCluster storyCluster) {
+                        Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
+                        return false;  // Allow normal click behavior
+                    }
+                });                NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+                algorithm.setMaxDistanceBetweenClusteredItems(80); // Adjust clustering sensitivity
                 clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
                 // Observe location updates from ViewModel
 
@@ -134,7 +139,6 @@ public class ExploreFragment extends Fragment {
                                 clusterManager.addItem(storyCluster);
                             }
                         }
-                        clusterManager.cluster();
                     } else {
                         Log.e("ExploreFragment", "Error getting documents: ", task.getException());
                     }
@@ -155,7 +159,7 @@ public class ExploreFragment extends Fragment {
         if (pulsatingCircle == null) {
             pulsatingCircle = googleMap.addCircle(new CircleOptions()
                     .center(latLng)
-                    .radius(50) // Initial radius in meters
+                    .radius(30) // Initial radius in meters
                     .strokeWidth(0f)
                     .fillColor(Color.argb(70, 0, 0, 255)));
 

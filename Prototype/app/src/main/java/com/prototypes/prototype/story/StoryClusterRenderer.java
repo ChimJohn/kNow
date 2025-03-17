@@ -10,6 +10,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -24,15 +25,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-import com.prototypes.prototype.R;
+import com.google.maps.android.clustering.Cluster;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
     private final Context context;
     private final ClusterManager<StoryCluster> clusterManager;
-//    private final Map<StoryCluster, BitmapDescriptor> iconCache = new HashMap<>(); // Store loaded icons
+    private final Map<StoryCluster, BitmapDescriptor> iconCache = new HashMap<>(); // Store loaded icons
 
     public StoryClusterRenderer(Context context, GoogleMap map, ClusterManager<StoryCluster> clusterManager) {
         super(context, map, clusterManager);
@@ -47,14 +49,22 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
 //        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
         // Check if image is already cached
+        if (iconCache.containsKey(item)) {
+            markerOptions.icon(iconCache.get(item));
+            clusterManager.cluster();
+        } else {
             loadMarkerImage(item);
+        }
     }
     @Override
     protected void onClusterItemRendered(StoryCluster item, @NonNull Marker marker) {
+        Log.d("MarkerStatus", "Rendering marker: " + item.getTitle());
         // After the image is loaded, set the correct icon
-
+        if (iconCache.containsKey(item)) {
+            marker.setIcon(iconCache.get(item));
+        } else {
             loadMarkerImage(item); // If icon not cached yet, load the image and update
-
+        }
     }
     /**
      * Loads the image and updates the cache.
@@ -65,20 +75,19 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
             @Override
             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                 Log.d("HEHE", "Image Loaded for: " + item.getTitle());
-
                 // Convert to circular bitmap
                 Bitmap circularBitmap = getCircularBitmapWithBorder(resource, 8, Color.WHITE);
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(circularBitmap);
-
                 // Cache the icon
-
-                // Force update marker
-                Marker marker = getMarker(item);
-                if (marker != null) {
-                    marker.setIcon(icon);
+                iconCache.put(item, icon);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    clusterManager.getMarkerCollection().getMarkers().forEach(marker -> {
+                        if (marker.getTitle() != null && marker.getTitle().equals(item.getTitle())) {
+                            marker.setIcon(icon);
+                        }
+                    });
                 }
-
-                clusterManager.cluster(); // Refresh clustering
+                clusterManager.cluster();
             }
 
             @Override
@@ -87,9 +96,8 @@ public class StoryClusterRenderer extends DefaultClusterRenderer<StoryCluster> {
             }
         });
     }
-
     @Override
-    protected boolean shouldRenderAsCluster(com.google.maps.android.clustering.Cluster<StoryCluster> cluster) {
+            protected boolean shouldRenderAsCluster(com.google.maps.android.clustering.Cluster<StoryCluster> cluster) {
         return cluster.getSize() > 1; // Cluster when at least 2 markers exist
     }
 
