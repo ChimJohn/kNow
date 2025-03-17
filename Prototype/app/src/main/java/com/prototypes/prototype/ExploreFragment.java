@@ -130,10 +130,11 @@ public class ExploreFragment extends Fragment {
                                 String caption = documentSnapshot.getString("caption");
                                 String category = documentSnapshot.getString("category");
                                 String imageUrl = documentSnapshot.getString("imageUrl");
+                                String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
                                 double latitude = documentSnapshot.getDouble("latitude");
                                 double longitude = documentSnapshot.getDouble("longitude");
                                 // Create a StoryCluster for each document
-                                StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, imageUrl);
+                                StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, thumbnailUrl);
                                 // Add the cluster item
                                 clusterManager.addItem(storyCluster);
                             }

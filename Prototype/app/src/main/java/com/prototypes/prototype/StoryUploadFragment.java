@@ -19,7 +19,12 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FieldValue;
 import java.util.Date;
 
-
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.provider.MediaStore;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +42,14 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
+
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.UUID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,51 +114,97 @@ public class StoryUploadFragment extends Fragment {
         return rootView;
     }
 
+
     private void uploadImageToFirebaseStorage(Uri uri, String caption) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageReference = storage.getReference("media/" + UUID.randomUUID().toString());
+        StorageReference fullImageRef = storage.getReference("Media/" + UUID.randomUUID().toString());
+        StorageReference thumbnailRef = storage.getReference("Thumbnails/" + UUID.randomUUID().toString());
 
-        storageReference.putFile(uri)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        storageReference.getDownloadUrl()
-                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri downloadUri) {
-                                        String selectedCategory = getSelectedCategory();
-                                        String url = downloadUri.toString();
-                                        saveUrlToFirestore(firebaseAuthManager.getCurrentUser().getUid(), url, caption, selectedCategory, lat, lng);
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("UploadFragment", "Upload failed: " + e.getMessage());
-                    }
-                });
+        // Step 1: Compress and Rotate Image (if necessary)
+        try {
+            // Get the original bitmap from the URI
+            Bitmap originalBitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), uri);
+
+            // Handle EXIF orientation
+            originalBitmap = rotateImageIfRequired(originalBitmap, uri);
+
+            // Step 2: Create a copy of the original image without altering resolution
+            Bitmap fullImageBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);  // Create a mutable copy of the original image
+
+            // Step 3: Compress and convert the full image for storage
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            fullImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);  // Compress at 50% quality
+            byte[] fullImageData = baos.toByteArray();
+
+            // Step 4: Create a smaller thumbnail based on the aspect ratio
+            float aspectRatio = (float) originalBitmap.getWidth() / (float) originalBitmap.getHeight();
+            int newWidth = 250;
+            int newHeight = (int) (250 / aspectRatio); // Adjust height according to aspect ratio
+            if (newHeight > 250) {
+                newHeight = 250;
+                newWidth = (int) (250 * aspectRatio); // Adjust width to maintain aspect ratio
+            }
+
+            // Resize the image for the thumbnail
+            Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+            ByteArrayOutputStream thumbBaos = new ByteArrayOutputStream();
+            thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, thumbBaos);  // Compress at 30% quality
+            byte[] thumbData = thumbBaos.toByteArray();
+
+            // Step 5: Upload Full Image
+            fullImageRef.putBytes(fullImageData).addOnSuccessListener(taskSnapshot ->
+                    fullImageRef.getDownloadUrl().addOnSuccessListener(fullUrl -> {
+                        // Step 6: Upload Thumbnail
+                        thumbnailRef.putBytes(thumbData).addOnSuccessListener(thumbSnapshot ->
+                                thumbnailRef.getDownloadUrl().addOnSuccessListener(thumbUrl -> {
+                                    // Step 7: Save both URLs to Firestore
+                                    savePhotoToFirestore(firebaseAuthManager.getCurrentUser().getUid(),
+                                            fullUrl.toString(), thumbUrl.toString(), caption, getSelectedCategory(), lat, lng);
+                                }));
+                    }));
+        } catch (IOException e) {
+            Log.e("UploadError", "Failed to process image: " + e.getMessage());
+        }
     }
 
+
+    private Bitmap rotateImageIfRequired(Bitmap img, Uri uri) throws IOException {
+        ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        Matrix matrix = new Matrix();
+        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            matrix.postRotate(90);
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            matrix.postRotate(180);
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            matrix.postRotate(270);
+        }
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle(); // Recycle the original bitmap to free memory
+        return rotatedBitmap;
+    }
+
+
     //Image URL to be saved in Firestore
-    private void saveUrlToFirestore(String userId, String url, String caption, String selectedCategory, Double lat, Double lng) {
+    private void savePhotoToFirestore(String userId, String imageUrl, String thumbnailUrl, String caption, String selectedCategory, Double lat, Double lng) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, Object> data = new HashMap<>();
-        data.put("user",userId);
-        data.put("imageUrl", url);
+        data.put("user", userId);
+        data.put("imageUrl", imageUrl);
+        data.put("thumbnailUrl", thumbnailUrl);
         data.put("caption", caption);
         data.put("category", selectedCategory);
         data.put("latitude", lat);
         data.put("longitude", lng);
         data.put("timestamp", FieldValue.serverTimestamp()); // Firestore server timestamp
+        data.put("uploadType", "photo");
 
         db.collection("media").document()
                 .set(data)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-
                         Log.d("UploadFragment", "Image URL saved to Firestore");
                     }
                 })
