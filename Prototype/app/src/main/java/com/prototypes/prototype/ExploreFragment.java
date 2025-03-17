@@ -100,7 +100,7 @@ public class ExploreFragment extends Fragment {
                 googleMap.setOnCameraIdleListener(clusterManager);
                 googleMap.setOnMarkerClickListener(clusterManager);
                 NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
-                algorithm.setMaxDistanceBetweenClusteredItems(80); // Adjust clustering sensitivity
+                algorithm.setMaxDistanceBetweenClusteredItems(40); // Adjust clustering sensitivity
                 clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
                 // Observe location updates from ViewModel
 
