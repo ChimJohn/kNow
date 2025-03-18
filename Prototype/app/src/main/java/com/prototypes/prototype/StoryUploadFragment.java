@@ -3,6 +3,7 @@ package com.prototypes.prototype;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,9 @@ import android.widget.Toast;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FieldValue;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Date;
 
 import android.graphics.Bitmap;
@@ -54,6 +58,8 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class StoryUploadFragment extends Fragment {
     private ImageView imageView;
@@ -162,35 +168,74 @@ public class StoryUploadFragment extends Fragment {
             Log.e("UploadError", "Failed to process image: " + e.getMessage());
         }
     }
+
+    public interface ThumbnailUploadCallback {
+        void onThumbnailUploaded(String thumbUrl);
+    }
+
     private void uploadVideoToFirebaseStorage(Uri mediaUri, String caption) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference mediaRef;
-        StorageReference thumbnailRef;
 
         // Reference for storing the video file
         mediaRef = storage.getReference("Videos/" + UUID.randomUUID().toString());
+
         // Upload the video to Firebase Storage
         mediaRef.putFile(mediaUri)
                 .addOnSuccessListener(taskSnapshot ->
                         // After the video is uploaded successfully, get the download URL
                         mediaRef.getDownloadUrl()
                                 .addOnSuccessListener(downloadUrl -> {
-                                    // Create the video thumbnail URL (if you need one)
-                                    String thumbUrl = null; // You need to implement this method if necessary
-                                    // Now save the data to Firestore
-                                    saveVideoToFirestore(firebaseAuthManager.getCurrentUser().getUid(),
-                                            downloadUrl.toString(),  // The full video URL
-                                            thumbUrl,                // The thumbnail URL
-                                            caption,                 // The caption provided by the user
-                                            getSelectedCategory(),   // Get the selected category
-                                            lat,                     // Latitude
-                                            lng                      // Longitude
-                                    );
+                                    // Now create the thumbnail for the video
+                                    createVideoThumbnail(mediaUri, thumbUrl -> {
+                                        // Save video info to Firestore once the thumbnail URL is available
+                                        saveVideoToFirestore(firebaseAuthManager.getCurrentUser().getUid(),
+                                                downloadUrl.toString(),  // Full video URL
+                                                thumbUrl,                // Thumbnail URL
+                                                caption,                 // The caption provided by the user
+                                                getSelectedCategory(),   // Category
+                                                lat,                     // Latitude
+                                                lng                      // Longitude
+                                        );
+                                    });
                                 })
                                 .addOnFailureListener(e -> Log.e("UploadError", "Error getting download URL: " + e.getMessage()))
                 )
                 .addOnFailureListener(e -> Log.e("UploadError", "Upload failed: " + e.getMessage()));
     }
+
+    private void createVideoThumbnail(Uri videoUri, ThumbnailUploadCallback callback) {
+        try {
+            // Create a MediaMetadataRetriever instance
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(getContext(), videoUri);
+            // Get the duration of the video in milliseconds
+            String durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            long duration = Long.parseLong(durationStr);
+            // Capture a frame from the middle of the video
+            long middleTime = duration / 2;
+            Bitmap bitmap = retriever.getFrameAtTime(middleTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            // Convert the Bitmap to a file and upload to Firebase Storage
+            File thumbnailFile = new File(requireContext().getCacheDir(), "thumbnail.jpg");
+            try (FileOutputStream out = new FileOutputStream(thumbnailFile)) {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
+            }
+            // Upload the thumbnail to Firebase Storage
+            StorageReference thumbRef = FirebaseStorage.getInstance().getReference("Thumbnails/" + UUID.randomUUID().toString() + ".jpg");
+            thumbRef.putFile(Uri.fromFile(thumbnailFile))
+                    .addOnSuccessListener(taskSnapshot -> thumbRef.getDownloadUrl()
+                            .addOnSuccessListener(thumbDownloadUrl -> {
+                                // Notify the callback that the thumbnail is uploaded successfully
+                                callback.onThumbnailUploaded(thumbDownloadUrl.toString());
+                            })
+                            .addOnFailureListener(e -> Log.e("UploadError", "Failed to get thumbnail URL: " + e.getMessage()))
+                    )
+                    .addOnFailureListener(e -> Log.e("UploadError", "Thumbnail upload failed: " + e.getMessage()));
+        } catch (Exception e) {
+            Log.e("ThumbnailError", "Error creating thumbnail: " + e.getMessage());
+        }
+    }
+
 
     private Bitmap rotateImageIfRequired(Bitmap img, Uri uri) throws IOException {
         ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
