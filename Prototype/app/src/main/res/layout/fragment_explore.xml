@@ -8,13 +8,8 @@
     tools:context=".ExploreFragment">
 
     <include layout="@layout/story_marker" />
+
     <!-- Full-Screen Google MapView (Background) -->
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- Search Bar (Rounded Rectangle) -->
     <androidx.cardview.widget.CardView
@@ -26,7 +21,7 @@
         android:layout_marginEnd="30dp"
         app:cardCornerRadius="25dp"
         app:cardElevation="6dp"
-        android:background="@android:color/white"
+        android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -44,4 +39,69 @@
             android:inputType="text" />
     </androidx.cardview.widget.CardView>
 
+    <!-- Filter Chips (Food and Attractions) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/filterCard"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="6dp"
+        android:padding="20dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/searchBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Remove background of the ConstraintLayout holding the chips -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"> <!-- Set transparent background -->
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupFilters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@android:color/transparent"
+                app:chipSpacing="8dp"
+                app:singleLine="false"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <!-- Food Filter Chip -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Food"
+                    android:checkable="true"
+                    android:checked="false"
+                    android:background="@android:color/transparent" /> <!-- Set transparent background for chip -->
+
+                <!-- Attractions Filter Chip -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAttraction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Attractions"
+                    android:checkable="true"
+                    android:checked="false"
+                    android:background="@android:color/transparent" /> <!-- Set transparent background for chip -->
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="21dp"
+        tools:layout_editor_absoluteY="149dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

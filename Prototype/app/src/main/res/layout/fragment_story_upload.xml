@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -30,44 +31,34 @@
         android:textSize="16sp" />
 
     <!-- CheckBoxes Row -->
-    <RadioGroup
-        android:id="@+id/radioGroup"
-        android:layout_width="wrap_content"
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        app:singleSelection="true">
 
-        <RadioButton
-            android:id="@+id/radioNone"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipNone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/category_radio_selector"
             android:text="None"
-            android:textSize="18sp"
-            android:button="@null"
-            android:padding="10dp"
-            android:checked="true"/>
+            android:checkable="true"/>
 
-        <RadioButton
-            android:id="@+id/radioFood"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipFood"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/category_radio_selector"
             android:text="Food"
-            android:textSize="18sp"
-            android:button="@null"
-            android:padding="10dp"/>
+            android:checkable="true"/>
 
-        <RadioButton
-            android:id="@+id/radioAttractions"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAttraction"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/category_radio_selector"
-            android:text="Attractions"
-            android:textSize="18sp"
-            android:button="@null"
-            android:padding="10dp"/>
-    </RadioGroup>
+            android:text="Attraction"
+            android:checkable="true"/>
 
+    </com.google.android.material.chip.ChipGroup>
 
     <Button
         android:id="@+id/saveButton"

@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.google.firebase.auth)
-    implementation (libs.google.firebase.storage)
+    implementation(libs.google.firebase.storage)
 
     implementation(libs.android.maps.utils)
     implementation(libs.play.services.auth)
@@ -71,8 +71,13 @@ dependencies {
     implementation(libs.camera.core)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
+
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.video)
+
     implementation(libs.appcompat)
     implementation(libs.material)
+
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
