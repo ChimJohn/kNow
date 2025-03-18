@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +21,17 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
-import androidx.camera.core.resolutionselector.AspectRatioStrategy;
-import androidx.camera.core.resolutionselector.ResolutionSelector;
+import androidx.camera.video.FileOutputOptions;
+import androidx.camera.video.QualitySelector;
+import androidx.camera.video.Recorder;
+import androidx.camera.video.VideoCapture;
+import androidx.camera.video.Quality;
+import androidx.camera.video.Recording;
+import androidx.camera.video.VideoRecordEvent;
+import androidx.camera.view.PreviewView;
+
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -32,35 +41,39 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 
 public class TakePhotoFragment extends Fragment {
 
     private Preview preview;
     private ImageCapture imageCapture;
+    private VideoCapture<Recorder> videoCapture; // VideoCapture instance
     private CameraSelector cameraSelector;
     private Camera camera;
     private ExecutorService cameraExecutor;
 
     private androidx.camera.view.PreviewView cameraPreview;
-    private ImageButton btnCapture, btnFlash, btnFlip, btnClose;
+    private ImageButton btnCapture, btnFlash, btnFlip, btnClose, btnRecord;
 
     private boolean isFlashOn = false;
     private boolean isFrontCamera = false;
+    private boolean isRecording = false;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
+    private final Handler videoHandler = new Handler(); // Handler for running video timer
+
+    private static final long MAX_VIDEO_DURATION = 60000; // 60 seconds
+    private File videoFile; // Define globally to access after stopping recording
+
+    private long videoStartTime;
 
     @Nullable
     @Override
@@ -72,6 +85,7 @@ public class TakePhotoFragment extends Fragment {
         btnFlash = rootView.findViewById(R.id.btnFlash);
         btnFlip = rootView.findViewById(R.id.btnFlip);
         btnClose = rootView.findViewById(R.id.btnClose);
+        btnRecord = rootView.findViewById(R.id.btnRecord); // Button to start/stop recording
 
         cameraExecutor = Executors.newSingleThreadExecutor();
 
@@ -87,12 +101,14 @@ public class TakePhotoFragment extends Fragment {
                 }
         );
 
-        // Request Camera Permission
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
         } else {
             startCamera();
         }
+
 
         // Capture Photo
         btnCapture.setOnClickListener(v -> takePhoto());
@@ -106,6 +122,15 @@ public class TakePhotoFragment extends Fragment {
         // Close Camera
         btnClose.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
 
+        // Start/Stop Video Recording
+        btnRecord.setOnClickListener(v -> {
+            if (isRecording) {
+                stopVideoRecording();
+            } else {
+                startVideoRecording();
+            }
+        });
+
         return rootView;
     }
 
@@ -117,24 +142,12 @@ public class TakePhotoFragment extends Fragment {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
 
-                // Create a ResolutionSelector with 16:9 aspect ratio
-                ResolutionSelector resolutionSelector = new ResolutionSelector.Builder()
-                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
-                        // Optional: If you want more control over resolution
-                        // .setResolutionStrategy(new ResolutionStrategy(
-                        //     new Size(1280, 720),
-                        //     ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
+                preview = new Preview.Builder().build();
+                imageCapture = new ImageCapture.Builder().build();
+                Recorder recorder = new Recorder.Builder()
+                        .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
                         .build();
-
-                // Apply the same ResolutionSelector to both preview and image capture
-                preview = new Preview.Builder()
-                        .setResolutionSelector(resolutionSelector)
-                        .build();
-
-                imageCapture = new ImageCapture.Builder()
-                        .setResolutionSelector(resolutionSelector)
-                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .build();
+                videoCapture = VideoCapture.withOutput(recorder); // ✅ Correct
 
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
@@ -142,20 +155,16 @@ public class TakePhotoFragment extends Fragment {
 
                 cameraProvider.unbindAll();
 
-                camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+                camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture, videoCapture); // Bind videoCapture
 
-                if (cameraPreview.getSurfaceProvider() != null) {
-                    preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
-                } else {
-                    Log.e("UploadFragment", "Camera Preview SurfaceProvider is null");
-                }
+                cameraPreview.getSurfaceProvider();
+                preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
 
             } catch (Exception e) {
                 Log.e("UploadFragment", "CameraX initialization failed", e);
             }
         }, ContextCompat.getMainExecutor(requireActivity()));
     }
-
 
     private void takePhoto() {
         if (imageCapture == null) {
@@ -175,6 +184,7 @@ public class TakePhotoFragment extends Fragment {
                         Uri savedUri = Uri.fromFile(photoFile);
                         openStoryUploadFragment(savedUri);
                     }
+
                     @Override
                     public void onError(@NonNull ImageCaptureException exception) {
                         Log.e("UploadFragment", "Photo capture failed: " + exception.getMessage());
@@ -183,16 +193,83 @@ public class TakePhotoFragment extends Fragment {
         );
     }
 
-    private void openStoryUploadFragment(Uri photoUri) {
-        StoryUploadFragment previewFragment = StoryUploadFragment.newInstance(photoUri);
+    private Recording currentRecording;
+
+    private void startVideoRecording() {
+        if (videoCapture == null) {
+            Toast.makeText(requireContext(), "Camera not ready", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        videoFile = new File(requireContext().getExternalFilesDir(null),
+                new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".mp4");
+
+        // Set up video output options
+        FileOutputOptions outputOptions = new FileOutputOptions.Builder(videoFile).build();
+
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        currentRecording = videoCapture.getOutput()
+                .prepareRecording(requireContext(), outputOptions)
+                .withAudioEnabled()
+                .start(ContextCompat.getMainExecutor(requireContext()), videoRecordEvent -> {
+                    if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+                        Log.d("UploadFragment", "Video recording started.");
+                        isRecording = true;
+//                        btnRecord.setText("Stop Recording");
+
+                    } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                        Log.d("UploadFragment", "Video recording finalized.");
+                        isRecording = false;
+//                        btnRecord.setText("Start Recording");
+                        VideoRecordEvent.Finalize finalizeEvent = (VideoRecordEvent.Finalize) videoRecordEvent;
+                        if (videoFile != null) {
+                            openStoryUploadFragment(Uri.fromFile(videoFile)); // Transition to StoryUploadFragment
+                        }
+                    }
+                });
+        videoStartTime = System.currentTimeMillis();
+        videoHandler.postDelayed(videoStopRunnable, MAX_VIDEO_DURATION);
+    }
+
+
+    private void stopVideoRecording() {
+        if (currentRecording != null) {
+            currentRecording.stop();
+            videoHandler.removeCallbacks(videoStopRunnable);
+            isRecording = false;
+            if (videoFile != null) {
+                openStoryUploadFragment(Uri.fromFile(videoFile)); // Open StoryUploadFragment with saved video
+            }
+//            btnRecord.setText("Start Recording");
+        }
+    }
+
+    private final Runnable videoStopRunnable = new Runnable() {
+        @Override
+        public void run() {
+            stopVideoRecording();
+            Toast.makeText(requireContext(), "Video recording stopped after 60 seconds", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private void openStoryUploadFragment(Uri mediaUri) {
+        StoryUploadFragment uploadFragment = StoryUploadFragment.newInstance(mediaUri);
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, previewFragment) // Change this to your actual container ID
-                .addToBackStack(null) // Allows going back to the previous screen
+                .replace(R.id.fragment_container, uploadFragment)
+                .addToBackStack(null)
                 .commit();
     }
 
-    //Actual image (not url) saved in Firebase Storage
     private void toggleFlash() {
         if (camera == null || !camera.getCameraInfo().hasFlashUnit()) {
             Toast.makeText(requireContext(), "Flash not available", Toast.LENGTH_SHORT).show();
@@ -211,5 +288,6 @@ public class TakePhotoFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         cameraExecutor.shutdown();
+        videoHandler.removeCallbacks(videoStopRunnable); // Remove any pending video stop runnable
     }
 }

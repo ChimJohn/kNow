@@ -2,11 +2,15 @@
 activityKtx = "1.10.1"
 agp = "8.9.0"
 androidMapsUtils = "3.10.0"
+androidxCameraLifecycle = "1.4.1"
+androidxCameraView = "1.4.1"
 androidxCredentials = "1.5.0"
 androidxJunit = "1.2.1"
 appcompatVersion = "1.7.0"
+cameraCamera2 = "1.4.1"
 cameraCoreVersion = "1.4.1"
 cameraLifecycleVersion = "1.4.1"
+cameraVideo = "1.4.1"
 cameraViewVersion = "1.4.1"
 compiler = "4.16.0"
 constraintlayoutVersion = "2.2.1"
@@ -43,7 +47,12 @@ playServicesLocation = "21.3.0"
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCoreVersion" }
+androidx-camera-camera2-v110 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
+androidx-camera-lifecycle-v110 = { module = "androidx.camera:camera-lifecycle", version.ref = "androidxCameraLifecycle" }
 androidx-camera-lifecycle-v130 = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraLifecycleVersion" }
+androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "cameraCoreVersion" }
+androidx-camera-video-v110 = { module = "androidx.camera:camera-video", version.ref = "cameraVideo" }
+androidx-camera-view-v100alpha05 = { module = "androidx.camera:camera-view", version.ref = "androidxCameraView" }
 androidx-camera-view-v130 = { module = "androidx.camera:camera-view", version.ref = "cameraViewVersion" }
 androidx-credentials-v130 = { module = "androidx.credentials:credentials", version.ref = "androidxCredentials" }
 androidx-espresso-core-v351 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
