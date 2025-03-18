@@ -38,7 +38,6 @@
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 
     public class ExploreFragment extends Fragment {
-
         private MapView mapView;
         private GoogleMap googleMap;
         private CurrentLocationViewModel currentLocationViewModel;
