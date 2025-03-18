@@ -95,9 +95,27 @@ public class StoryUploadFragment extends Fragment {
 
         String mediaUriString = getArguments().getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
-        Glide.with(requireContext()) // Using Glide to load the image
-                .load(mediaUri)
-                .into(imageView);
+        if (mediaUri.toString().endsWith(".mp4")) {
+            // For videos, extract the first frame
+            try {
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(requireContext(), mediaUri);
+                // Get the first frame (at time 0)
+                Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                if (bitmap != null) {
+                    // Set the first frame as the image in the ImageView
+                    imageView.setImageBitmap(bitmap);
+                }
+                retriever.release(); // Don't forget to release the retriever
+            } catch (Exception e) {
+                Log.e("VideoThumbnailError", "Error extracting video thumbnail: " + e.getMessage());
+            }
+        } else {
+            // For images, use Glide to display it
+            Glide.with(requireContext()) // Using Glide to load the image
+                    .load(mediaUri)
+                    .into(imageView);
+        }
 
         // Handle save button click
         saveButton.setOnClickListener(v -> {
@@ -176,10 +194,8 @@ public class StoryUploadFragment extends Fragment {
     private void uploadVideoToFirebaseStorage(Uri mediaUri, String caption) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference mediaRef;
-
         // Reference for storing the video file
         mediaRef = storage.getReference("Videos/" + UUID.randomUUID().toString());
-
         // Upload the video to Firebase Storage
         mediaRef.putFile(mediaUri)
                 .addOnSuccessListener(taskSnapshot ->
@@ -209,17 +225,21 @@ public class StoryUploadFragment extends Fragment {
             // Create a MediaMetadataRetriever instance
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(getContext(), videoUri);
-            // Get the duration of the video in milliseconds
-            String durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long duration = Long.parseLong(durationStr);
-            // Capture a frame from the middle of the video
-            long middleTime = duration / 2;
-            Bitmap bitmap = retriever.getFrameAtTime(middleTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             // Convert the Bitmap to a file and upload to Firebase Storage
             File thumbnailFile = new File(requireContext().getCacheDir(), "thumbnail.jpg");
             try (FileOutputStream out = new FileOutputStream(thumbnailFile)) {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
+                float aspectRatio = (float) bitmap.getWidth() / (float) bitmap.getHeight();
+                int newWidth = 250;
+                int newHeight = (int) (250 / aspectRatio); // Adjust height according to aspect ratio
+                if (newHeight > 250) {
+                    newHeight = 250;
+                    newWidth = (int) (250 * aspectRatio); // Adjust width to maintain aspect ratio
+                }
+                Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
             }
+            retriever.release(); // Don't forget to release the retriever
             // Upload the thumbnail to Firebase Storage
             StorageReference thumbRef = FirebaseStorage.getInstance().getReference("Thumbnails/" + UUID.randomUUID().toString() + ".jpg");
             thumbRef.putFile(Uri.fromFile(thumbnailFile))
