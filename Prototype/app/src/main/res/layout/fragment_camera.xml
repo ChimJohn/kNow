@@ -15,6 +15,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <!-- Timer Text -->
+    <TextView
+        android:id="@+id/timerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btnRecord"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingBottom="10dp"/>
+
     <!-- Camera Controls -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +36,9 @@
         android:layout_marginBottom="20dp"
         android:orientation="horizontal"
         android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@color/translucent_white"
+        android:padding="10dp"> <!-- Optional: padding to give some space around buttons -->
 
         <!-- Close Button -->
         <ImageButton
@@ -40,11 +56,19 @@
             android:src="@drawable/ic_flip_camera"
             android:background="?attr/selectableItemBackground" />
 
-        <!-- Capture Button (Photo & Video) -->
+        <!-- Record Button (Centered) -->
         <ImageButton
-            android:id="@+id/btnCapture"
+            android:id="@+id/btnRecord"
             android:layout_width="80dp"
             android:layout_height="80dp"
+            android:src="@drawable/ic_camera_button"
+            android:background="?attr/selectableItemBackground" />
+
+        <!-- Capture Button (Right of Record) -->
+        <ImageButton
+            android:id="@+id/btnCapture"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/ic_camera_button"
             android:background="?attr/selectableItemBackground" />
 
@@ -55,14 +79,7 @@
             android:layout_height="50dp"
             android:src="@drawable/ic_flash"
             android:background="?attr/selectableItemBackground" />
-
-
-        <ImageButton
-            android:id="@+id/btnRecord"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/ic_camera_button"
-            android:background="?attr/selectableItemBackground" />
     </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
