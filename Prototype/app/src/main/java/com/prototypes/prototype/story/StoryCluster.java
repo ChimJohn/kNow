@@ -8,14 +8,14 @@ import com.google.maps.android.clustering.ClusterItem;
 
 public class StoryCluster implements ClusterItem {
     private final LatLng position;
-    private final String title;
-    private final String snippet;
+    private final String caption;
     private final String imageUrl;
+    private final String category;
 
-    public StoryCluster(double lat, double lng, String title, String snippet, String imageUrl) {
+    public StoryCluster(double lat, double lng, String caption, String category, String imageUrl) {
         position = new LatLng(lat, lng);
-        this.title = title;
-        this.snippet = snippet;
+        this.caption = caption;
+        this.category = category;
         this.imageUrl = imageUrl;
     }
 
@@ -25,9 +25,14 @@ public class StoryCluster implements ClusterItem {
         return position;
     }
 
+    @Nullable
     @Override
     public String getTitle() {
-        return title;
+        return "";
+    }
+
+    public String getCategory() {
+        return category;
     }
 
     public String getImageUrl() {
@@ -36,7 +41,7 @@ public class StoryCluster implements ClusterItem {
 
     @Override
     public String getSnippet() {
-        return snippet;
+        return category;
     }
 
     @Nullable

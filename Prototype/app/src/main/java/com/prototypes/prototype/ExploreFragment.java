@@ -25,6 +25,8 @@
     import com.google.android.gms.maps.model.MapStyleOptions;
     import com.google.android.gms.maps.model.Marker;
     import com.google.android.gms.maps.model.MarkerOptions;
+    import com.google.android.material.chip.Chip;
+    import com.google.android.material.chip.ChipGroup;
     import com.google.firebase.firestore.EventListener;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.google.firebase.firestore.ListenerRegistration;
@@ -36,6 +38,9 @@
     import com.prototypes.prototype.story.StoryClusterRenderer;
     import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
+
+    import java.util.ArrayList;
+    import java.util.List;
 
     public class ExploreFragment extends Fragment {
         private MapView mapView;
@@ -51,34 +56,36 @@
         private ListenerRegistration mediaListener;  // Firestore listener reference
         private static final long UPDATE_INTERVAL = 10000; // 20 seconds
         private long lastUpdateTime = 0;
+        private List<StoryCluster> allMarkers = new ArrayList<>();
+        ChipGroup chipGroupFilters;
+        Chip chipFood, chipAttraction;
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
             Log.d("Debug", "Explore page.");
-
             mapView = rootView.findViewById(R.id.mapView);
             mapView.onCreate(savedInstanceState);
             mapView.onResume();
-
+            chipGroupFilters = rootView.findViewById(R.id.chipGroupFilters);
+            chipFood = rootView.findViewById(R.id.chipFood);
+            chipAttraction = rootView.findViewById(R.id.chipAttraction);
+            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> applyFilters());
             try {
                 MapsInitializer.initialize(requireActivity().getApplicationContext());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
             currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
             db = FirebaseFirestore.getInstance();
-
             mapView.getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(@NonNull GoogleMap map) {
                     googleMap = map;
                     googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
-
                     LatLng singapore = new LatLng(1.3521, 103.8198);
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
-
                     currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                         if (location != null) {
                             updateGpsMarker(location);
@@ -88,18 +95,15 @@
                             isFirstLocationUpdate = false;
                         }
                     });
-
                     googleMap.getUiSettings().setMapToolbarEnabled(false);
                     googleMap.getUiSettings().setCompassEnabled(false);
                     googleMap.getUiSettings().setRotateGesturesEnabled(false);
                     googleMap.getUiSettings().setTiltGesturesEnabled(false);
-
                     // Initialize the ClusterManager
                     clusterManager = new ClusterManager<>(requireContext(), googleMap);
                     clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
                     googleMap.setOnCameraIdleListener(clusterManager);
                     googleMap.setOnMarkerClickListener(clusterManager);
-
                     clusterManager.setOnClusterItemClickListener(storyCluster -> {
                         Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
                         StoryViewDialogFragment dialogFragment = StoryViewDialogFragment.newInstance(
@@ -108,19 +112,15 @@
                                 storyCluster.getImageUrl()
                         );
                         dialogFragment.show(getChildFragmentManager(), "story_view");
-
                         return true; // Consume the event
                     });
-
                     NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
                     algorithm.setMaxDistanceBetweenClusteredItems(30); // Adjust clustering sensitivity
                     clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
-
                     // Listen for real-time updates
                     listenToMarkersData();
                 }
             });
-
             return rootView;
         }
 
@@ -155,12 +155,33 @@
                 String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
                 double latitude = documentSnapshot.getDouble("latitude");
                 double longitude = documentSnapshot.getDouble("longitude");
-
                 StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, thumbnailUrl);
                 clusterManager.addItem(storyCluster);
+                allMarkers.add(storyCluster);
             }
-            clusterManager.cluster(); // Refresh clusters
+            applyFilters();
         }
+        private void applyFilters() {
+            if (clusterManager == null) return;
+            clusterManager.clearItems(); // Clear the map markers
+            List<String> selectedCategories = new ArrayList<>();
+            if (chipFood.isChecked()) selectedCategories.add("Food");
+            if (chipAttraction.isChecked()) selectedCategories.add("Attractions");
+
+            if (selectedCategories.isEmpty()) {
+                // No filters selected, show everything
+                clusterManager.addItems(allMarkers);
+            } else {
+                // Filter markers based on selected categories
+                for (StoryCluster story : allMarkers) {
+                    if (selectedCategories.contains(story.getCategory())) {
+                        clusterManager.addItem(story);
+                    }
+                }
+            }
+            clusterManager.cluster(); // Refresh map clusters
+        }
+
 
         private void updateGpsMarker(Location location) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
