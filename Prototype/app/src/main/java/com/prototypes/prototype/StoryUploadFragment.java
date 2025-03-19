@@ -69,17 +69,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StoryUploadFragment extends Fragment {
+    private static final String ARG_MEDIA_URI = "mediaUri";
     private ImageView imageView;
     private EditText captionEditText;
     private Button saveButton;
     private ChipGroup categoryChipGroup;
-    private static final String ARG_MEDIA_URI = "mediaUri";
-    private CurrentLocationViewModel currentLocationViewModel;
     private FirebaseAuthManager firebaseAuthManager;
-    double lat, lng;
     private MediaViewModel mediaViewModel;
-    private Context appContext;
-
+    double lat, lng;
     public static StoryUploadFragment newInstance(Uri mediaUri) {
         StoryUploadFragment fragment = new StoryUploadFragment();
         Bundle args = new Bundle();
@@ -87,57 +84,47 @@ public class StoryUploadFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         String mediaUriString = getArguments().getString(ARG_MEDIA_URI);
         Uri mediaUri = Uri.parse(mediaUriString); // Convert string back to URI
-        uploadMediaAndThumbnailInBackground(mediaUri);
-    }
 
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_story_upload, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_story_upload, container, false);
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
-        currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+        CurrentLocationViewModel currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
         firebaseAuthManager = new FirebaseAuthManager(requireActivity());
-
         imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
         categoryChipGroup = view.findViewById(R.id.chipGroup);
         saveButton = view.findViewById(R.id.saveButton);
-
         String userId = firebaseAuthManager.getCurrentUser().getUid();
         String mediaUriString = getArguments().
                 getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
+        mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
         if (mediaUri.toString().endsWith(".mp4")) {
-            // For videos, extract the first frame
             try {
                 MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(requireContext(), mediaUri);
-                // Get the first frame (at time 0)
                 Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 if (bitmap != null) {
-                    // Set the first frame as the image in the ImageView
                     imageView.setImageBitmap(bitmap);
                 }
-                retriever.release(); // Don't forget to release the retriever
+                retriever.release();
             } catch (Exception e) {
                 Log.e("VideoThumbnailError", "Error extracting video thumbnail: " + e.getMessage());
             }
         } else {
-            // For images, use Glide to display it
-            Glide.with(requireContext()) // Using Glide to load the image
+            Glide.with(requireContext())
                     .load(mediaUri)
                     .into(imageView);
         }
@@ -145,13 +132,12 @@ public class StoryUploadFragment extends Fragment {
         lat = lastKnownLocation.getLatitude();
         lng = lastKnownLocation.getLongitude();
 
-        // Handle save button click
         saveButton.setOnClickListener(v -> {
             String caption = captionEditText.getText().toString();
             if (mediaUri.toString().endsWith(".mp4")) {
                 uploadVideoToFirebaseStorage(mediaUri, caption);
             } else {
-                mediaViewModel.savePhotoToFirestore(userId, caption, getSelectedCategory(), lat, lng);
+                mediaViewModel.savePhotoToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng);
             }
             ExploreFragment exploreFragment = new ExploreFragment();
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -162,76 +148,6 @@ public class StoryUploadFragment extends Fragment {
         });
     }
 
-    private void uploadMediaAndThumbnailInBackground(Uri mediaUri) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference mediaRef;
-            StorageReference thumbnailRef;
-            if (mediaUri.toString().endsWith(".mp4")) {
-                mediaRef = storage.getReference("Videos/" + UUID.randomUUID().toString());
-            } else {
-                //BACKGROUND UPLOAD FOR PHOTOS
-                mediaRef = storage.getReference("Images/" + UUID.randomUUID().toString());
-                thumbnailRef = storage.getReference("Thumbnails/" + UUID.randomUUID().toString());
-                try {
-                    // Get the original bitmap from the URI
-                    Bitmap originalBitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), mediaUri);
-                    // Handle EXIF orientation
-                    // Step 1: Rotate Image (if necessary)
-                    originalBitmap = rotateImageIfRequired(originalBitmap, mediaUri);
-                    // Step 2: Create a copy of the original image without altering resolution
-                    Bitmap fullImageBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);  // Create a mutable copy of the original image
-                    // Step 3: Compress and convert the full image for storage
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    fullImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);  // Compress at 50% quality
-                    // Step 4: Create a smaller thumbnail based on the aspect ratio
-                    float aspectRatio = (float) originalBitmap.getWidth() / (float) originalBitmap.getHeight();
-                    int newWidth = 250;
-                    int newHeight = (int) (250 / aspectRatio); // Adjust height according to aspect ratio
-                    if (newHeight > 250) {
-                        newHeight = 250;
-                        newWidth = (int) (250 * aspectRatio); // Adjust width to maintain aspect ratio
-                    }
-                    // Resize the image for the thumbnail
-                    Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
-                    ByteArrayOutputStream thumbBaos = new ByteArrayOutputStream();
-                    thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, thumbBaos);  // Compress at 30% quality
-                    byte[] thumbData = thumbBaos.toByteArray();
-
-                    Task<Uri> thumbnailUploadTask = thumbnailRef.putBytes(thumbData)
-                            .continueWithTask(task -> {
-                                if (!task.isSuccessful()) {
-                                    throw task.getException(); // Prevent silent failure
-                                }
-                                return thumbnailRef.getDownloadUrl();
-                            }).addOnFailureListener(e -> Log.e("UploadError", "Thumbnail upload failed: " + e.getMessage()));
-
-                    Task<Uri> mediaUploadTask = mediaRef.putFile(mediaUri)
-                            .continueWithTask(task -> {
-                                if (!task.isSuccessful()) {
-                                    throw task.getException(); // Prevent silent failure
-                                }
-                                return mediaRef.getDownloadUrl();
-                            }).addOnFailureListener(e -> Log.e("UploadError", "Media upload failed: " + e.getMessage()));
-
-                    Tasks.whenAllSuccess(mediaUploadTask, thumbnailUploadTask)
-                            .addOnSuccessListener(results -> {
-                                Log.d("LOL", "CMON");
-                                String mediaUrl = ((Uri) results.get(0)).toString();
-                                String thumbnailUrl = ((Uri) results.get(1)).toString();
-                                mediaViewModel.setImageUrl(mediaUrl);
-                                mediaViewModel.setThumbnailUrl(thumbnailUrl);
-                            })
-                            .addOnFailureListener(e -> Log.e("UploadError", "File upload failed: " + e.getMessage()));
-                } catch (IOException e) {
-                    Log.e("UploadError", "Failed to process image: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-
     public interface ThumbnailUploadCallback {
         void onThumbnailUploaded(String thumbUrl);
     }
@@ -239,9 +155,7 @@ public class StoryUploadFragment extends Fragment {
     private void uploadVideoToFirebaseStorage(Uri mediaUri, String caption) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference mediaRef;
-        // Reference for storing the video file
         mediaRef = storage.getReference("Videos/" + UUID.randomUUID().toString());
-        // Upload the video to Firebase Storage
         mediaRef.putFile(mediaUri)
                 .addOnSuccessListener(taskSnapshot ->
                         // After the video is uploaded successfully, get the download URL
@@ -300,91 +214,6 @@ public class StoryUploadFragment extends Fragment {
             Log.e("ThumbnailError", "Error creating thumbnail: " + e.getMessage());
         }
     }
-
-
-    private Bitmap rotateImageIfRequired(Bitmap img, Uri uri) throws IOException {
-        ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        Matrix matrix = new Matrix();
-        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
-            matrix.postRotate(90);
-        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
-            matrix.postRotate(180);
-        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            matrix.postRotate(270);
-        }
-        Bitmap rotatedBitmap = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        img.recycle(); // Recycle the original bitmap to free memory
-        return rotatedBitmap;
-    }
-
-    private void savePhotoToFirestore(String userId, String caption, String selectedCategory, Double lat, Double lng) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        LiveData<String> imageUrlLiveData = mediaViewModel.getImageUrlLiveData();
-        LiveData<String> thumbnailUrlLiveData = mediaViewModel.getThumbnailUrlLiveData();
-        if (imageUrlLiveData.getValue() != null && thumbnailUrlLiveData.getValue() != null) {
-            // Both URLs are ready, save immediately
-            saveMediaToFirestore(db, imageUrlLiveData.getValue(), thumbnailUrlLiveData.getValue(), userId, caption, selectedCategory, lat, lng);
-            return;
-        }
-        // MediatorLiveData to observe both image and thumbnail URLs
-        MediatorLiveData<Pair<String, String>> allDataReady = new MediatorLiveData<>();
-
-        // Observe image URL
-        allDataReady.addSource(imageUrlLiveData, newImageUrl -> {
-            String latestThumbnailUrl = thumbnailUrlLiveData.getValue();
-            if (newImageUrl != null && latestThumbnailUrl != null) {
-                // Once both URLs are available, save to Firestore
-                allDataReady.setValue(new Pair<>(newImageUrl, latestThumbnailUrl));
-            }
-        });
-
-        // Observe thumbnail URL
-        allDataReady.addSource(thumbnailUrlLiveData, newThumbnailUrl -> {
-            String latestImageUrl = imageUrlLiveData.getValue();
-            if (newThumbnailUrl != null && latestImageUrl != null) {
-                // Once both URLs are available, save to Firestore
-                allDataReady.setValue(new Pair<>(latestImageUrl, newThumbnailUrl));
-            }
-        });
-
-        // When both URLs are ready, proceed to save
-        allDataReady.observe(getViewLifecycleOwner(), pair -> {
-            saveMediaToFirestore(db, pair.first, pair.second, userId, caption, selectedCategory, lat, lng);
-            // Remove sources after data is saved
-            allDataReady.removeSource(imageUrlLiveData);
-            allDataReady.removeSource(thumbnailUrlLiveData);
-        });
-    }
-
-    private void saveMediaToFirestore(FirebaseFirestore dbInstance, String userId, String mediaUrl, String thumbnailUrl, String caption, String selectedCategory, Double lat, Double lng){
-        Map<String, Object> data = new HashMap<>();
-        data.put("user", userId);
-        data.put("caption", caption);
-        data.put("category", selectedCategory);
-        data.put("latitude", lat);
-        data.put("longitude", lng);
-        data.put("timestamp", FieldValue.serverTimestamp()); // Firestore server timestamp
-        data.put("uploadType", "photo");
-        data.put("mediaUrl", mediaUrl);
-        data.put("thumbnailUrl", thumbnailUrl);
-        dbInstance.collection("media").document()
-                            .set(data)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Log.d("UploadFragment", "Image URL saved to Firestore");
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.e("UploadFragment", "Failed to save URL to Firestore: " + e.getMessage());
-                                }
-                            });
-    }
-
-
 
     private void saveVideoToFirestore(String userId, String videoUrl, String thumbnailUrl, String caption, String selectedCategory, Double lat, Double lng) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();

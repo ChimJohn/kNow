@@ -10,6 +10,7 @@
     import android.view.ViewGroup;
 
     import androidx.annotation.NonNull;
+    import androidx.annotation.Nullable;
     import androidx.fragment.app.Fragment;
     import androidx.lifecycle.ViewModelProvider;
 
@@ -27,6 +28,8 @@
     import com.google.android.gms.maps.model.MarkerOptions;
     import com.google.android.material.chip.Chip;
     import com.google.android.material.chip.ChipGroup;
+    import com.google.firebase.firestore.DocumentChange;
+    import com.google.firebase.firestore.DocumentSnapshot;
     import com.google.firebase.firestore.EventListener;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.google.firebase.firestore.ListenerRegistration;
@@ -40,7 +43,9 @@
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 
     import java.util.ArrayList;
+    import java.util.HashMap;
     import java.util.List;
+    import java.util.Map;
 
     public class ExploreFragment extends Fragment {
         private MapView mapView;
@@ -52,26 +57,27 @@
         private FirebaseFirestore db;
         private ClusterManager<StoryCluster> clusterManager;
         private boolean isFirstLocationUpdate = true;
-
         private ListenerRegistration mediaListener;  // Firestore listener reference
-        private static final long UPDATE_INTERVAL = 10000; // 20 seconds
+        private static final long UPDATE_INTERVAL = 10000; // 10 seconds
         private long lastUpdateTime = 0;
-        private List<StoryCluster> allMarkers = new ArrayList<>();
+        private Map<String, StoryCluster> allMarkers = new HashMap<>();
         ChipGroup chipGroupFilters;
         Chip chipFood, chipAttraction;
 
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_explore, container, false);
+            return inflater.inflate(R.layout.fragment_explore, container, false);
+        }
+        @Override
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
             Log.d("Debug", "Explore page.");
-            mapView = rootView.findViewById(R.id.mapView);
+            mapView = view.findViewById(R.id.mapView);
             mapView.onCreate(savedInstanceState);
             mapView.onResume();
-            chipGroupFilters = rootView.findViewById(R.id.chipGroupFilters);
-            chipFood = rootView.findViewById(R.id.chipFood);
-            chipAttraction = rootView.findViewById(R.id.chipAttraction);
-            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> applyFilters());
+            chipGroupFilters = view.findViewById(R.id.chipGroupFilters);
+            chipFood = view.findViewById(R.id.chipFood);
+            chipAttraction = view.findViewById(R.id.chipAttraction);
+//            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> applyFilters());
             try {
                 MapsInitializer.initialize(requireActivity().getApplicationContext());
             } catch (Exception e) {
@@ -121,67 +127,74 @@
                     listenToMarkersData();
                 }
             });
-            return rootView;
+        }
+        public void onPause() {
+            super.onPause();
+            mapView.onPause(); // Pause rendering when not visible
         }
 
+        @Override
+        public void onLowMemory() {
+            super.onLowMemory();
+            mapView.onLowMemory(); // Handle low memory situations
+        }
         private void listenToMarkersData() {
             mediaListener = db.collection("media")
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(QuerySnapshot snapshots, FirebaseFirestoreException e) {
-                            if (e  != null) {
-                                Log.e("Firestore", "Listen failed.", e);
-                                return;
-                            }
-                            long currentTime = System.currentTimeMillis();
-                            if (snapshots != null && (currentTime - lastUpdateTime >= UPDATE_INTERVAL)) {
-                                lastUpdateTime = currentTime; // Update last update time
-                                Log.d("Firestore", "Ok its updating.");
-                                updateMarkers(snapshots);
-                            } else {
-                                Log.d("Firestore", "Update ignored to prevent frequent updates.");
-                            }
+                    .addSnapshotListener((snapshots, e) -> {
+                        if (e != null) {
+                            Log.e("Firestore", "Listen failed.", e);
+                            return;
                         }
+//                        long currentTime = System.currentTimeMillis();
+//                        if (snapshots != null && (currentTime - lastUpdateTime >= UPDATE_INTERVAL)) {
+//                            lastUpdateTime = currentTime; // Update last update time
+                        Log.d("Firestore", "Updating markers...");
+                        updateMarkers(snapshots);
+//                        } else {
+//                            Log.d("Firestore", "Update ignored to prevent frequent updates.");
+//                        }
                     });
         }
-
         private void updateMarkers(QuerySnapshot snapshots) {
-            clusterManager.clearItems(); // Clear old markers
-            Log.d("HAH", "updating markers");
-            for (QueryDocumentSnapshot documentSnapshot : snapshots) {
+            if (snapshots == null) return;
+            Log.d("Firestore", "Processing marker updates...");
+            for (DocumentChange change : snapshots.getDocumentChanges()) {
+                DocumentSnapshot documentSnapshot = change.getDocument();
+                String id = documentSnapshot.getId();
                 String caption = documentSnapshot.getString("caption");
                 String category = documentSnapshot.getString("category");
                 String imageUrl = documentSnapshot.getString("imageUrl");
                 String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
-                double latitude = documentSnapshot.getDouble("latitude");
-                double longitude = documentSnapshot.getDouble("longitude");
-                StoryCluster storyCluster = new StoryCluster(latitude, longitude, caption, category, thumbnailUrl);
-                clusterManager.addItem(storyCluster);
-                allMarkers.add(storyCluster);
-            }
-            applyFilters();
-        }
-        private void applyFilters() {
-            if (clusterManager == null) return;
-            clusterManager.clearItems(); // Clear the map markers
-            List<String> selectedCategories = new ArrayList<>();
-            if (chipFood.isChecked()) selectedCategories.add("Food");
-            if (chipAttraction.isChecked()) selectedCategories.add("Attractions");
-
-            if (selectedCategories.isEmpty()) {
-                // No filters selected, show everything
-                clusterManager.addItems(allMarkers);
-            } else {
-                // Filter markers based on selected categories
-                for (StoryCluster story : allMarkers) {
-                    if (selectedCategories.contains(story.getCategory())) {
-                        clusterManager.addItem(story);
-                    }
+                Double latitude = documentSnapshot.getDouble("latitude");
+                Double longitude = documentSnapshot.getDouble("longitude");
+                if (latitude == null || longitude == null) continue;
+                StoryCluster storyCluster = new StoryCluster(id, latitude, longitude, caption, category, imageUrl, thumbnailUrl);
+                switch (change.getType()) {
+                    case ADDED:
+                        Log.d("Firestore", "Add...");
+                        clusterManager.addItem(storyCluster);
+                        allMarkers.put(id, storyCluster); // Store markers in a HashMap for fast lookup
+                        break;
+                    case MODIFIED:
+                        removeMarkerById(id);
+                        clusterManager.addItem(storyCluster);
+                        allMarkers.put(id, storyCluster);
+                        break;
+                    case REMOVED:
+                        removeMarkerById(id);
+                        break;
                 }
             }
-            clusterManager.cluster(); // Refresh map clusters
+            clusterManager.cluster(); // Refresh clusters efficiently
         }
 
+        // Efficient marker removal using HashMap
+        private void removeMarkerById(String id) {
+            StoryCluster marker = allMarkers.remove(id); // Remove from HashMap
+            if (marker != null) {
+                clusterManager.removeItem(marker);
+            }
+        }
 
         private void updateGpsMarker(Location location) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
