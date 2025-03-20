@@ -142,13 +142,13 @@ public class MediaViewModel extends AndroidViewModel {
     public void setThumbnailUrl(String url) {
         thumbnailUrlLiveData.postValue(url);
     }
-    public void saveMediaToFirebaseStorage(String userId, String caption, String selectedCategory, Double lat, Double lng) {
+    public void saveMediaToFirebaseStorage(String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType) {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             Observer<Pair<String, String>> firestoreObserver = new Observer<Pair<String, String>>() {
                 @Override
                 public void onChanged(Pair<String, String> pair) {
                     if (pair != null){
-                        saveMediaToFirestore(db, pair.first, pair.second, userId, caption, selectedCategory, lat, lng);
+                        saveMediaToFirestore(db, pair.first, pair.second, userId, caption, selectedCategory, lat, lng, mediaType);
                         mediaUrlLiveData.setValue(null);
                         thumbnailUrlLiveData.setValue(null);
                         allDataReady.setValue(null);
@@ -158,7 +158,7 @@ public class MediaViewModel extends AndroidViewModel {
             };
             getAllDataReady().observeForever(firestoreObserver);
     }
-    private void saveMediaToFirestore(FirebaseFirestore db, String mediaUrl, String thumbnailUrl, String userId, String caption, String selectedCategory, Double lat, Double lng) {
+    private void saveMediaToFirestore(FirebaseFirestore db, String mediaUrl, String thumbnailUrl, String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType) {
         Map<String, Object> mediaData = new HashMap<>();
         mediaData.put("mediaUrl", mediaUrl); //CHANGE IMAGE TO MEDIA
         mediaData.put("thumbnailUrl", thumbnailUrl);
@@ -167,6 +167,7 @@ public class MediaViewModel extends AndroidViewModel {
         mediaData.put("category", selectedCategory);
         mediaData.put("latitude", lat);
         mediaData.put("longitude", lng);
+        mediaData.put("mediaType", mediaType);
         mediaData.put("timestamp", FieldValue.serverTimestamp());
         db.collection("media").add(mediaData)
                 .addOnSuccessListener(documentReference -> Log.d("Firestore", "Document added: " + documentReference.getId()))

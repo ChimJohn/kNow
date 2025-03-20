@@ -26,25 +26,18 @@
     import com.google.android.gms.maps.model.MapStyleOptions;
     import com.google.android.gms.maps.model.Marker;
     import com.google.android.gms.maps.model.MarkerOptions;
-    import com.google.android.material.chip.Chip;
-    import com.google.android.material.chip.ChipGroup;
     import com.google.firebase.firestore.DocumentChange;
     import com.google.firebase.firestore.DocumentSnapshot;
-    import com.google.firebase.firestore.EventListener;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.google.firebase.firestore.ListenerRegistration;
-    import com.google.firebase.firestore.QueryDocumentSnapshot;
     import com.google.firebase.firestore.QuerySnapshot;
-    import com.google.firebase.firestore.FirebaseFirestoreException;
     import com.google.maps.android.clustering.ClusterManager;
     import com.prototypes.prototype.story.StoryCluster;
     import com.prototypes.prototype.story.StoryClusterRenderer;
     import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 
-    import java.util.ArrayList;
     import java.util.HashMap;
-    import java.util.List;
     import java.util.Map;
 
     public class ExploreFragment extends Fragment {
@@ -58,11 +51,7 @@
         private ClusterManager<StoryCluster> clusterManager;
         private boolean isFirstLocationUpdate = true;
         private ListenerRegistration mediaListener;  // Firestore listener reference
-        private static final long UPDATE_INTERVAL = 10000; // 10 seconds
-        private long lastUpdateTime = 0;
         private Map<String, StoryCluster> allMarkers = new HashMap<>();
-        ChipGroup chipGroupFilters;
-        Chip chipFood, chipAttraction;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,10 +63,6 @@
             mapView = view.findViewById(R.id.mapView);
             mapView.onCreate(savedInstanceState);
             mapView.onResume();
-//            chipGroupFilters = view.findViewById(R.id.chipGroupFilters);
-//            chipFood = view.findViewById(R.id.chipFood);
-//            chipAttraction = view.findViewById(R.id.chipAttraction);
-//            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> applyFilters());
             try {
                 MapsInitializer.initialize(requireActivity().getApplicationContext());
             } catch (Exception e) {
@@ -105,24 +90,39 @@
                     googleMap.getUiSettings().setCompassEnabled(false);
                     googleMap.getUiSettings().setRotateGesturesEnabled(false);
                     googleMap.getUiSettings().setTiltGesturesEnabled(false);
+
                     // Initialize the ClusterManager
                     clusterManager = new ClusterManager<>(requireContext(), googleMap);
                     clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
+
                     googleMap.setOnCameraIdleListener(clusterManager);
                     googleMap.setOnMarkerClickListener(clusterManager);
-                    clusterManager.setOnClusterItemClickListener(storyCluster -> {
-                        Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
-                        StoryViewDialogFragment dialogFragment = StoryViewDialogFragment.newInstance(
-                                storyCluster.getTitle(),
-                                storyCluster.getSnippet(),
-                                storyCluster.getImageUrl()
-                        );
-                        dialogFragment.show(getChildFragmentManager(), "story_view");
-                        return true; // Consume the event
-                    });
                     NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
                     algorithm.setMaxDistanceBetweenClusteredItems(30); // Adjust clustering sensitivity
                     clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
+                    clusterManager.setOnClusterItemClickListener(storyCluster -> {
+                        // Handle click event
+                        Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
+
+                        // Assuming you want to open a dialog when a cluster item is clicked
+                        StoryViewDialogFragment dialogFragment = StoryViewDialogFragment.newInstance(
+                                storyCluster.getTitle(),
+                                storyCluster.getCaption(),
+                                storyCluster.getMediaUrl()
+                        );
+                        dialogFragment.show(getChildFragmentManager(), "story_view");
+
+                        // Optionally, you could also play a video if you have a media URL
+                        String mediaUrl = storyCluster.getMediaUrl();
+                        if (mediaUrl != null) {
+                            // Logic to play the video using the mediaUrl
+                            Log.d("ClusterItemClicked", "Media URL: " + mediaUrl);
+                            // Example: You can use ExoPlayer or VideoView to play the video here
+                        }
+
+                        return true; // Return true to indicate that the event was consumed
+                    });
+
                     // Listen for real-time updates
                     listenToMarkersData();
                 }
@@ -130,13 +130,13 @@
         }
         public void onPause() {
             super.onPause();
-            mapView.onPause(); // Pause rendering when not visible
+            mapView.onPause();
         }
 
         @Override
         public void onLowMemory() {
             super.onLowMemory();
-            mapView.onLowMemory(); // Handle low memory situations
+            mapView.onLowMemory();
         }
         private void listenToMarkersData() {
             mediaListener = db.collection("media")
@@ -151,23 +151,23 @@
         }
         private void updateMarkers(QuerySnapshot snapshots) {
             if (snapshots == null) return;
-            Log.d("Firestore", "Processing marker updates...");
             for (DocumentChange change : snapshots.getDocumentChanges()) {
                 DocumentSnapshot documentSnapshot = change.getDocument();
                 String id = documentSnapshot.getId();
+                String userId = documentSnapshot.getString("userId");
                 String caption = documentSnapshot.getString("caption");
                 String category = documentSnapshot.getString("category");
                 String mediaUrl = documentSnapshot.getString("mediaUrl");
                 String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
+                String mediaType = documentSnapshot.getString("mediaType");
                 Double latitude = documentSnapshot.getDouble("latitude");
                 Double longitude = documentSnapshot.getDouble("longitude");
                 if (latitude == null || longitude == null) continue;
-                Log.d("thumbnail", id + thumbnailUrl);
-                StoryCluster storyCluster = new StoryCluster(id, latitude, longitude, caption, category, thumbnailUrl, mediaUrl);
+                StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
                 switch (change.getType()) {
                     case ADDED:
                         clusterManager.addItem(storyCluster);
-                        allMarkers.put(id, storyCluster); // Store markers in a HashMap for fast lookup
+                        allMarkers.put(id, storyCluster);
                         break;
                     case MODIFIED:
                         removeMarkerById(id);

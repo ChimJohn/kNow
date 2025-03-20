@@ -18,12 +18,12 @@ import com.bumptech.glide.request.RequestOptions;
 
 public class StoryViewDialogFragment extends DialogFragment {
 
-    public static StoryViewDialogFragment newInstance(String title, String snippet, String imageUrl) {
+    public static StoryViewDialogFragment newInstance(String userId, String caption, String mediaUrl) {
         StoryViewDialogFragment fragment = new StoryViewDialogFragment();
         Bundle args = new Bundle();
-        args.putString("title", title);
-        args.putString("snippet", snippet);
-        args.putString("imageUrl", imageUrl);
+        args.putString("userId", userId);
+        args.putString("caption", caption);
+        args.putString("mediaUrl", mediaUrl);
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,17 +46,14 @@ public class StoryViewDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageView imageView = view.findViewById(R.id.story_image);
-        TextView titleTextView = view.findViewById(R.id.story_title);
-        TextView snippetTextView = view.findViewById(R.id.story_snippet);
+        ImageView mediaView = view.findViewById(R.id.story_image);
+        TextView captionTextView = view.findViewById(R.id.story_snippet);
 
         if (getArguments() != null) {
-            String title = getArguments().getString("title");
-            String snippet = getArguments().getString("snippet");
-            String imageUrl = getArguments().getString("imageUrl");
+            String caption = getArguments().getString("caption");
+            String imageUrl = getArguments().getString("mediaUrl");
 
-            titleTextView.setText(title);
-            snippetTextView.setText(snippet);
+            captionTextView.setText(caption);
 
             // Load image with Glide with improved configuration
             RequestOptions options = new RequestOptions()
@@ -66,7 +63,7 @@ public class StoryViewDialogFragment extends DialogFragment {
             Glide.with(requireContext())
                     .load(imageUrl)
                     .apply(options)
-                    .into(imageView);
+                    .into(mediaView);
         }
     }
 

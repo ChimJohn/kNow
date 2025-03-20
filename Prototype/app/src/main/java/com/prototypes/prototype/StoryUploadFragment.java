@@ -45,9 +45,6 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        String mediaUriString = getArguments().getString(ARG_MEDIA_URI);
-        Uri mediaUri = Uri.parse(mediaUriString); // Convert string back to URI
-
     }
     @Nullable
     @Override
@@ -92,7 +89,14 @@ public class StoryUploadFragment extends Fragment {
 
         saveButton.setOnClickListener(v -> {
             String caption = captionEditText.getText().toString();
-            mediaViewModel.saveMediaToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng);
+            String mediaType;
+            if (mediaUri.toString().endsWith(".mp4")) {
+                mediaType = "video";
+            }
+            else{
+                mediaType = "photo";
+            }
+            mediaViewModel.saveMediaToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng, mediaType);
             ExploreFragment exploreFragment = new ExploreFragment();
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, exploreFragment) // Replace with the correct container ID

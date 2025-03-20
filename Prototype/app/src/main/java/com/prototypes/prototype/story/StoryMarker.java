@@ -49,30 +49,5 @@ public class StoryMarker extends LinearLayout {
     }
 
     // Generate a bitmap for cluster markers with a count label
-    public Bitmap createClusterIcon(int clusterSize) {
-        int size = 100; // Set fixed size for cluster icons
-        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
 
-        // Draw background circle
-        Paint circlePaint = new Paint();
-        circlePaint.setAntiAlias(true);
-        circlePaint.setColor(Color.BLUE);
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f, circlePaint);
-
-        // Draw text in the center
-        Paint textPaint = new Paint();
-        textPaint.setAntiAlias(true);
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(40);
-        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-
-        // Center the text
-        float x = size / 2f;
-        float y = (size / 2f) - ((textPaint.descent() + textPaint.ascent()) / 2f);
-        canvas.drawText(String.valueOf(clusterSize), x, y, textPaint);
-
-        return bitmap;
-    }
 }
