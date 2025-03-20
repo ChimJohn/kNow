@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,6 +40,7 @@ public class StoryMarker extends LinearLayout {
 
     // Asynchronously load image into the ImageView and return a bitmap
     public void setMarkerImage(Context context, String imageUrl, CustomTarget<Bitmap> target) {
+        Log.d("FIRESTORE", imageUrl);
         Glide.with(context)
                 .asBitmap()
                 .override(250, 250) // Resize the image to fit marker

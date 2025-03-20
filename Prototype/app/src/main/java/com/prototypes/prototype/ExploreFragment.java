@@ -74,9 +74,9 @@
             mapView = view.findViewById(R.id.mapView);
             mapView.onCreate(savedInstanceState);
             mapView.onResume();
-            chipGroupFilters = view.findViewById(R.id.chipGroupFilters);
-            chipFood = view.findViewById(R.id.chipFood);
-            chipAttraction = view.findViewById(R.id.chipAttraction);
+//            chipGroupFilters = view.findViewById(R.id.chipGroupFilters);
+//            chipFood = view.findViewById(R.id.chipFood);
+//            chipAttraction = view.findViewById(R.id.chipAttraction);
 //            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> applyFilters());
             try {
                 MapsInitializer.initialize(requireActivity().getApplicationContext());
@@ -145,14 +145,8 @@
                             Log.e("Firestore", "Listen failed.", e);
                             return;
                         }
-//                        long currentTime = System.currentTimeMillis();
-//                        if (snapshots != null && (currentTime - lastUpdateTime >= UPDATE_INTERVAL)) {
-//                            lastUpdateTime = currentTime; // Update last update time
                         Log.d("Firestore", "Updating markers...");
                         updateMarkers(snapshots);
-//                        } else {
-//                            Log.d("Firestore", "Update ignored to prevent frequent updates.");
-//                        }
                     });
         }
         private void updateMarkers(QuerySnapshot snapshots) {
@@ -163,15 +157,15 @@
                 String id = documentSnapshot.getId();
                 String caption = documentSnapshot.getString("caption");
                 String category = documentSnapshot.getString("category");
-                String imageUrl = documentSnapshot.getString("imageUrl");
+                String mediaUrl = documentSnapshot.getString("mediaUrl");
                 String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
                 Double latitude = documentSnapshot.getDouble("latitude");
                 Double longitude = documentSnapshot.getDouble("longitude");
                 if (latitude == null || longitude == null) continue;
-                StoryCluster storyCluster = new StoryCluster(id, latitude, longitude, caption, category, imageUrl, thumbnailUrl);
+                Log.d("thumbnail", id + thumbnailUrl);
+                StoryCluster storyCluster = new StoryCluster(id, latitude, longitude, caption, category, thumbnailUrl, mediaUrl);
                 switch (change.getType()) {
                     case ADDED:
-                        Log.d("Firestore", "Add...");
                         clusterManager.addItem(storyCluster);
                         allMarkers.put(id, storyCluster); // Store markers in a HashMap for fast lookup
                         break;
@@ -185,17 +179,14 @@
                         break;
                 }
             }
-            clusterManager.cluster(); // Refresh clusters efficiently
+            clusterManager.cluster(); // Refresh clusters
         }
-
-        // Efficient marker removal using HashMap
         private void removeMarkerById(String id) {
             StoryCluster marker = allMarkers.remove(id); // Remove from HashMap
             if (marker != null) {
                 clusterManager.removeItem(marker);
             }
         }
-
         private void updateGpsMarker(Location location) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             if (gpsMarker == null) {
@@ -206,7 +197,6 @@
             } else {
                 gpsMarker.setPosition(latLng);
             }
-
             if (pulsatingCircle == null) {
                 pulsatingCircle = googleMap.addCircle(new CircleOptions()
                         .center(latLng)
@@ -218,7 +208,6 @@
                 pulsatingCircle.setCenter(latLng);
             }
         }
-
         private void startPulsatingEffect() {
             pulseAnimator = ValueAnimator.ofFloat(10, 20 );
             pulseAnimator.setDuration(1000);
@@ -227,7 +216,6 @@
             pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
             pulseAnimator.start();
         }
-
         @Override
         public void onDestroyView() {
             super.onDestroyView();
@@ -236,7 +224,6 @@
                 mediaListener = null;
             }
         }
-
         @Override
         public void onDestroy() {
             super.onDestroy();
