@@ -26,11 +26,14 @@
     import com.google.android.gms.maps.model.MapStyleOptions;
     import com.google.android.gms.maps.model.Marker;
     import com.google.android.gms.maps.model.MarkerOptions;
+    import com.google.android.gms.maps.model.Polyline;
+    import com.google.android.gms.maps.model.PolylineOptions;
     import com.google.firebase.firestore.DocumentChange;
     import com.google.firebase.firestore.DocumentSnapshot;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.google.firebase.firestore.ListenerRegistration;
     import com.google.firebase.firestore.QuerySnapshot;
+    import com.google.maps.android.PolyUtil;
     import com.google.maps.android.clustering.ClusterManager;
     import com.prototypes.prototype.story.StoryCluster;
     import com.prototypes.prototype.story.StoryClusterRenderer;
@@ -38,6 +41,7 @@
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 
     import java.util.HashMap;
+    import java.util.List;
     import java.util.Map;
 
     public class ExploreFragment extends Fragment {
@@ -52,6 +56,8 @@
         private boolean isFirstLocationUpdate = true;
         private ListenerRegistration mediaListener;  // Firestore listener reference
         private Map<String, StoryCluster> allMarkers = new HashMap<>();
+        private Polyline routePolyline;
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -215,6 +221,14 @@
             pulseAnimator.setRepeatMode(ValueAnimator.REVERSE);
             pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
             pulseAnimator.start();
+        }
+
+        private void drawRoute(String encodedPolyline) {
+            if (routePolyline != null) {
+                routePolyline.remove();
+            }
+            List<LatLng> points = PolyUtil.decode(encodedPolyline);
+            routePolyline = googleMap.addPolyline(new PolylineOptions().addAll(points).width(10).color(0xFF2196F3));
         }
         @Override
         public void onDestroyView() {

@@ -43,6 +43,7 @@ firebaseCommon = "21.0.0"
 firebaseFirestore = "25.1.2"
 firebaseCrashlyticsBuildtools = "3.0.3"
 playServicesLocation = "21.3.0"
+volley = "1.2.1"
 
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
@@ -94,6 +95,7 @@ firebase-common = { group = "com.google.firebase", name = "firebase-common", ver
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+volley = { module = "com.android.volley:volley", version.ref = "volley" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
