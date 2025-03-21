@@ -14,6 +14,7 @@
     import android.graphics.drawable.Drawable;
     import android.os.Build;
     import android.util.Log;
+    import android.util.LruCache;
 
     import androidx.annotation.NonNull;
     import androidx.annotation.Nullable;
@@ -37,15 +38,26 @@
     import java.util.ArrayList;
     import java.util.Collection;
     import java.util.HashMap;
+    import java.util.HashSet;
+    import java.util.LinkedHashMap;
     import java.util.List;
     import java.util.Map;
+    import java.util.Set;
 
     public class StoryClusterRenderer extends DefaultAdvancedMarkersClusterRenderer<StoryCluster> {
         private final Context context;
         private final ClusterManager<StoryCluster> clusterManager;
+
         private Map<String, Marker> markerMap = new HashMap<>();
 
-        private final Map<String, BitmapDescriptor> iconCache = new HashMap<>(); // Store loaded icons
+        private final LruCache<String, BitmapDescriptor> iconCache = new LruCache<>(200); // Max 50 items
+        private final Map<Set<StoryCluster>, BitmapDescriptor> clusterIconCache =
+                new LinkedHashMap<Set<StoryCluster>, BitmapDescriptor>(100, 0.75f, true) {
+                    @Override
+                    protected boolean removeEldestEntry(Map.Entry<Set<StoryCluster>, BitmapDescriptor> eldest) {
+                        return size() > 100;  // Limit cache size to 100
+                    }
+                };
         public StoryClusterRenderer(Context context, GoogleMap map, ClusterManager<StoryCluster> clusterManager) {
             super(context, map, clusterManager);
             this.context = context;
@@ -71,8 +83,9 @@
         protected void onClusterItemRendered(StoryCluster item, @NonNull Marker marker) {
             marker.setTag(item.getId());
             markerMap.put(item.getId(), marker);
-            if (iconCache.containsKey(item.getId())) {
-                marker.setIcon(iconCache.get(item.getId()));
+            BitmapDescriptor cachedIcon = iconCache.get(item.getId());
+            if (cachedIcon != null) {
+                marker.setIcon(cachedIcon);
             } else {
                 loadMarkerImage(item);
             }
@@ -115,23 +128,20 @@
             canvas = new Canvas(output);
 
             // Darken the background by adding a gray circle
-            paint.setColor(Color.argb(150, 169, 169, 169));  // Gray color (with 50% opacity)
-            paint.setTextSize(size / 3f * 1.5f); // Adjust text size to 1.5x the previous size
-            paint.setTextAlign(Paint.Align.CENTER);
-
-            float radius = size / 2f;  // Radius of the circle (half of the size)
+            paint.setColor(Color.argb(150, 169, 169, 169));  // Gray color (50% opacity)
+            float radius = size / 2f;  // Radius of the circle
             canvas.drawCircle(radius, radius, radius, paint);  // Draw gray circle background
 
-            // If there are thumbnails, draw the pie chart sections
+            // If there are thumbnails, draw them in a pie chart
             if (!thumbnails.isEmpty()) {
-                // Darken the background by adding a semi-transparent black circle
-                paint.setColor(Color.argb(150, 0, 0, 0));  // RGBA (150 alpha = 50% opacity)
-                canvas.drawCircle(radius, radius, radius, paint);  // Draw dark circle background
+                paint.setColor(Color.argb(150, 0, 0, 0));  // Semi-transparent black background
+                canvas.drawCircle(radius, radius, radius, paint);  // Draw dark circle
 
-                // Draw the pie chart section (thumbnails) on top of the dark circle
+                // Draw pie chart sections (thumbnails)
                 float startAngle = 0;
                 float sweepAngle = 360f / thumbnails.size();
                 RectF bounds = new RectF(0, 0, size, size);  // Circle bounds
+
                 for (Bitmap thumb : thumbnails) {
                     BitmapShader shader = new BitmapShader(thumb, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
                     paint.setShader(shader);
@@ -140,37 +150,38 @@
                 }
             }
 
-            // Draw the cluster size number in the center (this should be the last thing drawn)
-            paint.setShader(null);  // Reset shader to ensure the text is white
-            paint.setColor(Color.WHITE);  // Set the number color to white
-            paint.setTextSize(size / 3f * 1.5f); // Adjust text size
+            // Reset shader to ensure the text is white
+            paint.setShader(null);
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(size / 3f * 1.5f);
             paint.setTextAlign(Paint.Align.CENTER);
 
             // Calculate the vertical alignment for the text
             float textY = (size / 2f) - ((paint.descent() + paint.ascent()) / 2f);
+            String clusterSizeText = String.valueOf(clusterSize);
 
-            // Show the expected cluster size number (not the actual thumbnails.size())
-            String clusterSizeText = String.valueOf(clusterSize); // Use clusterSize from parameters
-
-            // Draw the text in the center
+            // Draw cluster size number in the center
             canvas.drawText(clusterSizeText, size / 2f, textY, paint);
 
-            return BitmapDescriptorFactory.fromBitmap(output);
+            Bitmap finalBitmap = getCircularBitmapWithBorder(output, 8, Color.WHITE);
+
+            return BitmapDescriptorFactory.fromBitmap(finalBitmap);
         }
-
-
         private void getClusterIcon(Collection<StoryCluster> clusterItems, OnClusterIconReady callback) {
-            int baseSize = 200; // Minimum size
-            int maxSize = 400; // Maximum size
+            int baseSize = 200;
+            int maxSize = 400;
             int clusterSize = clusterItems.size();
 
-            // Scale size between baseSize and maxSize
             int iconSize = Math.min(baseSize + (clusterSize * 10), maxSize);
+
+            // Check cache first
+            if (clusterIconCache.containsKey(clusterItems)) {
+                callback.onIconReady(clusterIconCache.get(clusterItems));
+                return;  // Avoid redundant loading
+            }
 
             List<Bitmap> thumbnails = new ArrayList<>();
             List<StoryCluster> items = new ArrayList<>(clusterItems);
-
-            // Keep track of how many images are loaded
             final int[] loadedCount = {0};
 
             for (StoryCluster item : items) {
@@ -183,22 +194,21 @@
                             @Override
                             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                                 thumbnails.add(resource);
-                                loadedCount[0]++;  // Increment the loaded count
+                                loadedCount[0]++;
 
-                                // If all thumbnails are loaded, update the cluster icon
                                 if (loadedCount[0] == clusterSize) {
-                                    callback.onIconReady(createPieChart(thumbnails, iconSize, clusterSize));
+                                    Log.d("Test", "Cluster icon generated!");
+                                    BitmapDescriptor icon = createPieChart(thumbnails, iconSize, clusterSize);
+                                    clusterIconCache.put(new HashSet<>(clusterItems), icon);  // Cache result
+                                    callback.onIconReady(icon);
                                 }
                             }
 
                             @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-                                // Handle cleanup if needed
-                            }
+                            public void onLoadCleared(@Nullable Drawable placeholder) {}
                         });
             }
 
-            // If some images are still loading, show a fallback (gray circle with number)
             if (loadedCount[0] < clusterSize) {
                 // Show a fallback icon while images are still loading
                 callback.onIconReady(createPieChart(new ArrayList<>(), iconSize, clusterSize));

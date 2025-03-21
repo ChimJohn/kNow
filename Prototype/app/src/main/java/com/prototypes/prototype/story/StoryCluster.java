@@ -6,10 +6,11 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
+import java.util.Objects;
+
 public class StoryCluster implements ClusterItem {
     private final LatLng position;
     private final String id, userId, mediaUrl, thumbnailUrl, caption, category, mediaType;
-
     public StoryCluster(String id, String userId, double lat, double lng, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
         this.position = new LatLng(lat, lng);
         this.id = id;
@@ -20,7 +21,6 @@ public class StoryCluster implements ClusterItem {
         this.mediaUrl = mediaUrl;
         this.mediaType = mediaType;
     }
-
     @Nullable
     @Override
     public String getTitle() {
@@ -34,6 +34,9 @@ public class StoryCluster implements ClusterItem {
     public String getId(){
         return id;
     }
+    public String getUserId(){
+        return userId;
+    }
     public String getCaption(){
         return caption;
     }
@@ -43,15 +46,27 @@ public class StoryCluster implements ClusterItem {
     public String getMediaUrl() {
         return mediaUrl;
     }
+    public String getMediaType() {
+        return mediaType;
+    }
     @Override
     public String getSnippet() {
         return category;
     }
-
     @Nullable
     @Override
     public Float getZIndex() {
         return 0f;
     }
-
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StoryCluster that = (StoryCluster) o;
+        return Objects.equals(this.getId(), that.getId());
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getId(), this.getUserId());
+    }
 }
