@@ -39,6 +39,7 @@
     import com.prototypes.prototype.story.StoryClusterRenderer;
     import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
+    import com.prototypes.prototype.story.StoryViewFragment;
 
     import java.util.HashMap;
     import java.util.List;
@@ -111,7 +112,7 @@
                         Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
 
                         // Assuming you want to open a dialog when a cluster item is clicked
-                        StoryViewDialogFragment dialogFragment = StoryViewDialogFragment.newInstance(
+                        StoryViewFragment dialogFragment = StoryViewFragment.newInstance(
                                 storyCluster.getTitle(),
                                 storyCluster.getCaption(),
                                 storyCluster.getMediaUrl()

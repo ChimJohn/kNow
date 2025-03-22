@@ -1,25 +1,25 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.story;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.prototypes.prototype.R;
 
-public class StoryViewDialogFragment extends DialogFragment {
+public class StoryViewFragment extends Fragment {
 
-    public static StoryViewDialogFragment newInstance(String userId, String caption, String mediaUrl) {
-        StoryViewDialogFragment fragment = new StoryViewDialogFragment();
+    public static StoryViewFragment newInstance(String userId, String caption, String mediaUrl) {
+        StoryViewFragment fragment = new StoryViewFragment();
         Bundle args = new Bundle();
         args.putString("userId", userId);
         args.putString("caption", caption);
@@ -31,14 +31,12 @@ public class StoryViewDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        }
+
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
 
@@ -67,14 +65,5 @@ public class StoryViewDialogFragment extends DialogFragment {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            );
-        }
-    }
+
 }
