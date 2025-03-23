@@ -1,69 +1,58 @@
 package com.prototypes.prototype.story;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.prototypes.prototype.R;
 
-public class StoryViewFragment extends Fragment {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static StoryViewFragment newInstance(String userId, String caption, String mediaUrl) {
+public class StoryViewFragment extends Fragment implements StoryViewAdapter.StoryListener{
+    private ArrayList<Story> storyList;
+    private ViewPager2 viewPager2;
+    private int position;
+    private StoryViewAdapter adapter;
+    public static StoryViewFragment newInstance(List<Story> stories, int position) {
         StoryViewFragment fragment = new StoryViewFragment();
-        Bundle args = new Bundle();
-        args.putString("userId", userId);
-        args.putString("caption", caption);
-        args.putString("mediaUrl", mediaUrl);
-        fragment.setArguments(args);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("stories", new ArrayList<>(stories));
+        bundle.putInt("position", position); // Pass position to know which story to show
+        fragment.setArguments(bundle);
         return fragment;
     }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (getArguments() != null) {
+            storyList = getArguments().getParcelableArrayList("stories");
+            position = getArguments().getInt("position", 0);
+        }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        ImageView mediaView = view.findViewById(R.id.story_image);
-        TextView captionTextView = view.findViewById(R.id.story_snippet);
-
-        if (getArguments() != null) {
-            String caption = getArguments().getString("caption");
-            String imageUrl = getArguments().getString("mediaUrl");
-
-            captionTextView.setText(caption);
-
-            // Load image with Glide with improved configuration
-            RequestOptions options = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .centerInside();
-
-            Glide.with(requireContext())
-                    .load(imageUrl)
-                    .apply(options)
-                    .into(mediaView);
-        }
+        viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
+        adapter = new StoryViewAdapter(getContext(), storyList, this);
+        viewPager2.setAdapter(adapter);
     }
-
+    @Override
+    public void onStoryTap(int position) {
+        // Handle the story tap event here
+        Log.d("StoryViewFragment", "Tapped story at position: " + position);
+        // Navigate to another screen or update UI
+    }
 
 }

@@ -12,13 +12,14 @@
     import androidx.annotation.NonNull;
     import androidx.annotation.Nullable;
     import androidx.fragment.app.Fragment;
+    import androidx.fragment.app.FragmentTransaction;
     import androidx.lifecycle.ViewModelProvider;
 
+    import com.google.android.gms.maps.CameraUpdateFactory;
     import com.google.android.gms.maps.GoogleMap;
-    import com.google.android.gms.maps.OnMapReadyCallback;
     import com.google.android.gms.maps.MapView;
     import com.google.android.gms.maps.MapsInitializer;
-    import com.google.android.gms.maps.CameraUpdateFactory;
+    import com.google.android.gms.maps.OnMapReadyCallback;
     import com.google.android.gms.maps.model.BitmapDescriptorFactory;
     import com.google.android.gms.maps.model.Circle;
     import com.google.android.gms.maps.model.CircleOptions;
@@ -34,13 +35,16 @@
     import com.google.firebase.firestore.ListenerRegistration;
     import com.google.firebase.firestore.QuerySnapshot;
     import com.google.maps.android.PolyUtil;
+    import com.google.maps.android.clustering.Cluster;
     import com.google.maps.android.clustering.ClusterManager;
-    import com.prototypes.prototype.story.StoryCluster;
-    import com.prototypes.prototype.story.StoryClusterRenderer;
     import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
     import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
+    import com.prototypes.prototype.story.Story;
+    import com.prototypes.prototype.story.StoryCluster;
+    import com.prototypes.prototype.story.StoryClusterRenderer;
     import com.prototypes.prototype.story.StoryViewFragment;
 
+    import java.util.ArrayList;
     import java.util.HashMap;
     import java.util.List;
     import java.util.Map;
@@ -110,27 +114,29 @@
                     clusterManager.setOnClusterItemClickListener(storyCluster -> {
                         // Handle click event
                         Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
-
                         // Assuming you want to open a dialog when a cluster item is clicked
-                        StoryViewFragment dialogFragment = StoryViewFragment.newInstance(
-                                storyCluster.getTitle(),
-                                storyCluster.getCaption(),
-                                storyCluster.getMediaUrl()
-                        );
-                        dialogFragment.show(getChildFragmentManager(), "story_view");
-
-                        // Optionally, you could also play a video if you have a media URL
-                        String mediaUrl = storyCluster.getMediaUrl();
-                        if (mediaUrl != null) {
-                            // Logic to play the video using the mediaUrl
-                            Log.d("ClusterItemClicked", "Media URL: " + mediaUrl);
-                            // Example: You can use ExoPlayer or VideoView to play the video here
-                        }
-
+//                        StoryViewFragment dialogFragment = StoryViewFragment.newInstance(storyCluster,
+//                                1
+//                        );
+//                        dialogFragment.show(getChildFragmentManager(), "story_view");
                         return true; // Return true to indicate that the event was consumed
                     });
-
-                    // Listen for real-time updates
+                    clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<>() {
+                        @Override
+                        public boolean onClusterClick(Cluster<StoryCluster> cluster) {
+                            List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
+                            ArrayList<Story> storyList = new ArrayList<>();
+                            int position = 0;
+                            for (StoryCluster storyCluster : clusterItems) {
+                                storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getMediaUrl(), storyCluster.getPosition(), storyCluster.getMediaType()));
+                            }
+                            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                            transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList, 0));
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                            return true;
+                        }
+                    });
                     listenToMarkersData();
                 }
             });
