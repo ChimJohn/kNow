@@ -1,6 +1,7 @@
 package com.prototypes.prototype.story;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +23,15 @@ import java.util.ArrayList;
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList; // List of stories
     private Context context;
-    private StoryListener listener;
-    public StoryViewAdapter(Context context,  ArrayList<Story> stories, StoryListener listener) {
+//    private StoryListener listener;
+    private final ArrayList<ExoPlayer> playerCache; // Cache to keep preloaded players
+
+    public StoryViewAdapter(Context context,  ArrayList<Story> stories) {
         this.context = context;
         this.storyList = stories;
-        this.listener = listener;
+//        this.listener = listener;
+        this.playerCache = new ArrayList<>();
+        preloadVideos();
     }
     @NonNull
     @Override
@@ -37,7 +42,8 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
-        holder.bind(story);
+        Log.d("POSITION", String.valueOf(position));
+        holder.bind(story, playerCache.get(position));
     }
     @Override
     public int getItemCount() {
@@ -47,6 +53,31 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     public void onViewRecycled(@NonNull StoryViewHolder holder) {
         super.onViewRecycled(holder);
         holder.releasePlayer(); // Release player when the view is recycled
+    }
+    @Override
+    public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.restartVideo(); // Restart the video every time it's visible
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull StoryViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        holder.pausePlayer(); // Release player when the view is recycled
+    }
+
+    private void preloadVideos() {
+        for (Story story : storyList) {
+            if (story.isVideo()) {
+                ExoPlayer player = new ExoPlayer.Builder(context).build();
+                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
+                player.setMediaItem(mediaItem);
+                player.prepare(); // Preload the video
+                playerCache.add(player);
+            } else {
+                playerCache.add(null); // Placeholder for images
+            }
+        }
     }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
         private ImageView storyImage;
@@ -59,16 +90,36 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             playerView = itemView.findViewById(R.id.player_view);
             storyCaption = itemView.findViewById(R.id.story_snippet);
         }
-        public void bind(Story story) {
+        public void bind(Story story, ExoPlayer preloadedPlayer) {
             storyCaption.setText(story.getCaption());
             if (story.isVideo()) {
                 storyImage.setVisibility(View.GONE);
                 playerView.setVisibility(View.VISIBLE);
-                initializePlayer(story.getMediaUrl());
+                this.exoPlayer = preloadedPlayer;
+                playerView.setPlayer(exoPlayer);
+                playerView.setUseController(false);
+
+                if (exoPlayer != null && !exoPlayer.isPlaying()) {
+                    exoPlayer.play();
+                }
             } else {
                 playerView.setVisibility(View.GONE);
                 storyImage.setVisibility(View.VISIBLE);
                 Glide.with(itemView.getContext()).load(story.getMediaUrl()).into(storyImage);
+            }
+        }
+
+        public void restartVideo() {
+            Log.d("EXOPLAYER", "bro is null");
+            if (exoPlayer != null) {
+                exoPlayer.seekTo(0); // Restart video from the beginning
+                exoPlayer.play();
+            }
+        }
+
+        public void pausePlayer() {
+            if (exoPlayer != null && exoPlayer.isPlaying()) {
+                exoPlayer.pause();
             }
         }
         private void initializePlayer(String videoUrl) {
@@ -86,7 +137,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             }
         }
     }
-    public interface StoryListener {
-        void onStoryTap(int position);
-    }
+//    public interface StoryListener {
+//        void onStoryTap(int position);
+//    }
 }

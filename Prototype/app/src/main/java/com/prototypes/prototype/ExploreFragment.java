@@ -70,7 +70,6 @@
         }
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-            Log.d("Debug", "Explore page.");
             mapView = view.findViewById(R.id.mapView);
             mapView.onCreate(savedInstanceState);
             mapView.onResume();
@@ -79,6 +78,7 @@
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
             db = FirebaseFirestore.getInstance();
             mapView.getMapAsync(new OnMapReadyCallback() {
@@ -90,7 +90,7 @@
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
                     currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                         if (location != null) {
-                            updateGpsMarker(location);
+                            updateGpsMarker(location, googleMap);
                             if (isFirstLocationUpdate) {
                                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 20));
                             }
@@ -112,13 +112,6 @@
                     algorithm.setMaxDistanceBetweenClusteredItems(30); // Adjust clustering sensitivity
                     clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
                     clusterManager.setOnClusterItemClickListener(storyCluster -> {
-                        // Handle click event
-                        Log.d("ClusterItemClicked", "Cluster item clicked: " + storyCluster.getTitle());
-                        // Assuming you want to open a dialog when a cluster item is clicked
-//                        StoryViewFragment dialogFragment = StoryViewFragment.newInstance(storyCluster,
-//                                1
-//                        );
-//                        dialogFragment.show(getChildFragmentManager(), "story_view");
                         return true; // Return true to indicate that the event was consumed
                     });
                     clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<>() {
@@ -126,12 +119,11 @@
                         public boolean onClusterClick(Cluster<StoryCluster> cluster) {
                             List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
                             ArrayList<Story> storyList = new ArrayList<>();
-                            int position = 0;
                             for (StoryCluster storyCluster : clusterItems) {
                                 storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getMediaUrl(), storyCluster.getPosition(), storyCluster.getMediaType()));
                             }
                             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                            transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList, 0));
+                            transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
                             transaction.addToBackStack(null);
                             transaction.commit();
                             return true;
@@ -145,7 +137,23 @@
             super.onPause();
             mapView.onPause();
         }
-
+        @Override
+        public void onResume() {
+            super.onResume();
+            isFirstLocationUpdate = true;
+            mapView.onResume();
+            if (googleMap != null) {
+                currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
+                    if (location != null) {
+                        if (gpsMarker != null) {
+                            gpsMarker.remove();
+                            gpsMarker = null;
+                        }
+                        updateGpsMarker(location, googleMap);
+                    }
+                });
+            }
+        }
         @Override
         public void onLowMemory() {
             super.onLowMemory();
@@ -200,7 +208,7 @@
                 clusterManager.removeItem(marker);
             }
         }
-        private void updateGpsMarker(Location location) {
+        private void updateGpsMarker(Location location, GoogleMap googleMap) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             if (gpsMarker == null) {
                 gpsMarker = googleMap.addMarker(new MarkerOptions()
