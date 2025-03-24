@@ -7,6 +7,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -23,7 +25,25 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.Manifest;
 
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
+    private final ActivityResultLauncher<String[]> multiplePermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
+                boolean allGranted = true;
+                for (Map.Entry<String, Boolean> entry : permissions.entrySet()) {
+                    if (!entry.getValue()) {
+                        allGranted = false;
+                        break;
+                    }
+                }
+                if (allGranted) {
+                    Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Some permissions denied", Toast.LENGTH_SHORT).show();
+                }
+            });
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -32,12 +52,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         currentLocationViewModel = new ViewModelProvider(this).get(CurrentLocationViewModel.class);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        startLocationUpdates();
-//        bottomNavigationView.setItemBackgroundResource(R.color.white);
+
+        requestPermissions();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
+        } else {
+            Toast.makeText(this, "Location permission required", Toast.LENGTH_SHORT).show();
+        }
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -65,7 +92,27 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
     }
+    private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                boolean allGranted = true;
+                for (Map.Entry<String, Boolean> entry : result.entrySet()) {
+                    if (!entry.getValue()) {
+                        allGranted = false;
+                        Log.e("Permissions", "Permission Denied: " + entry.getKey());
+                    }
+                }
+                if (allGranted) {
+                    Log.d("Permissions", "All permissions granted!");
+                }
+            });
 
+    private void requestPermissions() {
+        requestPermissionsLauncher.launch(new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        });
+    }
     private void startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Request permissions
