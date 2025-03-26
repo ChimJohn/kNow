@@ -82,24 +82,74 @@
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Choose a undername"
+            android:hint="Choose a username"
             android:paddingHorizontal="16dp"
             android:background="@drawable/custom_input"
             android:inputType="textEmailAddress"
             android:textSize="14sp"
             android:fontFamily="@font/inter_regular"
-            android:layout_marginTop="14dp"/>
+            android:layout_marginTop="10dp"/>
+
+        <!-- Email Label -->
+        <TextView
+            android:id="@+id/emailLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/grey"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Email Input -->
+        <EditText
+            android:id="@+id/etSignUpEmail"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_your_email"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/custom_input"
+            android:inputType="textEmailAddress"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_regular"
+            android:layout_marginTop="10dp"/>
+
+        <!-- Password Label -->
+        <TextView
+            android:id="@+id/passwordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            android:textSize="14sp"
+            android:textColor="@color/grey"
+            android:fontFamily="@font/inter_medium"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Password Input -->
+        <EditText
+            android:id="@+id/etSignUpPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="@string/enter_your_password"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/custom_input"
+            android:inputType="textPassword"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_regular"
+            android:layout_marginTop="10dp"/>
 
 
         <!-- Next Button -->
         <Button
-            android:id="@+id/btnNext"
+            android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="50dp"
             android:fontFamily="@font/inter_semibold"
             android:paddingVertical="12dp"
-            android:text="Next"
+            android:text="Sign Up"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textAllCaps="false"
