@@ -47,6 +47,16 @@ public class StoryViewFragment extends Fragment{
         adapter = new StoryViewAdapter(getContext(), storyList);
         viewPager2.setAdapter(adapter);
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                adapter.setCurrentPosition(position); // Pass position to adapter
+
+                Log.d("ViewPager2", "Current Position: " + position);
+            }
+        });
+
         preloadMedia();
     }
 

@@ -24,11 +24,14 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     private final ArrayList<Story> storyList;
     private Context context;
     private final ArrayList<ExoPlayer> playerCache;
+    private int currentPosition = 0; // Track the current page
+
 
     public StoryViewAdapter(Context context,  ArrayList<Story> stories) {
         this.context = context;
         this.storyList = stories;
         this.playerCache = new ArrayList<>();
+        setHasStableIds(true);
         preloadVideos();
     }
     @NonNull
@@ -36,6 +39,17 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     public StoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_view, parent, false);
         return new StoryViewHolder(view);
+    }
+    @Override
+    public long getItemId(int position) {
+        return stringToLongHash(storyList.get(position).getId());
+    }
+    private long stringToLongHash(String firebaseId) {
+        long hash = 0;
+        for (int i = 0; i < firebaseId.length(); i++) {
+            hash = 31 * hash + firebaseId.charAt(i); // Simple but effective hash function
+        }
+        return Math.abs(hash); // Ensure positive values
     }
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
@@ -74,6 +88,10 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 playerCache.add(null); // Placeholder for images
             }
         }
+    }
+    public void setCurrentPosition(int position) {
+        this.currentPosition = position;
+        notifyDataSetChanged(); // Refresh adapter when page changes
     }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
         private ImageView storyImage;
