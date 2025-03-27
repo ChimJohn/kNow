@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".SettingsActivity">
+
+    <!-- Top App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarSettings"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:background="@android:color/white"
+        android:layout_marginTop="50dp"
+        app:title="Settings and activity"
+        app:titleTextColor="@android:color/black"
+        app:navigationIcon="@drawable/ic_arrow_back_24"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/toolbarSettings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Section: How you use kNow -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="How you use kNow"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp"
+                android:fontFamily="@font/inter_medium"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvNotifications"
+                style="@style/SettingItemStyle"
+                android:text="Notifications" />
+
+            <TextView
+                android:id="@+id/tvTimeManagement"
+                style="@style/SettingItemStyle"
+                android:text="Time Management" />
+
+            <!-- Section: Who can see your content -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Who can see your content"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp"
+                android:fontFamily="@font/inter_medium"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvAccountPrivacy"
+                style="@style/SettingItemStyle"
+                android:text="Account Privacy" />
+
+            <TextView
+                android:id="@+id/tvBlocked"
+                style="@style/SettingItemStyle"
+                android:text="Blocked" />
+
+            <!-- Section: Login -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp"
+                android:fontFamily="@font/inter_medium"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Log out"
+                android:textColor="@android:color/holo_red_dark"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:fontFamily="@font/inter_medium"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,4 +14,15 @@
         <item name="rippleColor">@color/black</item>
         <item name="cornerRadius">10dp</item>
     </style>
+
+    <style name="SettingItemStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:fontFamily">@font/inter_medium</item>
+    </style>
+
 </resources>
