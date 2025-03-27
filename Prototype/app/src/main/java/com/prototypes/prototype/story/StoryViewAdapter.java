@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -89,22 +90,25 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             }
         }
     }
-    public void setCurrentPosition(int position) {
-        this.currentPosition = position;
-        notifyDataSetChanged(); // Refresh adapter when page changes
+
+    public interface OnGpsClickListener {
+        void onGpsClick(double latitude, double longitude);
     }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
         private ImageView storyImage;
         private PlayerView playerView;
         private ExoPlayer exoPlayer;
         private TextView storyCaption;
+        private Button gpsButton;
         public StoryViewHolder(View itemView) {
             super(itemView);
             storyImage = itemView.findViewById(R.id.story_image);
             playerView = itemView.findViewById(R.id.player_view);
             storyCaption = itemView.findViewById(R.id.story_snippet);
+            gpsButton = itemView.findViewById(R.id.btnGps);
         }
-        public void bind(Story story, ExoPlayer preloadedPlayer) {
+        public void bind(Story story, ExoPlayer preloadedPlayer, OnGpsClickListener listener) {
+            Log.d("STORYCAPTION", story.getCaption());
             storyCaption.setText(story.getCaption());
             if (story.isVideo()) {
                 storyImage.setVisibility(View.GONE);
@@ -120,6 +124,11 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 storyImage.setVisibility(View.VISIBLE);
                 Glide.with(itemView.getContext()).load(story.getMediaUrl()).into(storyImage);
             }
+            gpsButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onGpsClick(story.getPosition().latitude, story.getPosition().longitude);
+                }
+            });
         }
         public void restartVideo() {
             if (exoPlayer != null) {
@@ -138,5 +147,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 exoPlayer = null;
             }
         }
+
     }
 }

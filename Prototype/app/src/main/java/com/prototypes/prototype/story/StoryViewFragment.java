@@ -12,12 +12,13 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.prototypes.prototype.ExploreFragment;
 import com.prototypes.prototype.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoryViewFragment extends Fragment{
+public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGpsClickListener{
     private ArrayList<Story> storyList;
     private ViewPager2 viewPager2;
     private StoryViewAdapter adapter;
@@ -47,16 +48,6 @@ public class StoryViewFragment extends Fragment{
         adapter = new StoryViewAdapter(getContext(), storyList);
         viewPager2.setAdapter(adapter);
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
-        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                adapter.setCurrentPosition(position); // Pass position to adapter
-
-                Log.d("ViewPager2", "Current Position: " + position);
-            }
-        });
-
         preloadMedia();
     }
 
@@ -71,5 +62,17 @@ public class StoryViewFragment extends Fragment{
             }
         }
     }
+    @Override
+    public void onGpsClick(double latitude, double longitude) {
+        Log.d("StoryViewFragment", "GPS Clicked: " + latitude + ", " + longitude);
+
+        // ✅ Navigate to ExplorerViewFragment with lat/lng
+//        ExploreFragment exploreFragment = ExploreFragment.newInstance(latitude, longitude);
+//        requireActivity().getSupportFragmentManager().beginTransaction()
+//                .replace(R.id.fragment_container, exploreFragment)
+//                .addToBackStack(null)
+//                .commit();
+    }
+
 
 }
