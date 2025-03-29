@@ -7,14 +7,23 @@
     android:layout_height="match_parent"
     tools:context=".ExploreFragment">
 
-    <include layout="@layout/story_marker" />
-
     <!-- Full-Screen Google MapView (Background) -->
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Include Story Marker -->
+    <include layout="@layout/story_marker" />
 
     <!-- Search Bar (Rounded Rectangle) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/searchBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginTop="50dp"
         android:layout_marginStart="30dp"
@@ -26,7 +35,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Search Input -->
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="match_parent"
@@ -39,69 +47,103 @@
             android:inputType="text" />
     </androidx.cardview.widget.CardView>
 
+    <!-- Combined Search Results -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSearchResults"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#FAFAFA"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:visibility="gone"
+        android:elevation="6dp"
+        app:layout_constraintTop_toBottomOf="@id/searchBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <!-- Filter Chips (Food and Attractions) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/filterCard"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         app:cardCornerRadius="25dp"
-        app:cardElevation="6dp"
-        android:padding="20dp"
-        android:background="@android:color/transparent"
+        app:cardElevation="0dp"
+        android:backgroundTint="@android:color/transparent"
         app:layout_constraintTop_toBottomOf="@id/searchBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Remove background of the ConstraintLayout holding the chips -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"> <!-- Set transparent background -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupFilters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@android:color/transparent"
+            app:chipSpacing="8dp"
+            app:layout_constraintTop_toBottomOf="@id/searchBar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupFilters"
-                android:layout_width="match_parent"
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFood"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="@android:color/transparent"
-                app:chipSpacing="8dp"
-                app:singleLine="false"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
+                android:checkable="true"
+                android:checked="false"
+                android:text="Food"
+                app:chipBackgroundColor="@android:color/transparent"
+                android:textColor="@android:color/black"
+                app:chipStrokeColor="@android:color/darker_gray"
+                app:chipStrokeWidth="1dp"
+                app:checkedIconVisible="false" />
 
-                <!-- Food Filter Chip -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipFood"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Food"
-                    android:checkable="true"
-                    android:checked="false"
-                    android:background="@android:color/transparent" /> <!-- Set transparent background for chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAttraction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:checked="false"
+                android:text="Attractions"
+                app:chipBackgroundColor="@android:color/transparent"
+                android:textColor="@android:color/black"
+                app:chipStrokeColor="@android:color/darker_gray"
+                app:chipStrokeWidth="1dp"
+                app:checkedIconVisible="false" />
 
-                <!-- Attractions Filter Chip -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAttraction"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Attractions"
-                    android:checkable="true"
-                    android:checked="false"
-                    android:background="@android:color/transparent" /> <!-- Set transparent background for chip -->
-
-            </com.google.android.material.chip.ChipGroup>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipNews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:checked="false"
+                android:text="News"
+                app:chipBackgroundColor="@android:color/transparent"
+                android:textColor="@android:color/black"
+                app:chipStrokeColor="@android:color/darker_gray"
+                app:chipStrokeWidth="1dp"
+                app:checkedIconVisible="false" />
+        </com.google.android.material.chip.ChipGroup>
 
     </androidx.cardview.widget.CardView>
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="21dp"
-        tools:layout_editor_absoluteY="149dp" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:src="@drawable/outline_near_me_24"
+        android:contentDescription="Current Location Button"
+        app:backgroundTint="@android:color/white"
+        app:tint="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
