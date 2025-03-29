@@ -44,8 +44,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
-
-        adapter = new StoryViewAdapter(getContext(), storyList);
+        adapter = new StoryViewAdapter(getContext(), storyList, this);
         viewPager2.setAdapter(adapter);
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
         preloadMedia();
@@ -66,12 +65,11 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public void onGpsClick(double latitude, double longitude) {
         Log.d("StoryViewFragment", "GPS Clicked: " + latitude + ", " + longitude);
 
-        // ✅ Navigate to ExplorerViewFragment with lat/lng
-//        ExploreFragment exploreFragment = ExploreFragment.newInstance(latitude, longitude);
-//        requireActivity().getSupportFragmentManager().beginTransaction()
-//                .replace(R.id.fragment_container, exploreFragment)
-//                .addToBackStack(null)
-//                .commit();
+        ExploreFragment exploreFragment = ExploreFragment.newInstance(latitude, longitude);
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, exploreFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
 

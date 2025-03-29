@@ -20,115 +20,114 @@ import com.prototypes.prototype.R;
 
 import java.util.ArrayList;
 
-
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList;
-    private Context context;
-    private final ArrayList<ExoPlayer> playerCache;
-    private int currentPosition = 0; // Track the current page
+    private final Context context;
+    public interface OnGpsClickListener {
+        void onGpsClick(double latitude, double longitude);
+    }
+    private final OnGpsClickListener gpsClickListener;
 
-
-    public StoryViewAdapter(Context context,  ArrayList<Story> stories) {
+    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener) {
         this.context = context;
         this.storyList = stories;
-        this.playerCache = new ArrayList<>();
         setHasStableIds(true);
-        preloadVideos();
+        this.gpsClickListener = gpsClickListener;
+
     }
+
     @NonNull
     @Override
     public StoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_view, parent, false);
         return new StoryViewHolder(view);
     }
+
     @Override
     public long getItemId(int position) {
         return stringToLongHash(storyList.get(position).getId());
     }
+
     private long stringToLongHash(String firebaseId) {
         long hash = 0;
         for (int i = 0; i < firebaseId.length(); i++) {
-            hash = 31 * hash + firebaseId.charAt(i); // Simple but effective hash function
+            hash = 31 * hash + firebaseId.charAt(i);
         }
-        return Math.abs(hash); // Ensure positive values
+        return Math.abs(hash);
     }
+
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
         Log.d("POSITION", String.valueOf(position));
-        holder.bind(story, playerCache.get(position));
+        holder.bind(story, gpsClickListener);
     }
+
     @Override
     public int getItemCount() {
         return storyList.size();
     }
+
     @Override
     public void onViewRecycled(@NonNull StoryViewHolder holder) {
         super.onViewRecycled(holder);
-        holder.releasePlayer(); // Release player when the view is recycled
+        holder.releasePlayer();
     }
+
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        holder.restartVideo(); // Restart the video every time it's visible
+        holder.restartVideo();
     }
+
     @Override
     public void onViewDetachedFromWindow(@NonNull StoryViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        holder.pausePlayer(); // Pause player when the view is detached
-    }
-    private void preloadVideos() {
-        for (Story story : storyList) {
-            if (story.isVideo()) {
-                ExoPlayer player = new ExoPlayer.Builder(context).build();
-                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
-                player.setMediaItem(mediaItem);
-                player.prepare(); // Preload the video
-                playerCache.add(player);
-            } else {
-                playerCache.add(null); // Placeholder for images
-            }
-        }
-    }
-
-    public interface OnGpsClickListener {
-        void onGpsClick(double latitude, double longitude);
+        holder.pausePlayer();
     }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
-        private ImageView storyImage;
-        private PlayerView playerView;
+        private final ImageView imageView;
+        private final PlayerView playerView;
+        private final TextView storyCaption;
+        private final Button gpsButton;
         private ExoPlayer exoPlayer;
-        private TextView storyCaption;
-        private Button gpsButton;
         public StoryViewHolder(View itemView) {
             super(itemView);
-            storyImage = itemView.findViewById(R.id.story_image);
+            imageView = itemView.findViewById(R.id.story_image);
             playerView = itemView.findViewById(R.id.player_view);
             storyCaption = itemView.findViewById(R.id.story_snippet);
             gpsButton = itemView.findViewById(R.id.btnGps);
         }
-        public void bind(Story story, ExoPlayer preloadedPlayer, OnGpsClickListener listener) {
-            Log.d("STORYCAPTION", story.getCaption());
+        public void bind(Story story, OnGpsClickListener gpsClickListener) {
             storyCaption.setText(story.getCaption());
-            if (story.isVideo()) {
-                storyImage.setVisibility(View.GONE);
-                playerView.setVisibility(View.VISIBLE);
-                this.exoPlayer = preloadedPlayer;
-                playerView.setPlayer(exoPlayer);
-                playerView.setUseController(false);
-                if (exoPlayer != null && !exoPlayer.isPlaying()) {
-                    exoPlayer.play();
-                }
-            } else {
-                playerView.setVisibility(View.GONE);
-                storyImage.setVisibility(View.VISIBLE);
-                Glide.with(itemView.getContext()).load(story.getMediaUrl()).into(storyImage);
-            }
+            gpsButton.bringToFront();
             gpsButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onGpsClick(story.getPosition().latitude, story.getPosition().longitude);
+                if (story.getPosition() != null) {
+                    Log.e("StoryViewHolder", "Error: Story position is NOT NULL " + story.getCaption());
+                } else {
+                    Log.e("StoryViewHolder", "Error: Story position is null for " + story.getCaption());
+                }
+                if (gpsClickListener != null) {
+                    gpsClickListener.onGpsClick(story.getPosition().latitude, story.getPosition().longitude);
                 }
             });
+            if (story.isVideo()) {
+                imageView.setVisibility(View.GONE);
+                playerView.setVisibility(View.VISIBLE);
+                if (exoPlayer == null) {
+                    exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
+                    playerView.setPlayer(exoPlayer);
+                }
+                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
+                exoPlayer.setMediaItem(mediaItem);
+                exoPlayer.prepare();
+                exoPlayer.play();
+//                playerView.setUseController(false);
+            } else {
+                playerView.setVisibility(View.GONE);
+                imageView.setVisibility(View.VISIBLE);
+                Glide.with(itemView.getContext()).load(story.getMediaUrl()).into(imageView);
+            }
         }
         public void restartVideo() {
             if (exoPlayer != null) {
@@ -147,6 +146,5 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 exoPlayer = null;
             }
         }
-
     }
 }
