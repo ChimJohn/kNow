@@ -64,13 +64,10 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     @Override
     public void onGpsClick(double latitude, double longitude) {
         Log.d("StoryViewFragment", "GPS Clicked: " + latitude + ", " + longitude);
-
         ExploreFragment exploreFragment = ExploreFragment.newInstance(latitude, longitude);
         requireActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, exploreFragment)
                 .addToBackStack(null)
                 .commit();
     }
-
-
 }

@@ -1,7 +1,6 @@
 package com.prototypes.prototype;
 
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,13 +24,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
@@ -50,6 +46,8 @@ import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
+import com.prototypes.prototype.directions.DirectionsApiService;
+import com.prototypes.prototype.directions.DirectionsResponse;
 import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
@@ -61,6 +59,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class ExploreFragment extends Fragment {
 
     private RecyclerView rvUserSearchResults;
@@ -69,16 +73,35 @@ public class ExploreFragment extends Fragment {
     private MapView mapView;
     private GoogleMap googleMap;
     private CurrentLocationViewModel currentLocationViewModel;
-    private Marker gpsMarker;
+    private Double latitude, longitude;
     private Circle pulsatingCircle;
     private ValueAnimator pulseAnimator;
     private FirebaseFirestore db;
     private ClusterManager<StoryCluster> clusterManager;
     private boolean isFirstLocationUpdate = true;
     private ListenerRegistration mediaListener;
-    private Map<String, StoryCluster> allMarkers = new HashMap<>();
+    private final Map<String, StoryCluster> allMarkers = new HashMap<>();
     private Polyline routePolyline;
     private PlacesClient placesClient;
+    private static final String ARG_LATITUDE = "latitude";
+    private static final String ARG_LONGITUDE = "longitude";
+    public static ExploreFragment newInstance(double latitude, double longitude) {
+        ExploreFragment fragment = new ExploreFragment();
+        Bundle args = new Bundle();
+        args.putDouble(ARG_LATITUDE, latitude);
+        args.putDouble(ARG_LONGITUDE, longitude);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            latitude = getArguments().getDouble(ARG_LATITUDE);
+            longitude = getArguments().getDouble(ARG_LONGITUDE);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -112,6 +135,11 @@ public class ExploreFragment extends Fragment {
                     }
                     isFirstLocationUpdate = false;
                 }
+                if (latitude != null && longitude != null){
+                    LatLng latLng = new LatLng(latitude, longitude);
+
+                    fetchRoute(location, latLng);
+                }
             });
 
             googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -135,7 +163,7 @@ public class ExploreFragment extends Fragment {
                     storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getMediaUrl(), storyCluster.getPosition(), storyCluster.getMediaType()));
                 }
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList, 0));
+                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
                 transaction.addToBackStack(null);
                 transaction.commit();
                 return true;
@@ -170,10 +198,8 @@ public class ExploreFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String query = s.toString().trim();
-
                 if (query.startsWith("@")) {
                     String usernameQuery = query.substring(1).toLowerCase();
-
                     db.collection("Users")
                             .orderBy("username")
                             .startAt(usernameQuery)
@@ -198,23 +224,19 @@ public class ExploreFragment extends Fragment {
                             new LatLng(1.1304753, 103.6920359),
                             new LatLng(1.4504753, 104.0120359)
                     );
-
                     FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                             .setQuery(query)
                             .setLocationBias(bounds)
                             .setTypeFilter(TypeFilter.ADDRESS)
                             .build();
-
                     placesClient.findAutocompletePredictions(request)
                             .addOnSuccessListener(response -> {
                                 List<String> locationNames = new ArrayList<>();
                                 List<String> locationPlaceIds = new ArrayList<>();
-
                                 for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
                                     locationNames.add(prediction.getPrimaryText(null).toString());
                                     locationPlaceIds.add(prediction.getPlaceId());
                                 }
-
                                 // Set new adapter with location click handling
                                 userSearchAdapter = new UserSearchAdapter(locationNames, selectedName -> {
                                     int index = locationNames.indexOf(selectedName);
@@ -230,12 +252,10 @@ public class ExploreFragment extends Fragment {
                                 Log.e("PlaceSearch", "Places API failed", e);
                                 rvUserSearchResults.setVisibility(View.GONE);
                             });
-
                 } else {
                     rvUserSearchResults.setVisibility(View.GONE);
                 }
             }
-
             @Override public void afterTextChanged(Editable s) {}
         });
     }
@@ -317,7 +337,6 @@ public class ExploreFragment extends Fragment {
 
     private void fetchAndZoomToPlace(String placeId) {
         List<Place.Field> placeFields = Arrays.asList(Place.Field.LAT_LNG);
-
         placesClient.fetchPlace(
                 com.google.android.libraries.places.api.net.FetchPlaceRequest.builder(placeId, placeFields).build()
         ).addOnSuccessListener(fetchPlaceResponse -> {
@@ -331,7 +350,6 @@ public class ExploreFragment extends Fragment {
         });
     }
 
-
     private void startPulsatingEffect() {
         pulseAnimator = ValueAnimator.ofFloat(10, 20);
         pulseAnimator.setDuration(1000);
@@ -340,13 +358,44 @@ public class ExploreFragment extends Fragment {
         pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
         pulseAnimator.start();
     }
+    private void fetchRoute(Location currentLocation, LatLng destination) {
+        String origin = currentLocation.getLatitude() + "," + currentLocation.getLongitude(); // Replace with current location
+        String dest = destination.latitude + "," + destination.longitude;
+        String apiKey = getString(R.string.google_maps_key);;
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://maps.googleapis.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        DirectionsApiService service = retrofit.create(DirectionsApiService.class);
+        Call<DirectionsResponse> call = service.getWalkingDirections(origin, dest, "walking", apiKey);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().routes.isEmpty()) {
+                    String polyline = response.body().routes.get(0).overviewPolyline.points;
+                    drawRoute(polyline);
+                }
+            }
+            @Override
+            public void onFailure(Call<DirectionsResponse> call, Throwable t) {
+                Log.e("Directions API", "Error fetching directions: " + t.getMessage());
+            }
+        });
+    }
 
     private void drawRoute(String encodedPolyline) {
+        List<LatLng> points = PolyUtil.decode(encodedPolyline);
         if (routePolyline != null) {
             routePolyline.remove();
         }
-        List<LatLng> points = PolyUtil.decode(encodedPolyline);
-        routePolyline = googleMap.addPolyline(new PolylineOptions().addAll(points).width(10).color(0xFF2196F3));
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(points)
+                .width(10f)
+                .color(Color.BLUE)
+                .geodesic(true);
+        if (googleMap != null) {
+            routePolyline = googleMap.addPolyline(polylineOptions);
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.prototypes.prototype;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,7 +13,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -23,27 +23,10 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import android.Manifest;
 
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    private final ActivityResultLauncher<String[]> multiplePermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                boolean allGranted = true;
-                for (Map.Entry<String, Boolean> entry : permissions.entrySet()) {
-                    if (!entry.getValue()) {
-                        allGranted = false;
-                        break;
-                    }
-                }
-                if (allGranted) {
-                    Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Some permissions denied", Toast.LENGTH_SHORT).show();
-                }
-            });
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -108,9 +91,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestPermissions() {
         requestPermissionsLauncher.launch(new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.CAMERA,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
         });
     }
     private void startLocationUpdates() {
