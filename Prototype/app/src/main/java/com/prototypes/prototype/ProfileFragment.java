@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.content.Intent;
+import android.widget.ImageButton;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,6 +68,19 @@ public class ProfileFragment extends Fragment {
         tvFollowers = view.findViewById(R.id.tvFollowers);
         galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
+
+        // Menu button
+        ImageButton btnMenu = view.findViewById(R.id.btnMenu);
+        btnMenu.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                Log.d(TAG, "Menu button clicked.");
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
+            } else {
+                Log.e(TAG, "Activity is null, cannot start SettingsActivity");
+            }
+        });
+
 
         // Get user details
         firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {

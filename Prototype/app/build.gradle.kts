@@ -68,6 +68,8 @@ dependencies {
     implementation(libs.volley)
     implementation(libs.credentials)
 
+    implementation(libs.google.places)
+
     implementation(libs.activity.ktx)
     implementation(libs.camera.core)
     implementation(libs.camera.lifecycle)

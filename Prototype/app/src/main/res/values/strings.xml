@@ -4,6 +4,7 @@
     <string name="brandname_for_loading_screen">brandname for loading screen</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="google_maps_key">AIzaSyDDwHU3UYIDIeoAeb6uAZWGe0AN8HHpgfw</string>
     <string name="log_in_to_your_account">Log in to your account</string>
     <string name="welcome_back_please_enter_your_details">Welcome back! Please enter your details.</string>
     <string name="enter_your_email">Enter your email</string>
