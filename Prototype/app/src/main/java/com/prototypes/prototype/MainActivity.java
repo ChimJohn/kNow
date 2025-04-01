@@ -162,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         // Stop location updates when activity is stopped
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        if (fusedLocationClient != null && locationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
     }
 }

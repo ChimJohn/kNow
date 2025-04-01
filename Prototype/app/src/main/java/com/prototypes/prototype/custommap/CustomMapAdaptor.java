@@ -54,7 +54,7 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
         holder.itemView.setOnClickListener(v -> {
             if (position == 0) {
                 // Handle "Add" map click
-                // Toast.makeText(context, "Add new map clicked", Toast.LENGTH_SHORT).show();
+//                 Toast.makeText(context, "Add new map clicked", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(context, CreateCustomMap.class);
                 context.startActivity(intent);
             } else {

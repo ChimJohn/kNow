@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -17,10 +18,11 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final String TAG = "SettingsActivity";
     private FirebaseAuthManager authManager;
-
+    TextView tvLogout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
 
         // Set up Firebase auth
@@ -42,7 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // Handle logout click
-        TextView tvLogout = findViewById(R.id.tvLogout);
+        tvLogout = findViewById(R.id.tvLogout);
         tvLogout.setOnClickListener(v -> {
             authManager.logoutUser();
             Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show();

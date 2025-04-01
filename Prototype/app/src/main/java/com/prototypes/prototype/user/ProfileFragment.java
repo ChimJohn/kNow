@@ -19,11 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.login.LoginActivity;
 import com.prototypes.prototype.settings.SettingsActivity;
 import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
+import com.prototypes.prototype.signup.SignUpActivity;
 import com.prototypes.prototype.story.Story;
 
 import java.util.ArrayList;
@@ -46,7 +48,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
-        Log.d(TAG, "User page.");
 
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this.getActivity());
         FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
