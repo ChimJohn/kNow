@@ -38,7 +38,7 @@ public class ProfileFragment extends Fragment {
     String name, username, profile;
     List<String> followersList, stories;
     ImageView imgProfile;
-    TextView tvName, tvHandle, tvFollowers;
+    TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
     RecyclerView galleryRecyclerView, mapRecyclerView;
     GalleryAdaptor galleryAdaptor;
     CustomMapAdaptor customMapAdaptor;
@@ -61,6 +61,7 @@ public class ProfileFragment extends Fragment {
         tvFollowers = view.findViewById(R.id.tvFollowers);
         galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
+        tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
 
         // Menu button
         ImageButton btnMenu = view.findViewById(R.id.btnMenu);
@@ -101,55 +102,9 @@ public class ProfileFragment extends Fragment {
                 tvHandle.setText(username);
 
                 // Retrieve all media related to user
-                firestoreStoriesManager.queryDocuments("media", "userId", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Story>() {
-                    @Override
-                    public void onEmpty(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.GONE);
-                        TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
-                        tvNoPhotos.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onSuccess(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.VISIBLE);
-                        TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
-                        tvNoPhotos.setVisibility(View.GONE);
-                        galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                        galleryRecyclerView.setAdapter(galleryAdaptor);
-                    }
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.d(TAG, "firestoreStoriesManager failed: " + e);
-                    }
-                });
-
+                getMedia(firestoreStoriesManager, firebaseAuthManager);
                 // Retrieve all maps
-                firestoreMapManager.queryDocuments("Map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
-                    @Override
-                    public void onEmpty(ArrayList<CustomMap> customMaps) {
-                        Log.d(TAG, "Number of Custom Maps: 0");
-                        customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
-                        mapRecyclerView.setAdapter(customMapAdaptor);
-                        // Create "Add" map element
-                        CustomMap addMap = new CustomMap("Add", null, null);
-                        customMapAdaptor.addItemToTop(addMap);
-                    }
-                    @Override
-                    public void onSuccess(ArrayList<CustomMap> customMaps) {
-                        Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
-                        customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
-                        mapRecyclerView.setAdapter(customMapAdaptor);
-
-                        // Create "Add" map element
-                        CustomMap addMap = new CustomMap("Add", null, null);
-                        customMapAdaptor.addItemToTop(addMap);
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.d(TAG, "firestoreMapManager failed: "+ e);
-                    }
-                });
+                getMaps(firestoreMapManager, firebaseAuthManager);
             }
             @Override
             public void onFailure(Exception e) {
@@ -157,5 +112,66 @@ public class ProfileFragment extends Fragment {
             }
         });
         return view;
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
+        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
+        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        // Retrieve all media related to user
+        getMedia(firestoreStoriesManager, firebaseAuthManager);
+        // Retrieve all maps
+        getMaps(firestoreMapManager, firebaseAuthManager);
+    }
+    public void getMedia(FirestoreManager firestoreStoriesManager, FirebaseAuthManager firebaseAuthManager){
+        firestoreStoriesManager.queryDocuments("media", "userId", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Story>() {
+            @Override
+            public void onEmpty(ArrayList<Story> storyList) {
+                galleryRecyclerView.setVisibility(View.GONE);
+                tvNoPhotos.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSuccess(ArrayList<Story> storyList) {
+                galleryRecyclerView.setVisibility(View.VISIBLE);
+                tvNoPhotos.setVisibility(View.GONE);
+                galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
+                galleryRecyclerView.setAdapter(galleryAdaptor);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "firestoreStoriesManager failed: " + e);
+            }
+        });
+
+    }
+    public void getMaps(FirestoreManager firestoreMapManager, FirebaseAuthManager firebaseAuthManager){
+        firestoreMapManager.queryDocuments("map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+            @Override
+            public void onEmpty(ArrayList<CustomMap> customMaps) {
+                Log.d(TAG, "Number of Custom Maps: 0");
+                customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                mapRecyclerView.setAdapter(customMapAdaptor);
+                // Create "Add" map element
+                CustomMap addMap = new CustomMap("Add", null, null);
+                customMapAdaptor.addItemToTop(addMap);
+            }
+            @Override
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
+                Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
+                customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                mapRecyclerView.setAdapter(customMapAdaptor);
+
+                // Create "Add" map element
+                CustomMap addMap = new CustomMap("Add", null, null);
+                customMapAdaptor.addItemToTop(addMap);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "firestoreMapManager failed: "+ e);
+            }
+        });
     }
 }

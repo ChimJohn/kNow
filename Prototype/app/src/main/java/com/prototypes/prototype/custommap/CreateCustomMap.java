@@ -19,8 +19,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.MainActivity;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
+import com.prototypes.prototype.user.User;
 
 
 public class CreateCustomMap extends AppCompatActivity {
@@ -29,6 +33,9 @@ public class CreateCustomMap extends AppCompatActivity {
     TextView tvAdd, tvSetCover;
     ImageView imgCover;
     Uri image;
+    String mapName, owner;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     private static final String TAG = "Create Custom Map Activity";
 
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -51,6 +58,8 @@ public class CreateCustomMap extends AppCompatActivity {
 //        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_custom_map);
         Log.d(TAG, "User page.");
+        FirestoreManager firestoreManager = new FirestoreManager(db, CustomMap.class);
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
 
         cvExit = findViewById(R.id.cvExit);
         etMapName = findViewById(R.id.etMapName);
@@ -72,7 +81,13 @@ public class CreateCustomMap extends AppCompatActivity {
             public void onClick(View v) {
                 if (etMapName.getText().toString().trim().equals("")){
                     Toast.makeText(CreateCustomMap.this, "Fill in map name!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                mapName = etMapName.getText().toString().trim();
+                owner = firebaseAuthManager.getCurrentUser().getUid();
+                create_map(firestoreManager, mapName, owner, "");
+
             }
         });
 
@@ -87,4 +102,21 @@ public class CreateCustomMap extends AppCompatActivity {
             }
         });
     }
+
+    public void create_map(FirestoreManager firestoreManager, String mapName, String owner, String imgUrl){
+        CustomMap customMap = new CustomMap(mapName, owner, imgUrl);
+        firestoreManager.writeDocument("map", null, customMap, new FirestoreManager.FirestoreCallback() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Map created");
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "Error: " + e.toString());
+            }
+        });
+    }
 }
+

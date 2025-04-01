@@ -5,9 +5,12 @@ import android.util.Log;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FirestoreManager<T> {
     private FirebaseFirestore db;
@@ -21,10 +24,25 @@ public class FirestoreManager<T> {
 
     // Create or Update a document
     public void writeDocument(String collection, String documentId, T object, FirestoreCallback callback) {
+        if (documentId == null){
+            db.collection(collection)
+                    .add(object)
+                    .addOnSuccessListener(unused -> callback.onSuccess())
+                    .addOnFailureListener(callback::onFailure);
+        }else{
+            db.collection(collection).document(documentId)
+                    .set(object)
+                    .addOnSuccessListener(unused -> callback.onSuccess())
+                    .addOnFailureListener(callback::onFailure);
+        }
+    }
+
+    // Update attribute
+    public  void updateDocument(String collection, String documentId, String attributeName, String updatedValue, FirestoreCallback callback){
+        Map<String, Object> data = new HashMap<>();
+        data.put(attributeName, updatedValue);
         db.collection(collection).document(documentId)
-                .set(object)
-                .addOnSuccessListener(unused -> callback.onSuccess())
-                .addOnFailureListener(callback::onFailure);
+                .set(data, SetOptions.merge());
     }
 
     // Read a document
