@@ -23,8 +23,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.MainActivity;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirebaseStorageManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.user.User;
+
+import java.util.UUID;
 
 
 public class CreateCustomMap extends AppCompatActivity {
@@ -60,6 +63,7 @@ public class CreateCustomMap extends AppCompatActivity {
         Log.d(TAG, "User page.");
         FirestoreManager firestoreManager = new FirestoreManager(db, CustomMap.class);
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
+        FirebaseStorageManager firebaseStorageManager = new FirebaseStorageManager();
 
         cvExit = findViewById(R.id.cvExit);
         etMapName = findViewById(R.id.etMapName);
@@ -83,11 +87,14 @@ public class CreateCustomMap extends AppCompatActivity {
                     Toast.makeText(CreateCustomMap.this, "Fill in map name!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
+                if (image == null){
+                    Toast.makeText(CreateCustomMap.this, "Select cover image!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 mapName = etMapName.getText().toString().trim();
                 owner = firebaseAuthManager.getCurrentUser().getUid();
-                create_map(firestoreManager, mapName, owner, "");
-
+                // If no cover img selected, use
+                uploadCover(firestoreManager, firebaseStorageManager, image, mapName, owner);
             }
         });
 
@@ -102,21 +109,40 @@ public class CreateCustomMap extends AppCompatActivity {
             }
         });
     }
-
+    // Add map date to firestore
     public void create_map(FirestoreManager firestoreManager, String mapName, String owner, String imgUrl){
         CustomMap customMap = new CustomMap(mapName, owner, imgUrl);
         firestoreManager.writeDocument("map", null, customMap, new FirestoreManager.FirestoreCallback() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Map created");
+                Log.d(TAG, "Map added to firestore");
                 finish();
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.d(TAG, "Error: " + e.toString());
+                Log.d(TAG, "Failed to add map to firestore: " + e.toString());
             }
         });
     }
+    // Add img to Firebase Storage
+    public void uploadCover(FirestoreManager firestoreManager, FirebaseStorageManager firebaseStorageManager, Uri file, String mapName, String owner){
+        String fileName = UUID.randomUUID().toString();
+        // Add photo to storage
+        firebaseStorageManager.uploadFile(file, "map/" + fileName, new FirebaseStorageManager.UploadFileCallback() {
+            @Override
+            public void onSuccess(String url) {
+                create_map(firestoreManager, mapName, owner, url);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Log.d(TAG, "UploadCover Function Failed: " + error);
+            }
+        });
+
+    }
 }
+
+
 
