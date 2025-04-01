@@ -23,7 +23,7 @@
         android:theme="@style/Theme.Prototype"
         tools:targetApi="31">
         <activity
-            android:name=".CreateCustomMap"
+            android:name=".custommap.CreateCustomMap"
             android:exported="false" />
         <activity
             android:name=".signup.SignUpFinal"
@@ -47,7 +47,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true" />
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".settings.SettingsActivity" />
 
     </application>
 

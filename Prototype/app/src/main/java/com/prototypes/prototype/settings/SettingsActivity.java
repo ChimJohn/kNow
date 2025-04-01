@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.prototypes.prototype.R;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.login.LoginActivity;
 

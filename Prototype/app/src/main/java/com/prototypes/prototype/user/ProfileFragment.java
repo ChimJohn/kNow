@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.user;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -17,25 +17,17 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Source;
+import com.prototypes.prototype.R;
+import com.prototypes.prototype.settings.SettingsActivity;
 import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.media.Stories;
-import com.prototypes.prototype.user.GalleryAdaptor;
-import com.prototypes.prototype.user.User;
+import com.prototypes.prototype.story.Story;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
@@ -58,7 +50,7 @@ public class ProfileFragment extends Fragment {
 
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this.getActivity());
         FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Stories.class);
+        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
         FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
 
         // Get UI elements
@@ -108,16 +100,16 @@ public class ProfileFragment extends Fragment {
                 tvHandle.setText(username);
 
                 // Retrieve all media related to user
-                firestoreStoriesManager.queryDocuments("Media", "creator", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Stories>() {
+                firestoreStoriesManager.queryDocuments("media", "userId", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Story>() {
                     @Override
-                    public void onEmpty(ArrayList<Stories> storyList) {
+                    public void onEmpty(ArrayList<Story> storyList) {
                         galleryRecyclerView.setVisibility(View.GONE);
                         TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.VISIBLE);
                     }
 
                     @Override
-                    public void onSuccess(ArrayList<Stories> storyList) {
+                    public void onSuccess(ArrayList<Story> storyList) {
                         galleryRecyclerView.setVisibility(View.VISIBLE);
                         TextView tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.GONE);

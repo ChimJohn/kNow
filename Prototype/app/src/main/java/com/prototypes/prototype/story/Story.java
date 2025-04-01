@@ -15,6 +15,9 @@ public class Story implements Parcelable {
     private Timestamp timestamp;
     private LatLng position;
 
+    public Story(){
+
+    }
     public Story(String id, String userId, String caption, String mediaUrl, LatLng position, String mediaType) {
         this.id = id;
         this.userId = userId;

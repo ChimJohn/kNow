@@ -13,12 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.prototypes.prototype.CreateCustomMap;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.login.LoginActivity;
-import com.prototypes.prototype.signup.SignUpActivity;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 

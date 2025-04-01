@@ -23,6 +23,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.prototypes.prototype.user.ProfileFragment;
+
 import android.Manifest;
 
 import java.util.Map;

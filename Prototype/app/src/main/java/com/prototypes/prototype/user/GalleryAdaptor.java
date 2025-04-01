@@ -10,20 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.prototypes.prototype.ProfileFragment;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.media.Stories;
+import com.prototypes.prototype.story.Story;
 
 import java.util.ArrayList;
 
 public class GalleryAdaptor extends RecyclerView.Adapter<GalleryAdaptor.GalleryViewHolder> {
 
     Context context;
-    ArrayList<Stories> storiesArrayList;
+    ArrayList<Story> storyArrayList;
 
-    public GalleryAdaptor(Context context, ArrayList<Stories> storiesArrayList) {
+    public GalleryAdaptor(Context context, ArrayList<Story> storyArrayList) {
         this.context = context;
-        this.storiesArrayList = storiesArrayList;
+        this.storyArrayList = storyArrayList;
     }
 
     @NonNull
@@ -35,7 +34,7 @@ public class GalleryAdaptor extends RecyclerView.Adapter<GalleryAdaptor.GalleryV
 
     @Override
     public void onBindViewHolder(@NonNull GalleryAdaptor.GalleryViewHolder holder, int position) {
-        Stories story = storiesArrayList.get(position);
+        Story story = storyArrayList.get(position);
         int totalWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
         int itemWidth = totalWidth / 3;
 
@@ -54,13 +53,13 @@ public class GalleryAdaptor extends RecyclerView.Adapter<GalleryAdaptor.GalleryV
 
 
         Glide.with(context)
-                .load(story.getImageUrl())
+                .load(story.getMediaUrl())
                 .into(holder.galleryImg); //TODO: add buffering img
     }
 
     @Override
     public int getItemCount() {
-        return storiesArrayList.size();
+        return storyArrayList.size();
     }
 
     public static class GalleryViewHolder extends  RecyclerView.ViewHolder{
