@@ -106,12 +106,17 @@ public class ProfileFragment extends Fragment {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
-                Glide.with(ProfileFragment.this)
-                        .load(profile)
-                        .into(imgProfile); //TODO: add buffering img
                 tvName.setText(name);
                 tvHandle.setText(username);
-
+                if (profile == null){
+                    Glide.with(ProfileFragment.this)
+                            .load(R.drawable.default_profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }else{
+                    Glide.with(ProfileFragment.this)
+                            .load(profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }
                 // Retrieve all media related to user
                 getMedia(firestoreStoriesManager, firebaseAuthManager);
                 // Retrieve all maps
