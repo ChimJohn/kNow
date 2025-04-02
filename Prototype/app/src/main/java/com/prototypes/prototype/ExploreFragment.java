@@ -155,7 +155,24 @@ public class ExploreFragment extends Fragment {
             algorithm.setMaxDistanceBetweenClusteredItems(30);
             clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
 
-            clusterManager.setOnClusterItemClickListener(storyCluster -> true);
+            clusterManager.setOnClusterItemClickListener(storyCluster -> {
+                Story story = new Story(
+                        storyCluster.getId(),
+                        storyCluster.getUserId(),
+                        storyCluster.getCaption(),
+                        storyCluster.getMediaUrl(),
+                        storyCluster.getPosition(),
+                        storyCluster.getMediaType()
+                );
+                ArrayList<Story> storyList = new ArrayList<>();
+                storyList.add(story);
+                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
+                transaction.addToBackStack(null);
+                transaction.commit();
+                return true;
+            });
+
             clusterManager.setOnClusterClickListener(cluster -> {
                 List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
                 ArrayList<Story> storyList = new ArrayList<>();
@@ -358,6 +375,7 @@ public class ExploreFragment extends Fragment {
         pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
         pulseAnimator.start();
     }
+
     private void fetchRoute(Location currentLocation, LatLng destination) {
         String origin = currentLocation.getLatitude() + "," + currentLocation.getLongitude(); // Replace with current location
         String dest = destination.latitude + "," + destination.longitude;

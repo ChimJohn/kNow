@@ -52,7 +52,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
 
     private void preloadMedia() {
         if (storyList == null || storyList.isEmpty()) return;
-
         for (int i = 0; i < storyList.size(); i++) {
             Story story = storyList.get(i);
             if (!story.isVideo()) {
