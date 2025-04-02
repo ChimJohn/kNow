@@ -102,13 +102,13 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             storyCaption.setText(story.getCaption());
             gpsButton.bringToFront();
             gpsButton.setOnClickListener(v -> {
-                if (story.getPosition() != null) {
+                if (story.getLatitude() != null && story.getLongitude() != null) {
                     Log.e("StoryViewHolder", "Error: Story position is NOT NULL " + story.getCaption());
                 } else {
                     Log.e("StoryViewHolder", "Error: Story position is null for " + story.getCaption());
                 }
                 if (gpsClickListener != null) {
-                    gpsClickListener.onGpsClick(story.getPosition().latitude, story.getPosition().longitude);
+                    gpsClickListener.onGpsClick(story.getLatitude(), story.getLongitude());
                 }
             });
             if (story.isVideo()) {

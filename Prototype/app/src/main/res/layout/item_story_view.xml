@@ -41,7 +41,4 @@
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         android:visibility="gone" />
-
-    <!-- Overlay Text -->
-
 </FrameLayout>
