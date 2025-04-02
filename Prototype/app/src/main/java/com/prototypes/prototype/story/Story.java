@@ -6,15 +6,17 @@ import android.os.Parcelable;
 import com.google.firebase.Timestamp;
 
 public class Story implements Parcelable {
-    private final String id;
-    private final String userId;
-    private final String caption;
-    private final String mediaUrl;
+    private String id;
+    private String userId;
+    private String caption;
+    private String mediaUrl;
     private String thumbnailUrl;
-    private final String mediaType;
+    private String mediaType;
     private Timestamp timestamp;
-    private final double latitude;
-    private final double longitude;
+    private double latitude;
+    private double longitude;
+
+    public Story(){}
 
     public Story(String id, String userId, String caption, String mediaUrl, double latitude, double longitude, String mediaType) {
         this.id = id;
