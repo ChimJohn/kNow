@@ -16,7 +16,25 @@ public class FirebaseStorageManager {
         mStorageReference = mFirebaseStorage.getReference();
     }
 
-    public void uploadFile(Uri fileUri, String storagePath, UploadFileCallback callback) {
+    // Upload file to Firebase Storage
+    public void uploadFile(Uri fileUri, String storagePath) {
+        StorageReference fileReference = mStorageReference.child(storagePath);
+
+        fileReference.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    Log.d(TAG, "File uploaded successfully.");
+                })
+                .addOnFailureListener(exception -> {
+                    Log.e(TAG, "File upload failed: " + exception.getMessage());
+                })
+                .addOnProgressListener(taskSnapshot -> {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    Log.d(TAG, "Upload is " + progress + "% done");
+                });
+    }
+
+    // Upload file to Firebase Storage, get URL as output
+    public void uploadFileOutURL(Uri fileUri, String storagePath, UploadFileCallback callback) {
         StorageReference fileReference = mStorageReference.child(storagePath);
 
         fileReference.putFile(fileUri)

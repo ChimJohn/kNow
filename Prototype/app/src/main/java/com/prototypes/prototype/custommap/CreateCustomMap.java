@@ -6,11 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,18 +20,16 @@ import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.prototypes.prototype.MainActivity;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirebaseStorageManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.user.User;
 
 import java.util.UUID;
 
 
 public class CreateCustomMap extends AppCompatActivity {
-    CardView cvExit;
+    ImageButton btnExit;
     EditText etMapName;
     TextView tvAdd, tvSetCover;
     ImageView imgCover;
@@ -65,14 +63,14 @@ public class CreateCustomMap extends AppCompatActivity {
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
         FirebaseStorageManager firebaseStorageManager = new FirebaseStorageManager();
 
-        cvExit = findViewById(R.id.cvExit);
+        btnExit = findViewById(R.id.btnExit);
         etMapName = findViewById(R.id.etMapName);
         tvAdd = findViewById(R.id.tvAdd);
         tvSetCover = findViewById(R.id.tvSetCover);
         imgCover = findViewById(R.id.ivCustomMap);
 
         // Destory activity when x button is pressed
-        cvExit.setOnClickListener(new View.OnClickListener() {
+        btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -129,7 +127,7 @@ public class CreateCustomMap extends AppCompatActivity {
     public void uploadCover(FirestoreManager firestoreManager, FirebaseStorageManager firebaseStorageManager, Uri file, String mapName, String owner){
         String fileName = UUID.randomUUID().toString();
         // Add photo to storage
-        firebaseStorageManager.uploadFile(file, "map/" + fileName, new FirebaseStorageManager.UploadFileCallback() {
+        firebaseStorageManager.uploadFileOutURL(file, "map/" + fileName, new FirebaseStorageManager.UploadFileCallback() {
             @Override
             public void onSuccess(String url) {
                 create_map(firestoreManager, mapName, owner, url);

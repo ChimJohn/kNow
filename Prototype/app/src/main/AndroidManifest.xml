@@ -23,6 +23,9 @@
         android:theme="@style/Theme.Prototype"
         tools:targetApi="31">
         <activity
+            android:name=".EditMaps"
+            android:exported="false" />
+        <activity
             android:name=".signup.SignUpFinal"
             android:exported="false" /> <!-- Google Maps API Key -->
         <meta-data
@@ -44,13 +47,12 @@
         <activity
             android:name=".MainActivity"
             android:exported="true" />
-
-        <activity android:name=".settings.SettingsActivity"
+        <activity
+            android:name=".settings.SettingsActivity"
             android:exported="false" />
         <activity
             android:name=".custommap.CreateCustomMap"
             android:exported="false" />
-
     </application>
 
 </manifest>
