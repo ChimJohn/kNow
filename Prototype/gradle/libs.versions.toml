@@ -14,6 +14,7 @@ cameraVideo = "1.4.1"
 cameraViewVersion = "1.4.1"
 compiler = "4.16.0"
 constraintlayoutVersion = "2.2.1"
+converterGson = "2.9.0"
 espressoCoreVersion = "3.6.1"
 firebaseBom = "33.10.0"
 firebaseStorage = "21.0.1"
@@ -44,6 +45,7 @@ firebaseCommon = "21.0.0"
 firebaseFirestore = "25.1.2"
 firebaseCrashlyticsBuildtools = "3.0.3"
 playServicesLocation = "21.3.0"
+retrofit = "2.9.0"
 volley = "1.2.1"
 
 [libraries]
@@ -68,6 +70,7 @@ camera-core-v130 = { module = "androidx.camera:camera-core", version.ref = "came
 com-google-firebase-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 constraintlayout-v221 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
@@ -97,6 +100,7 @@ firebase-common = { group = "com.google.firebase", name = "firebase-common", ver
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
 
 [plugins]

@@ -65,6 +65,9 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
     implementation(libs.volley)
     implementation(libs.credentials)
 

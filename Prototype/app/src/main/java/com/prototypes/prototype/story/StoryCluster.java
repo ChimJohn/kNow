@@ -9,10 +9,12 @@ import com.google.maps.android.clustering.ClusterItem;
 import java.util.Objects;
 
 public class StoryCluster implements ClusterItem {
-    private final LatLng position;
+    private final Double latitude;
+    private final Double longitude;
     private final String id, userId, mediaUrl, thumbnailUrl, caption, category, mediaType;
     public StoryCluster(String id, String userId, double lat, double lng, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
-        this.position = new LatLng(lat, lng);
+        this.latitude = lat;
+        this.longitude = lng;
         this.id = id;
         this.userId = userId;
         this.caption = caption;
@@ -21,15 +23,24 @@ public class StoryCluster implements ClusterItem {
         this.mediaUrl = mediaUrl;
         this.mediaType = mediaType;
     }
+
+    @NonNull
+    @Override
+    public LatLng getPosition() {
+        return new LatLng(latitude, longitude);
+    }
+
     @Nullable
     @Override
     public String getTitle() {
         return "";
     }
     @NonNull
-    @Override
-    public LatLng getPosition() {
-        return position;
+    public Double getLatitude() {
+        return latitude;
+    }
+    public Double getLongitude() {
+        return longitude;
     }
     public String getId(){
         return id;
