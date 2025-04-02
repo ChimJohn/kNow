@@ -1,29 +1,28 @@
 package com.prototypes.prototype.story;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.firebase.Timestamp;
-import com.google.android.gms.maps.model.LatLng;
 
 public class Story implements Parcelable {
-    private String id;
-    private String userId;
-    private String caption;
-    private String mediaUrl;
+    private final String id;
+    private final String userId;
+    private final String caption;
+    private final String mediaUrl;
     private String thumbnailUrl;
-    private String mediaType;
+    private final String mediaType;
     private Timestamp timestamp;
-    private LatLng position;
+    private final double latitude;
+    private final double longitude;
 
-    public Story(){
-
-    }
-    public Story(String id, String userId, String caption, String mediaUrl, LatLng position, String mediaType) {
+    public Story(String id, String userId, String caption, String mediaUrl, double latitude, double longitude, String mediaType) {
         this.id = id;
         this.userId = userId;
         this.caption = caption;
         this.mediaUrl = mediaUrl;
-        this.position = position;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.mediaType = mediaType;
     }
 
@@ -32,11 +31,11 @@ public class Story implements Parcelable {
     public String getUserId() { return userId; }
     public String getCaption() { return caption; }
     public String getMediaUrl() { return mediaUrl; }
-    public LatLng getPosition() { return position; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
     public Boolean isVideo(){ return mediaType.equals("video"); }
     public String getMediaType() { return this.mediaType; }
 
-    // Parcelable Implementation
     protected Story(Parcel in) {
         id = in.readString();
         userId = in.readString();
@@ -45,7 +44,8 @@ public class Story implements Parcelable {
         thumbnailUrl = in.readString();
         mediaType = in.readString();
         timestamp = new Timestamp(in.readLong(), 0);
-        position = new LatLng(in.readDouble(), in.readDouble());
+        latitude = in.readDouble();
+        longitude = in.readDouble();
     }
 
     @Override
@@ -57,8 +57,8 @@ public class Story implements Parcelable {
         dest.writeString(thumbnailUrl);
         dest.writeString(mediaType);
         dest.writeLong(timestamp.getSeconds()); // Firestore Timestamp workaround
-        dest.writeDouble(position.latitude);
-        dest.writeDouble(position.longitude);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class Story implements Parcelable {
         return 0;
     }
 
-    public static final Creator<Story> CREATOR = new Creator<Story>() {
+    public static final Creator<Story> CREATOR = new Creator<>() {
         @Override
         public Story createFromParcel(Parcel in) {
             return new Story(in);

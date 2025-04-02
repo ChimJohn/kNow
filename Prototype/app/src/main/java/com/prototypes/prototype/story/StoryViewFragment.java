@@ -11,21 +11,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
+import com.prototypes.prototype.ExploreFragment;
 import com.prototypes.prototype.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoryViewFragment extends Fragment implements StoryViewAdapter.StoryListener{
+public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGpsClickListener{
     private ArrayList<Story> storyList;
     private ViewPager2 viewPager2;
-    private int position;
     private StoryViewAdapter adapter;
-    public static StoryViewFragment newInstance(List<Story> stories, int position) {
+    public static StoryViewFragment newInstance(List<Story> stories) {
         StoryViewFragment fragment = new StoryViewFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("stories", new ArrayList<>(stories));
-        bundle.putInt("position", position); // Pass position to know which story to show
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -34,7 +34,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.Stor
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             storyList = getArguments().getParcelableArrayList("stories");
-            position = getArguments().getInt("position", 0);
         }
     }
     @Override
@@ -47,12 +46,27 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.Stor
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
         adapter = new StoryViewAdapter(getContext(), storyList, this);
         viewPager2.setAdapter(adapter);
-    }
-    @Override
-    public void onStoryTap(int position) {
-        // Handle the story tap event here
-        Log.d("StoryViewFragment", "Tapped story at position: " + position);
-        // Navigate to another screen or update UI
+        viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
+        preloadMedia();
     }
 
+    private void preloadMedia() {
+        if (storyList == null || storyList.isEmpty()) return;
+        for (int i = 0; i < storyList.size(); i++) {
+            Story story = storyList.get(i);
+            if (!story.isVideo()) {
+                // Preload image
+                Glide.with(requireContext()).load(story.getMediaUrl()).preload();
+            }
+        }
+    }
+    @Override
+    public void onGpsClick(double latitude, double longitude) {
+        Log.d("StoryViewFragment", "GPS Clicked: " + latitude + ", " + longitude);
+        ExploreFragment exploreFragment = ExploreFragment.newInstance(latitude, longitude);
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, exploreFragment)
+                .addToBackStack(null)
+                .commit();
+    }
 }
