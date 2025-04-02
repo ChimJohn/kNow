@@ -52,6 +52,8 @@ import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
 import com.prototypes.prototype.story.StoryViewFragment;
+import com.prototypes.prototype.user.UserProfileFragment;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,9 +196,7 @@ public class ExploreFragment extends Fragment {
         EditText etSearch = view.findViewById(R.id.etSearch);
         rvUserSearchResults = view.findViewById(R.id.rvSearchResults);
         rvUserSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
-        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), username -> {
-            Toast.makeText(getContext(), "Clicked on " + username, Toast.LENGTH_SHORT).show();
-        });
+        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), this::handleUserClick);
         rvUserSearchResults.setAdapter(userSearchAdapter);
 
         // Near me button
@@ -417,6 +417,35 @@ public class ExploreFragment extends Fragment {
             routePolyline = googleMap.addPolyline(polylineOptions);
         }
     }
+
+    private void handleUserClick(String username) {
+        // Query Firestore to get the user ID for this username
+        db.collection("Users")
+                .whereEqualTo("username", username)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
+                        String userId = document.getId();
+
+                        // Navigate to the user's profile
+                        UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, userProfileFragment)
+                                .addToBackStack(null)
+                                .commit();
+
+                        // Clear search results
+                        rvUserSearchResults.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UserSearch", "Error finding user", e);
+                });
+    }
+
 
     @Override
     public void onPause() {

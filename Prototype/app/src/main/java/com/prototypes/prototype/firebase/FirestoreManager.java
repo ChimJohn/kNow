@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -24,12 +25,12 @@ public class FirestoreManager<T> {
 
     // Create or Update a document
     public void writeDocument(String collection, String documentId, T object, FirestoreCallback callback) {
-        if (documentId == null){
+        if (documentId == null) {
             db.collection(collection)
                     .add(object)
                     .addOnSuccessListener(unused -> callback.onSuccess())
                     .addOnFailureListener(callback::onFailure);
-        }else{
+        } else {
             db.collection(collection).document(documentId)
                     .set(object)
                     .addOnSuccessListener(unused -> callback.onSuccess())
@@ -38,7 +39,8 @@ public class FirestoreManager<T> {
     }
 
     // Update attribute
-    public  void updateDocument(String collection, String documentId, String attributeName, String updatedValue, FirestoreCallback callback){
+    public void updateDocument(String collection, String documentId, String attributeName, String updatedValue,
+            FirestoreCallback callback) {
         Map<String, Object> data = new HashMap<>();
         data.put(attributeName, updatedValue);
         db.collection(collection).document(documentId)
@@ -61,10 +63,11 @@ public class FirestoreManager<T> {
 
     }
 
-    public void queryDocuments(String collection, String filterField, String filterValue ,FirestoreQueryCallback<T> callback) {
+    public void queryDocuments(String collection, String filterField, String filterValue,
+            FirestoreQueryCallback<T> callback) {
         db.collection(collection)
                 .whereEqualTo(filterField, filterValue)
-//                .orderBy(orderByField)
+                // .orderBy(orderByField)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     ArrayList<T> resultList = new ArrayList<>();
@@ -83,10 +86,10 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void queryArrayInDocuments(String collection, String filterField, String filterValue, String arrayFiler, String arrayValue ,FirestoreQueryCallback<T> callback) {
+    public void queryArrayInDocuments(String collection, String arrayField, String arrayValue,
+            FirestoreQueryCallback<T> callback) {
         db.collection(collection)
-                .whereEqualTo(filterField, filterValue)
-                .whereArrayContains(arrayFiler, arrayValue)
+                .whereArrayContains(arrayField, arrayValue)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     ArrayList<T> resultList = new ArrayList<>();
@@ -113,20 +116,42 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void addToArray(String collection, String documentId, String arrayField,
+            Object value, FirestoreCallback callback) {
+        db.collection(collection)
+                .document(documentId)
+                .update(arrayField, FieldValue.arrayUnion(value))
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void removeFromArray(String collection, String documentId, String arrayField,
+            Object value, FirestoreCallback callback) {
+        db.collection(collection)
+                .document(documentId)
+                .update(arrayField, FieldValue.arrayRemove(value))
+                .addOnFailureListener(callback::onFailure)
+                .addOnSuccessListener(aVoid -> callback.onSuccess());
+    }
+
     public interface FirestoreCallback {
         void onSuccess();
+
         void onFailure(Exception e);
     }
 
     public interface FirestoreReadCallback<T> {
         void onSuccess(T object);
+
         void onFailure(Exception e);
     }
 
     // Callback interface for queries
     public interface FirestoreQueryCallback<T> {
         void onEmpty(ArrayList<T> results);
+
         void onSuccess(ArrayList<T> results);
+
         void onFailure(Exception e);
     }
 }
