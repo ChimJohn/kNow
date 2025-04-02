@@ -11,7 +11,15 @@ import java.util.Objects;
 public class StoryCluster implements ClusterItem {
     private final Double latitude;
     private final Double longitude;
-    private final String id, userId, mediaUrl, thumbnailUrl, caption, category, mediaType;
+    private final String id;
+    private final String userId;
+    private final String mediaUrl;
+    private final String thumbnailUrl;
+    private final String caption;
+
+
+    private final String category;
+    private final String mediaType;
     public StoryCluster(String id, String userId, double lat, double lng, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
         this.latitude = lat;
         this.longitude = lng;
@@ -60,6 +68,7 @@ public class StoryCluster implements ClusterItem {
     public String getMediaType() {
         return mediaType;
     }
+    public String getCategory() {return category;}
     @Override
     public String getSnippet() {
         return category;
@@ -80,4 +89,5 @@ public class StoryCluster implements ClusterItem {
     public int hashCode() {
         return Objects.hash(this.getId(), this.getUserId());
     }
+
 }

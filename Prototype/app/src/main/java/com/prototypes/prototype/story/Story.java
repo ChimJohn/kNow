@@ -5,23 +5,28 @@ import android.os.Parcelable;
 
 import com.google.firebase.Timestamp;
 
+import java.util.List;
+
 public class Story implements Parcelable {
     private String id;
     private String userId;
     private String caption;
+    private String category;
+    private String mediaType;
     private String mediaUrl;
     private String thumbnailUrl;
-    private String mediaType;
     private Timestamp timestamp;
     private double latitude;
     private double longitude;
+    private List<String> mapsID;
 
     public Story(){}
 
-    public Story(String id, String userId, String caption, String mediaUrl, double latitude, double longitude, String mediaType) {
+    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType) {
         this.id = id;
         this.userId = userId;
         this.caption = caption;
+        this.category = category;
         this.mediaUrl = mediaUrl;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -37,11 +42,12 @@ public class Story implements Parcelable {
     public Double getLongitude() { return longitude; }
     public Boolean isVideo(){ return mediaType.equals("video"); }
     public String getMediaType() { return this.mediaType; }
-
+    public String getCategory() {return category;}
     protected Story(Parcel in) {
         id = in.readString();
         userId = in.readString();
         caption = in.readString();
+        category = in.readString();
         mediaUrl = in.readString();
         thumbnailUrl = in.readString();
         mediaType = in.readString();
@@ -55,6 +61,7 @@ public class Story implements Parcelable {
         dest.writeString(id);
         dest.writeString(userId);
         dest.writeString(caption);
+        dest.writeString(category);
         dest.writeString(mediaUrl);
         dest.writeString(thumbnailUrl);
         dest.writeString(mediaType);

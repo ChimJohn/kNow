@@ -83,6 +83,28 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void queryArrayInDocuments(String collection, String filterField, String filterValue, String arrayFiler, String arrayValue ,FirestoreQueryCallback<T> callback) {
+        db.collection(collection)
+                .whereEqualTo(filterField, filterValue)
+                .whereArrayContains(arrayFiler, arrayValue)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<T> resultList = new ArrayList<>();
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        callback.onEmpty(resultList);
+                        return;
+                    }
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        T object = document.toObject(type);
+                        if (object != null) {
+                            resultList.add(object);
+                        }
+                    }
+                    callback.onSuccess(resultList);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // Delete a document
     public void deleteDocument(String collection, String documentId, FirestoreCallback callback) {
         db.collection(collection).document(documentId)

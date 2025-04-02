@@ -160,6 +160,7 @@ public class ExploreFragment extends Fragment {
                         storyCluster.getId(),
                         storyCluster.getUserId(),
                         storyCluster.getCaption(),
+                        storyCluster.getCategory(),
                         storyCluster.getMediaUrl(),
                         storyCluster.getLatitude(),
                         storyCluster.getLongitude(),
@@ -178,7 +179,7 @@ public class ExploreFragment extends Fragment {
                 List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
                 ArrayList<Story> storyList = new ArrayList<>();
                 for (StoryCluster storyCluster : clusterItems) {
-                    storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
+                    storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
                 }
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
