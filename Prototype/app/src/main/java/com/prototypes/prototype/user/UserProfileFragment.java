@@ -1,10 +1,13 @@
 package com.prototypes.prototype.user;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -12,8 +15,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.story.Story;
 import java.util.ArrayList;
@@ -29,6 +34,9 @@ public class UserProfileFragment extends Fragment {
     private TextView tvName, tvHandle, tvFollowers;
     private RecyclerView galleryRecyclerView;
     private GalleryAdaptor galleryAdaptor;
+    private FollowManager followManager;
+    private Button followButton;
+    private boolean isFollowing = false;
 
     public static UserProfileFragment newInstance(String userId) {
         UserProfileFragment fragment = new UserProfileFragment();
@@ -45,6 +53,8 @@ public class UserProfileFragment extends Fragment {
             userId = getArguments().getString(ARG_USER_ID);
         }
         db = FirebaseFirestore.getInstance();
+        FirebaseAuthManager authManager = new FirebaseAuthManager(getActivity());
+        followManager = new FollowManager(db, authManager);
     }
 
     @Nullable
@@ -52,7 +62,7 @@ public class UserProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         // Use the same layout as the profile fragment but with different behavior
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
 
         // Initialize UI elements
         imgProfile = view.findViewById(R.id.imageProfile);
@@ -61,15 +71,14 @@ public class UserProfileFragment extends Fragment {
         tvFollowers = view.findViewById(R.id.tvFollowers);
         galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
 
-        // Hide settings button since this is not the current user's profile
-        View btnMenu = view.findViewById(R.id.btnMenu);
-        btnMenu.setVisibility(View.GONE);
-
         // Hide maps section if it exists in the layout
         RecyclerView mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         if (mapRecyclerView != null) {
             mapRecyclerView.setVisibility(View.GONE);
         }
+
+        followButton = view.findViewById(R.id.btnFollow);
+        followButton.setOnClickListener(v -> toggleFollowStatus());
 
         // Load user data
         loadUserData();
@@ -137,5 +146,44 @@ public class UserProfileFragment extends Fragment {
                         Log.e(TAG, "Failed to load user media: " + e.getMessage());
                     }
                 });
+        // Check if current user is following this user
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        followManager.checkFollowingStatus(currentUserId, userId, new FollowManager.FollowStatusCallback() {
+            @Override
+            public void onResult(boolean isFollowing) {
+                UserProfileFragment.this.isFollowing = isFollowing;
+                updateFollowButtonUI();
+            }
+        });
     }
+
+    private void toggleFollowStatus() {
+        followManager.toggleFollowStatus(userId, new FollowManager.FollowCallback() {
+            @Override
+            public void onSuccess(boolean isFollowing) {
+                UserProfileFragment.this.isFollowing = isFollowing;
+                updateFollowButtonUI();
+                loadUserData(); // Refresh follower count
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "Failed to toggle follow status: " + e.getMessage());
+            }
+        });
+    }
+
+    private void updateFollowButtonUI() {
+        followButton.setText(isFollowing ? "Following" : "Follow");
+
+        // Change button style based on follow status
+        if (isFollowing) {
+            // Set button background to white when following
+            followButton.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+        } else {
+            // Reset to default color
+            followButton.getBackground().clearColorFilter();
+        }
+    }
+
 }

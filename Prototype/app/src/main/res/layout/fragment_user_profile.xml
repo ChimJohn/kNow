@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".user.UserProfileFragment">
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <!-- Profile Img -->
+            <androidx.cardview.widget.CardView
+                android:layout_marginTop="45dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                app:cardCornerRadius="95dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="1dp">
+
+                <ImageView
+                    android:id="@+id/imageProfile"
+                    android:scaleType="centerCrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Username -->
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Username"
+                android:fontFamily="@font/inter_bold"
+                android:textColor="@color/black"
+                android:textSize="20dp"
+                android:layout_marginTop="18dp"/>
+
+            <!-- User Info -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tvHandle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="handle"
+                    android:textSize="14dp"
+                    android:textColor="@color/grey"/>
+
+                <TextView
+                    android:id="@+id/tvFollowers"
+                    android:layout_marginStart="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="followers"
+                    android:textSize="14dp"
+                    android:textColor="@color/grey"/>
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    style="@style/SolidButton"
+                    android:id="@+id/btnFollow"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="0dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
+                    android:paddingVertical="12dp"
+                    android:text="Follow"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <!-- Map Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp"
+                android:gravity="start">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Maps"
+                    android:fontFamily="@font/inter_bold"
+                    android:textSize="20dp"
+                    android:textColor="@color/black"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mapsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    android:orientation="horizontal"
+                    android:clipToPadding="false"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp" />
+            </LinearLayout>
+
+            <!-- Gallery Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stories"
+                    android:fontFamily="@font/inter_bold"
+                    android:textSize="20dp"
+                    android:textColor="@color/black"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/gallery_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="24dp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="3" />
+            </LinearLayout>
+
+            <!-- No Photos Text -->
+            <TextView
+                android:id="@+id/tvNoPhotos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:gravity="center"
+                android:text="No stories available"
+                android:textColor="@color/grey"
+                android:layout_marginTop="16dp"
+                android:textSize="16dp"
+                android:fontFamily="@font/inter_semibold"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Top-right menu icon button -->
+
+</FrameLayout>
