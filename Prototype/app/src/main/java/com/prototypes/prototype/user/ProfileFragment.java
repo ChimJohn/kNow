@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.content.Intent;
@@ -19,13 +20,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.login.LoginActivity;
+import com.prototypes.prototype.custommap.editmaps.EditMaps;
 import com.prototypes.prototype.settings.SettingsActivity;
 import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.signup.SignUpActivity;
 import com.prototypes.prototype.story.Story;
 
 import java.util.ArrayList;
@@ -39,6 +39,8 @@ public class ProfileFragment extends Fragment {
     List<String> followersList, stories;
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
+    ImageButton btnMenu;
+    Button btnEditMap;
     RecyclerView galleryRecyclerView, mapRecyclerView;
     GalleryAdaptor galleryAdaptor;
     CustomMapAdaptor customMapAdaptor;
@@ -62,9 +64,10 @@ public class ProfileFragment extends Fragment {
         galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
+        btnEditMap = view.findViewById(R.id.btnEditMap);
+        btnMenu = view.findViewById(R.id.btnMenu);
 
         // Menu button
-        ImageButton btnMenu = view.findViewById(R.id.btnMenu);
         btnMenu.setOnClickListener(v -> {
             if (getActivity() != null) {
                 Log.d(TAG, "Menu button clicked.");
@@ -75,6 +78,14 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        // Edit Maps
+        btnEditMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), EditMaps.class);
+                startActivity(intent);
+            }
+        });
 
         // Get user details
         firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {

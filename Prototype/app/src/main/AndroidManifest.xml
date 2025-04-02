@@ -23,7 +23,7 @@
         android:theme="@style/Theme.Prototype"
         tools:targetApi="31">
         <activity
-            android:name=".EditMaps"
+            android:name=".custommap.editmaps.EditMaps"
             android:exported="false" />
         <activity
             android:name=".signup.SignUpFinal"

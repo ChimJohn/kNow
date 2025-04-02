@@ -19,6 +19,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "SettingsActivity";
     private FirebaseAuthManager authManager;
     TextView tvLogout;
+    Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
         authManager = new FirebaseAuthManager(this);
 
         // Set up Toolbar with back arrow and title
-        Toolbar toolbar = findViewById(R.id.toolbarSettings);
+        toolbar = findViewById(R.id.toolbarSettings);
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {

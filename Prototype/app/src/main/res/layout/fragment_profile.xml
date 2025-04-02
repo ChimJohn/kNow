@@ -81,6 +81,7 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/btnEditMap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:paddingVertical="12dp"
