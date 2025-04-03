@@ -86,7 +86,6 @@ public class ProfileFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
         // Get user details
         firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {
             @Override
@@ -106,12 +105,17 @@ public class ProfileFragment extends Fragment {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
-                Glide.with(ProfileFragment.this)
-                        .load(profile)
-                        .into(imgProfile); //TODO: add buffering img
                 tvName.setText(name);
                 tvHandle.setText(username);
-
+                if (profile == null){
+                    Glide.with(ProfileFragment.this)
+                            .load(R.drawable.default_profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }else{
+                    Glide.with(ProfileFragment.this)
+                            .load(profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }
                 // Retrieve all media related to user
                 getMedia(firestoreStoriesManager, firebaseAuthManager);
                 // Retrieve all maps
@@ -182,6 +186,26 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreMapManager failed: "+ e);
+            }
+        });
+    }
+    // ignore this method
+    public void test(FirestoreManager firestoreStoriesManager){
+        firestoreStoriesManager.queryArrayInDocuments("test", "userId", "hh8PYvfd5wONjq3Xk508kgvDBjE3", "maps", "uzERlkCHjEGWhDvzrRgH", new FirestoreManager.FirestoreQueryCallback() {
+            @Override
+            public void onEmpty(ArrayList results) {
+                Log.e(TAG, "Empty List");
+            }
+
+            @Override
+            public void onSuccess(ArrayList results) {
+                Log.e(TAG, "SUCCESS");
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "FAILLLSLSL");
+
             }
         });
     }

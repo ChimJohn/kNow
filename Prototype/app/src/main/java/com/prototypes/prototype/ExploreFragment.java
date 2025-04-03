@@ -54,6 +54,8 @@ import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
 import com.prototypes.prototype.story.StoryViewFragment;
+import com.prototypes.prototype.user.UserProfileFragment;
+
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -174,6 +176,7 @@ public class ExploreFragment extends Fragment {
                         storyCluster.getId(),
                         storyCluster.getUserId(),
                         storyCluster.getCaption(),
+                        storyCluster.getCategory(),
                         storyCluster.getMediaUrl(),
                         storyCluster.getLatitude(),
                         storyCluster.getLongitude(),
@@ -192,7 +195,7 @@ public class ExploreFragment extends Fragment {
                 List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
                 ArrayList<Story> storyList = new ArrayList<>();
                 for (StoryCluster storyCluster : clusterItems) {
-                    storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
+                    storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
                 }
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
@@ -207,9 +210,7 @@ public class ExploreFragment extends Fragment {
         EditText etSearch = view.findViewById(R.id.etSearch);
         rvUserSearchResults = view.findViewById(R.id.rvSearchResults);
         rvUserSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
-        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), username -> {
-            Toast.makeText(getContext(), "Clicked on " + username, Toast.LENGTH_SHORT).show();
-        });
+        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), this::handleUserClick);
         rvUserSearchResults.setAdapter(userSearchAdapter);
 
         // Near me button

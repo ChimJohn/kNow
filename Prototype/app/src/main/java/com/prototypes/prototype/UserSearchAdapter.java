@@ -8,8 +8,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.util.Consumer;
 
 import java.util.List;
+//import java.util.function.Consumer;
 
 public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.UserViewHolder> {
 
@@ -18,9 +20,9 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
     }
 
     private List<String> usernames;
-    private OnUserClickListener listener;
+    private Consumer<String> listener;
 
-    public UserSearchAdapter(List<String> usernames, OnUserClickListener listener) {
+    public UserSearchAdapter(List<String> usernames, Consumer<String> listener) {
         this.usernames = usernames;
         this.listener = listener;
     }
@@ -44,7 +46,7 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
             ((TextView) holder.itemView).setText(item);
         }
 
-        holder.itemView.setOnClickListener(v -> listener.onUserClick(item));
+        holder.itemView.setOnClickListener(v -> listener.accept(item));
     }
 
 

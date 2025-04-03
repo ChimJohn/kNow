@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.login.LoginActivity;
+import com.prototypes.prototype.signup.SignUpActivity;
 
 import java.util.ArrayList;
 
@@ -59,7 +61,8 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
                 context.startActivity(intent);
             } else {
                 // Handle normal map click
-                Toast.makeText(context, "Clicked on: " + customMap.getName(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, CustomMapFull.class);
+                context.startActivity(intent);
             }
         });
     }
