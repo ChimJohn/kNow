@@ -12,8 +12,6 @@
     import android.graphics.RectF;
     import android.graphics.Shader;
     import android.graphics.drawable.Drawable;
-    import android.os.Build;
-    import android.util.Log;
     import android.util.LruCache;
 
     import androidx.annotation.NonNull;
@@ -29,11 +27,9 @@
     import com.google.android.gms.maps.model.BitmapDescriptor;
     import com.google.android.gms.maps.model.BitmapDescriptorFactory;
     import com.google.android.gms.maps.model.Marker;
-    import com.google.android.gms.maps.model.MarkerOptions;
+    import com.google.maps.android.clustering.Cluster;
     import com.google.maps.android.clustering.ClusterManager;
     import com.google.maps.android.clustering.view.DefaultAdvancedMarkersClusterRenderer;
-    import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-    import com.google.maps.android.clustering.Cluster;
 
     import java.util.ArrayList;
     import java.util.Collection;
@@ -68,17 +64,13 @@
                                                @NonNull AdvancedMarkerOptions markerOptions) {
             getClusterIcon(cluster.getItems(), bitmapDescriptor -> markerOptions.icon(bitmapDescriptor));
         }
-
         interface OnClusterIconReady {
             void onIconReady(BitmapDescriptor bitmapDescriptor);
         }
-
         @Override
         protected void onClusterUpdated(@NonNull Cluster<StoryCluster> cluster, AdvancedMarker marker) {
             getClusterIcon(cluster.getItems(), marker::setIcon);
         }
-
-
         @Override
         protected void onClusterItemRendered(StoryCluster item, @NonNull Marker marker) {
             marker.setTag(item.getId());
@@ -114,18 +106,57 @@
                 }
             });
         }
-        /**
-         * Generates a cluster icon with the number of items in the cluster.
-         */
+        private void getClusterIcon(Collection<StoryCluster> clusterItems, OnClusterIconReady callback) {
+            int baseSize = 200;
+            int maxSize = 400;
+            int clusterSize = clusterItems.size();
+            int iconSize = Math.min(baseSize + (clusterSize * 10), maxSize);
+            // Check cache first
+            if (clusterIconCache.containsKey(clusterItems)) {
+                callback.onIconReady(clusterIconCache.get(clusterItems));
+                return;
+            }
+            List<Bitmap> thumbnails = new ArrayList<>();
+            List<StoryCluster> items = new ArrayList<>(clusterItems);
+            final int[] loadedCount = {0};
+            for (StoryCluster item : items) {
+                Glide.with(context)
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .skipMemoryCache(false)
+                        .load(item.getThumbnailUrl())
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                thumbnails.add(resource);
+                                loadedCount[0]++;
+                                if (loadedCount[0] == clusterSize) {
+                                    BitmapDescriptor icon = createPieChart(thumbnails, iconSize, clusterSize);
+                                    clusterIconCache.put(new HashSet<>(clusterItems), icon);  // Cache result
+                                    callback.onIconReady(icon);
+                                }
+                            }
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {}
+                        });
+            }
+            if (loadedCount[0] < clusterSize) {
+                callback.onIconReady(createPieChart(new ArrayList<>(), iconSize, clusterSize));
+            }
+        }
         private BitmapDescriptor createPieChart(List<Bitmap> thumbnails, int size, int clusterSize) {
-            Bitmap output;
-            Canvas canvas;
+            // Define min and max size constraints
+            int minSize = 50;  // Minimum circle size
+            int maxSize = 300; // Maximum circle size
+            size = Math.max(minSize, Math.min(size, maxSize)); // Clamp the size
+            if (thumbnails.size() > 6) {
+                thumbnails = thumbnails.subList(0, 6);
+            }
             Paint paint = new Paint();
             paint.setAntiAlias(true);
-
             // Create the bitmap to represent the cluster icon
-            output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-            canvas = new Canvas(output);
+            Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(output);
 
             // Darken the background by adding a gray circle
             paint.setColor(Color.argb(150, 169, 169, 169));  // Gray color (50% opacity)
@@ -141,9 +172,9 @@
                 float startAngle = 0;
                 float sweepAngle = 360f / thumbnails.size();
                 RectF bounds = new RectF(0, 0, size, size);  // Circle bounds
-
                 for (Bitmap thumb : thumbnails) {
-                    BitmapShader shader = new BitmapShader(thumb, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                    Bitmap scaledThumb = Bitmap.createScaledBitmap(thumb, size / 2, size / 2, true);
+                    BitmapShader shader = new BitmapShader(scaledThumb, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
                     paint.setShader(shader);
                     canvas.drawArc(bounds, startAngle, sweepAngle, true, paint);
                     startAngle += sweepAngle;
@@ -153,7 +184,7 @@
             // Reset shader to ensure the text is white
             paint.setShader(null);
             paint.setColor(Color.WHITE);
-            paint.setTextSize(size / 3f * 1.5f);
+            paint.setTextSize(size / 3f * 1.1f);
             paint.setTextAlign(Paint.Align.CENTER);
 
             // Calculate the vertical alignment for the text
@@ -162,57 +193,9 @@
 
             // Draw cluster size number in the center
             canvas.drawText(clusterSizeText, size / 2f, textY, paint);
-
             Bitmap finalBitmap = getCircularBitmapWithBorder(output, 8, Color.WHITE);
-
+            output.recycle();
             return BitmapDescriptorFactory.fromBitmap(finalBitmap);
-        }
-        private void getClusterIcon(Collection<StoryCluster> clusterItems, OnClusterIconReady callback) {
-            int baseSize = 200;
-            int maxSize = 400;
-            int clusterSize = clusterItems.size();
-
-            int iconSize = Math.min(baseSize + (clusterSize * 10), maxSize);
-
-            // Check cache first
-            if (clusterIconCache.containsKey(clusterItems)) {
-                callback.onIconReady(clusterIconCache.get(clusterItems));
-                return;  // Avoid redundant loading
-            }
-
-            List<Bitmap> thumbnails = new ArrayList<>();
-            List<StoryCluster> items = new ArrayList<>(clusterItems);
-            final int[] loadedCount = {0};
-
-            for (StoryCluster item : items) {
-                Glide.with(context)
-                        .asBitmap()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .skipMemoryCache(false)
-                        .load(item.getThumbnailUrl())
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                thumbnails.add(resource);
-                                loadedCount[0]++;
-
-                                if (loadedCount[0] == clusterSize) {
-                                    Log.d("Test", "Cluster icon generated!");
-                                    BitmapDescriptor icon = createPieChart(thumbnails, iconSize, clusterSize);
-                                    clusterIconCache.put(new HashSet<>(clusterItems), icon);  // Cache result
-                                    callback.onIconReady(icon);
-                                }
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {}
-                        });
-            }
-
-            if (loadedCount[0] < clusterSize) {
-                // Show a fallback icon while images are still loading
-                callback.onIconReady(createPieChart(new ArrayList<>(), iconSize, clusterSize));
-            }
         }
         private Bitmap getCircularBitmapWithBorder(Bitmap bitmap, int borderWidth, int borderColor) {
             int width = bitmap.getWidth();

@@ -26,10 +26,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.Place;
@@ -53,11 +55,14 @@ import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
 import com.prototypes.prototype.story.StoryViewFragment;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -66,10 +71,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ExploreFragment extends Fragment {
-
     private RecyclerView rvUserSearchResults;
     private UserSearchAdapter userSearchAdapter;
-
     private MapView mapView;
     private GoogleMap googleMap;
     private CurrentLocationViewModel currentLocationViewModel;
@@ -82,6 +85,7 @@ public class ExploreFragment extends Fragment {
     private ListenerRegistration mediaListener;
     private final Map<String, StoryCluster> allMarkers = new HashMap<>();
     private Polyline routePolyline;
+    private Polyline routeOutline;
     private PlacesClient placesClient;
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
@@ -127,6 +131,9 @@ public class ExploreFragment extends Fragment {
             LatLng singapore = new LatLng(1.3521, 103.8198);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
 
+            final long FETCH_INTERVAL = 30000; // 30 seconds
+            AtomicLong lastFetchTime = new AtomicLong(); // Stores last fetch timestamp
+
             currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                 if (location != null) {
                     updateGpsMarker(location);
@@ -134,11 +141,18 @@ public class ExploreFragment extends Fragment {
                         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 20));
                     }
                     isFirstLocationUpdate = false;
-                }
-                if (latitude != null && longitude != null){
-                    LatLng latLng = new LatLng(latitude, longitude);
 
-                    fetchRoute(location, latLng);
+                    if (latitude != null && longitude != null){
+                        long currentTime = System.currentTimeMillis(); // Get current time
+                        LatLng latLng = new LatLng(latitude, longitude);
+                        if (currentTime - lastFetchTime.get() >= FETCH_INTERVAL) {
+                            fetchRoute(location, latLng); // Call fetch function
+                            lastFetchTime.set(currentTime); // Update last fetch time
+                            Log.d("API_CALL", "Fetching route at: " + currentTime);
+                        } else {
+                            Log.d("API_CALL", "Skipping fetch, waiting for next interval.");
+                        }
+                    }
                 }
             });
 
@@ -378,6 +392,7 @@ public class ExploreFragment extends Fragment {
     }
 
     private void fetchRoute(Location currentLocation, LatLng destination) {
+        Log.d("EXPLOREFRAGMENT", "FETCHIN");
         String origin = currentLocation.getLatitude() + "," + currentLocation.getLongitude(); // Replace with current location
         String dest = destination.latitude + "," + destination.longitude;
         String apiKey = getString(R.string.google_maps_key);;
@@ -404,18 +419,40 @@ public class ExploreFragment extends Fragment {
 
     private void drawRoute(String encodedPolyline) {
         List<LatLng> points = PolyUtil.decode(encodedPolyline);
+
         if (routePolyline != null) {
             routePolyline.remove();
         }
+        if (routeOutline != null) {
+            routeOutline.remove();
+        }
+
+        // Soft outline (wider, lighter color)
+        PolylineOptions outlineOptions = new PolylineOptions()
+                .addAll(points)
+                .width(18f) // Slightly wider than the main line
+                .color(Color.argb(200, 0, 255, 255)) // Transparent cyan
+                .geodesic(true)
+                .startCap(new RoundCap()) // Rounded start
+                .endCap(new RoundCap()) // Rounded end
+                .jointType(JointType.ROUND); // Rounded joints
+
+        // Main route (solid color)
         PolylineOptions polylineOptions = new PolylineOptions()
                 .addAll(points)
-                .width(10f)
+                .width(12f) // Inner line
                 .color(Color.BLUE)
-                .geodesic(true);
+                .geodesic(true)
+                .startCap(new RoundCap()) // Rounded start
+                .endCap(new RoundCap()) // Rounded end
+                .jointType(JointType.ROUND); // Rounded joints
+
         if (googleMap != null) {
+            routeOutline = googleMap.addPolyline(outlineOptions);
             routePolyline = googleMap.addPolyline(polylineOptions);
         }
     }
+
 
     @Override
     public void onPause() {
@@ -435,6 +472,13 @@ public class ExploreFragment extends Fragment {
         if (mediaListener != null) {
             mediaListener.remove();
             mediaListener = null;
+        }
+        if (placesClient instanceof Closeable) {
+            try {
+                ((Closeable) placesClient).close(); // Properly close the client
+            } catch (IOException e) {
+                Log.e("PlacesClient", "Error shutting down PlacesClient", e);
+            }
         }
     }
 
