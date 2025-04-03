@@ -12,6 +12,14 @@
         app:show_buffering="when_playing"
         app:show_shuffle_button="true"
     />
+    <ProgressBar
+        android:id="@+id/storyProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="top"
+        android:progressDrawable="@drawable/progress_bar_style"
+        android:max="100"
+        android:visibility="visible" />
     <Button
         android:id="@+id/btnGps"
         android:layout_width="wrap_content"

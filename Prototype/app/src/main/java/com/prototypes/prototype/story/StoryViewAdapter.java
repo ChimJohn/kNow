@@ -3,6 +3,9 @@ package com.prototypes.prototype.story;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +23,7 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -33,16 +37,19 @@ import java.util.ArrayList;
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList;
     private final Context context;
+    private final ViewPager2 viewPager2;
+
     public interface OnGpsClickListener {
         void onGpsClick(double latitude, double longitude);
     }
     private final OnGpsClickListener gpsClickListener;
 
-    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener) {
+    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener, ViewPager2 viewPager2) {
         this.context = context;
         this.storyList = stories;
         setHasStableIds(true);
         this.gpsClickListener = gpsClickListener;
+        this.viewPager2 = viewPager2;
 
     }
 
@@ -65,12 +72,17 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         }
         return Math.abs(hash);
     }
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable scrollRunnable;
+    private boolean isScrolling = false;  // Flag to prevent double scrolling
+
+    private CountDownTimer countDownTimer;
 
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
-        Log.d("POSITION", String.valueOf(position));
         holder.bind(story, gpsClickListener);
+
     }
 
     @Override
@@ -87,12 +99,41 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
+
+        // If there's a previous timer, cancel it to prevent multiple timers from firing
+        if (holder.countDownTimer != null) {
+            holder.countDownTimer.cancel();
+        }
+
+        // Create a new timer that triggers the scroll after 8 seconds
+        holder.countDownTimer = new CountDownTimer(8000, 8000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // No action needed here, just waiting for 8 seconds
+            }
+
+            @Override
+            public void onFinish() {
+                int nextPosition = holder.getBindingAdapterPosition() + 1;
+                Log.d("WHY", String.valueOf(nextPosition));
+                if (nextPosition < getItemCount()) {
+                    viewPager2.setCurrentItem(nextPosition, true);
+                }
+            }
+        };
+
+        // Start the timer
+        holder.countDownTimer.start();
+
         holder.restartVideo();
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull StoryViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
+        if (holder.countDownTimer != null) {
+            holder.countDownTimer.cancel();
+        }
         holder.pausePlayer();
     }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
@@ -100,8 +141,10 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         private final PlayerView playerView;
         private final TextView storyCaption;
         private final Button gpsButton;
+        public CountDownTimer countDownTimer;
         private ExoPlayer exoPlayer;
-        private final ProgressBar imageLoader; // Add this
+        private final ProgressBar imageLoader;
+        private ProgressBar progressBar;
 
         public StoryViewHolder(View itemView) {
             super(itemView);
@@ -110,9 +153,15 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             storyCaption = itemView.findViewById(R.id.story_snippet);
             gpsButton = itemView.findViewById(R.id.btnGps);
             imageLoader = itemView.findViewById(R.id.image_loader);
+            progressBar = itemView.findViewById(R.id.storyProgressBar);
+
         }
 
         public void bind(Story story, OnGpsClickListener gpsClickListener) {
+            progressBar.setProgress(0);
+            if (countDownTimer != null) {
+                countDownTimer.cancel();
+            }
             storyCaption.setText(story.getCaption());
             gpsButton.bringToFront();
             gpsButton.setOnClickListener(v -> {
@@ -146,17 +195,32 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                         .listener(new RequestListener<Drawable>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                                imageLoader.setVisibility(View.GONE); // Hide loader on failure
+                                imageLoader.setVisibility(View.GONE);
                                 return false;
                             }
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                imageLoader.setVisibility(View.GONE); // Hide loader when done
+                                imageLoader.setVisibility(View.GONE);
                                 return false;
                             }
                         })
                         .into(imageView);
             }
+            countDownTimer = new CountDownTimer(8000, 100) {  // Updates every 100ms
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    // Calculate the progress as a percentage
+                    int progress = (int) (100 - (millisUntilFinished / 80));
+                    progressBar.setProgress(progress);
+                }
+
+                @Override
+                public void onFinish() {
+                    // When the timer finishes, trigger the next story
+                }
+            };
+            // Start the timer
+            countDownTimer.start();
         }
         public void restartVideo() {
             if (exoPlayer != null) {
