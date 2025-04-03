@@ -190,23 +190,23 @@ public class ProfileFragment extends Fragment {
         });
     }
     // ignore this method
-    public void test(FirestoreManager firestoreStoriesManager){
-        firestoreStoriesManager.queryArrayInDocuments("test", "userId", "hh8PYvfd5wONjq3Xk508kgvDBjE3", "maps", "uzERlkCHjEGWhDvzrRgH", new FirestoreManager.FirestoreQueryCallback() {
-            @Override
-            public void onEmpty(ArrayList results) {
-                Log.e(TAG, "Empty List");
-            }
-
-            @Override
-            public void onSuccess(ArrayList results) {
-                Log.e(TAG, "SUCCESS");
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e(TAG, "FAILLLSLSL");
-
-            }
-        });
-    }
+//    public void test(FirestoreManager firestoreStoriesManager){
+//        firestoreStoriesManager.queryArrayInDocuments("test", "userId", "hh8PYvfd5wONjq3Xk508kgvDBjE3", "maps", "uzERlkCHjEGWhDvzrRgH", new FirestoreManager.FirestoreQueryCallback() {
+//            @Override
+//            public void onEmpty(ArrayList results) {
+//                Log.e(TAG, "Empty List");
+//            }
+//
+//            @Override
+//            public void onSuccess(ArrayList results) {
+//                Log.e(TAG, "SUCCESS");
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                Log.e(TAG, "FAILLLSLSL");
+//
+//            }
+//        });
+//    }
 }
