@@ -66,7 +66,7 @@ public class FirebaseStorageManager {
                 });
     }
 
-    // Method to retrieve the download URL
+    // Method to retrieve the file URL
     public void getDownloadUrl(String storagePath, DownloadUrlCallback callback) {
         StorageReference fileReference = mStorageReference.child(storagePath);
 
