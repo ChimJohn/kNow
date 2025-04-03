@@ -23,7 +23,8 @@ public class FirestoreManager<T> {
         this.type = type;
     }
 
-    // Create or Update a document
+    // Write to a specific document
+    // Inputs: collection, documentID and Object e.g. user object
     public void writeDocument(String collection, String documentId, T object, FirestoreCallback callback) {
         if (documentId == null) {
             db.collection(collection)
@@ -38,7 +39,26 @@ public class FirestoreManager<T> {
         }
     }
 
-    // Update attribute
+    public void writeDocumentWithId(String collection, String documentId, T object, FirestoreCallback callback) {
+        // If no documentId is provided, create a new document and add the ID as a field
+        db.collection(collection)
+                .add(object)
+                .addOnSuccessListener(documentReference -> {
+                    // Adding document ID to the object
+                    Map<String, Object> updatedObject = new HashMap<>();
+                    updatedObject.put("id", documentReference.getId());
+                    // Update the document with the document ID fiel
+                    documentReference.update(updatedObject)
+                            .addOnSuccessListener(aVoid -> callback.onSuccess())
+                            .addOnFailureListener(callback::onFailure);
+                })
+                .addOnFailureListener(callback::onFailure);
+
+    }
+
+
+    // Update specific attribute
+    // Inputs: collection, documentID, attributeName in Firestore, new value
     public void updateDocument(String collection, String documentId, String attributeName, String updatedValue,
             FirestoreCallback callback) {
         Map<String, Object> data = new HashMap<>();
@@ -48,6 +68,7 @@ public class FirestoreManager<T> {
     }
 
     // Read a document
+    // Inputs: collection, documentID
     public void readDocument(String collection, String documentId, FirestoreReadCallback<T> callback) {
         db.collection(collection).document(documentId)
                 .get()
@@ -63,6 +84,8 @@ public class FirestoreManager<T> {
 
     }
 
+    // Query a collection for documents. Filters a field
+    // Inputs: collection, filterField (Field in document), and filterValue (Value in field)
     public void queryDocuments(String collection, String filterField, String filterValue,
             FirestoreQueryCallback<T> callback) {
         db.collection(collection)
@@ -86,6 +109,8 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // Query a collection for documents. Filters array field
+    // Inputs: collection, arrayField (Field in document), arrayValue (Value in field)
     public void queryArrayInDocuments(String collection, String arrayField, String arrayValue,
             FirestoreQueryCallback<T> callback) {
         db.collection(collection)
@@ -116,6 +141,7 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // Add to Array Field in document
     public void addToArray(String collection, String documentId, String arrayField,
             Object value, FirestoreCallback callback) {
         db.collection(collection)
@@ -125,6 +151,7 @@ public class FirestoreManager<T> {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // Remove from Array Field in document
     public void removeFromArray(String collection, String documentId, String arrayField,
             Object value, FirestoreCallback callback) {
         db.collection(collection)

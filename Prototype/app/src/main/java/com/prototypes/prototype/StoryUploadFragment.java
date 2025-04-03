@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -21,19 +22,38 @@ import android.graphics.Bitmap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.prototypes.prototype.custommap.CustomMap;
+import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
+import com.prototypes.prototype.story.Story;
+import com.prototypes.prototype.upload.SelectMapAdaptor;
+import com.prototypes.prototype.user.User;
+
+import java.util.ArrayList;
 
 public class StoryUploadFragment extends Fragment {
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String ARG_MEDIA_URI = "mediaUri";
     private ImageView imageView;
+    ImageButton btnExit;
+    RecyclerView selectMapRecyclerView;
     private EditText captionEditText;
     private Button saveButton;
     private ChipGroup categoryChipGroup;
     private FirebaseAuthManager firebaseAuthManager;
+    FirestoreManager firestoreMapManager;
     private MediaViewModel mediaViewModel;
+    private static final String TAG = "Story Upload Fragment";
+
+
     double lat, lng;
     public static StoryUploadFragment newInstance(Uri mediaUri) {
         StoryUploadFragment fragment = new StoryUploadFragment();
@@ -54,17 +74,29 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
+
         CurrentLocationViewModel currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+
+        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
         firebaseAuthManager = new FirebaseAuthManager(requireActivity());
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+
         imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
         categoryChipGroup = view.findViewById(R.id.chipGroup);
         saveButton = view.findViewById(R.id.saveButton);
+        btnExit = view.findViewById(R.id.btnExit);
+        selectMapRecyclerView = view.findViewById(R.id.selectMapRecyclerView);
+        selectMapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
         String userId = firebaseAuthManager.getCurrentUser().getUid();
         String mediaUriString = getArguments().
                 getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
+
+        // Display all custom maps in recycler view
+        getMaps(firestoreMapManager, firebaseAuthManager);
+
         mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
         if (mediaUri.toString().endsWith(".mp4")) {
             try {
@@ -83,6 +115,7 @@ public class StoryUploadFragment extends Fragment {
                     .load(mediaUri)
                     .into(imageView);
         }
+
         Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
         lat = lastKnownLocation.getLatitude();
         lng = lastKnownLocation.getLongitude();
@@ -104,6 +137,12 @@ public class StoryUploadFragment extends Fragment {
                     .commit();
             Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
         });
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
     }
 
     private String getSelectedCategory() {
@@ -116,5 +155,27 @@ public class StoryUploadFragment extends Fragment {
             return "Attractions";
         }
         return "None"; // Default category if none is selected
+    }
+
+    public void getMaps(FirestoreManager firestoreMapManager, FirebaseAuthManager firebaseAuthManager){
+        firestoreMapManager.queryDocuments("map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+            @Override
+            public void onEmpty(ArrayList<CustomMap> customMaps) {
+                Log.d(TAG, "Number of Custom Maps: 0");
+            }
+            @Override
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
+                Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
+                Log.d(TAG, "Map name: "+ customMaps.get(1).getName());
+
+                SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
+                selectMapRecyclerView.setAdapter(selectMapAdaptor);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "firestoreMapManager failed: "+ e);
+            }
+        });
     }
 }

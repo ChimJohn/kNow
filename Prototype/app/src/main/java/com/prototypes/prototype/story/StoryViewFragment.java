@@ -42,6 +42,17 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() != null) {
+            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+            if (bottomNav != null) {
+                bottomNav.setVisibility(View.VISIBLE); // Show it again
+            }
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
