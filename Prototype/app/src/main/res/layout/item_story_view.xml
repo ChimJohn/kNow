@@ -36,7 +36,6 @@
         android:text="Story Caption Goes Here"
         android:textColor="#FFFFFF"
         android:textSize="18sp" />
-
     <ImageView
         android:background="#000000"
         android:id="@+id/story_image"
@@ -45,4 +44,11 @@
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         android:visibility="gone" />
+    <ProgressBar
+        android:id="@+id/image_loader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminate="true"/>
 </FrameLayout>

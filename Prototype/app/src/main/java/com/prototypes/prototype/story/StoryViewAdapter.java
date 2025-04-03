@@ -1,21 +1,31 @@
 package com.prototypes.prototype.story;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.prototypes.prototype.R;
 
 import java.util.ArrayList;
@@ -91,28 +101,28 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         private final TextView storyCaption;
         private final Button gpsButton;
         private ExoPlayer exoPlayer;
+        private final ProgressBar imageLoader; // Add this
+
         public StoryViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.story_image);
             playerView = itemView.findViewById(R.id.player_view);
             storyCaption = itemView.findViewById(R.id.story_snippet);
             gpsButton = itemView.findViewById(R.id.btnGps);
+            imageLoader = itemView.findViewById(R.id.image_loader);
         }
+
         public void bind(Story story, OnGpsClickListener gpsClickListener) {
             storyCaption.setText(story.getCaption());
             gpsButton.bringToFront();
             gpsButton.setOnClickListener(v -> {
-                if (story.getLatitude() != null && story.getLongitude() != null) {
-                    Log.e("StoryViewHolder", "Error: Story position is NOT NULL " + story.getCaption());
-                } else {
-                    Log.e("StoryViewHolder", "Error: Story position is null for " + story.getCaption());
-                }
                 if (gpsClickListener != null) {
                     gpsClickListener.onGpsClick(story.getLatitude(), story.getLongitude());
                 }
             });
             if (story.isVideo()) {
                 imageView.setVisibility(View.GONE);
+                imageLoader.setVisibility(View.GONE);
                 playerView.setVisibility(View.VISIBLE);
                 if (exoPlayer == null) {
                     exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
@@ -122,11 +132,30 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 exoPlayer.setMediaItem(mediaItem);
                 exoPlayer.prepare();
                 exoPlayer.play();
-//                playerView.setUseController(false);
+                playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
+                    if (visibility == View.VISIBLE) {
+                        playerView.setBackgroundColor(Color.TRANSPARENT); // Remove dim effect
+                    }
+                });
             } else {
                 playerView.setVisibility(View.GONE);
+                imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
-                Glide.with(itemView.getContext()).load(story.getMediaUrl()).into(imageView);
+                Glide.with(itemView.getContext())
+                        .load(story.getMediaUrl())
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                imageLoader.setVisibility(View.GONE); // Hide loader on failure
+                                return false;
+                            }
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                imageLoader.setVisibility(View.GONE); // Hide loader when done
+                                return false;
+                            }
+                        })
+                        .into(imageView);
             }
         }
         public void restartVideo() {

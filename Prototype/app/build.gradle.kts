@@ -46,6 +46,7 @@ android {
 dependencies {
     implementation(libs.guava)
     implementation(libs.glide)
+    implementation(libs.places)
 
     annotationProcessor(libs.compiler)
 

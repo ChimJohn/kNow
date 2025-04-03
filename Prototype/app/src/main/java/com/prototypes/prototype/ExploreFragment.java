@@ -1,7 +1,12 @@
 package com.prototypes.prototype;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
@@ -24,11 +29,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
@@ -39,6 +47,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -55,10 +64,7 @@ import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
 import com.prototypes.prototype.story.StoryViewFragment;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +95,11 @@ public class ExploreFragment extends Fragment {
     private PlacesClient placesClient;
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
+    private SensorManager sensorManager;
+    private Sensor rotationVectorSensor;
+    private float currentBearing = 0f;
+    private Marker gpsMarker;
+
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
         Bundle args = new Bundle();
@@ -105,6 +116,8 @@ public class ExploreFragment extends Fragment {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
+        sensorManager = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
+        rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     @Override
@@ -186,6 +199,12 @@ public class ExploreFragment extends Fragment {
                 transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
                 transaction.addToBackStack(null);
                 transaction.commit();
+                if (getActivity() != null) {
+                    BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+                    if (bottomNav != null) {
+                        bottomNav.setVisibility(View.GONE);
+                    }
+                }
                 return true;
             });
 
@@ -199,6 +218,12 @@ public class ExploreFragment extends Fragment {
                 transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
                 transaction.addToBackStack(null);
                 transaction.commit();
+                if (getActivity() != null) {
+                    BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+                    if (bottomNav != null) {
+                        bottomNav.setVisibility(View.GONE);
+                    }
+                }
                 return true;
             });
 
@@ -290,6 +315,32 @@ public class ExploreFragment extends Fragment {
             @Override public void afterTextChanged(Editable s) {}
         });
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (rotationVectorSensor != null) {
+            sensorManager.registerListener(sensorEventListener, rotationVectorSensor, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float[] rotationMatrix = new float[9];
+            float[] orientationAngles = new float[3];
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+            SensorManager.getOrientation(rotationMatrix, orientationAngles);
+            currentBearing = (float) Math.toDegrees(orientationAngles[0]);
+            currentBearing = (currentBearing + 360) % 360;
+            if (gpsMarker != null) {
+                gpsMarker.setRotation(currentBearing);
+            }
+        }
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    };
+
+
 
     private void listenToMarkersData() {
         mediaListener = db.collection("media")
@@ -344,22 +395,23 @@ public class ExploreFragment extends Fragment {
 
     private void updateGpsMarker(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        /*
         if (gpsMarker == null) {
             gpsMarker = googleMap.addMarker(new MarkerOptions()
                     .position(latLng)
-                    .title("You are here")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow_up_gps))
+                    .anchor(0.5f, 0.5f)
+                    .rotation(location.getBearing()));
         } else {
             gpsMarker.setPosition(latLng);
+            gpsMarker.setRotation(location.getBearing());
         }
-         */
+
         if (pulsatingCircle == null) {
             pulsatingCircle = googleMap.addCircle(new CircleOptions()
                     .center(latLng)
                     .radius(1)
                     .strokeWidth(0f)
-                    .fillColor(Color.argb(70, 0, 0, 255)));
+                    .fillColor(Color.argb(100, 10, 163, 223)));
             startPulsatingEffect();
         } else {
             pulsatingCircle.setCenter(latLng);
@@ -367,7 +419,7 @@ public class ExploreFragment extends Fragment {
     }
 
     private void fetchAndZoomToPlace(String placeId) {
-        List<Place.Field> placeFields = Arrays.asList(Place.Field.LAT_LNG);
+        List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
         placesClient.fetchPlace(
                 com.google.android.libraries.places.api.net.FetchPlaceRequest.builder(placeId, placeFields).build()
         ).addOnSuccessListener(fetchPlaceResponse -> {
@@ -391,7 +443,6 @@ public class ExploreFragment extends Fragment {
     }
 
     private void fetchRoute(Location currentLocation, LatLng destination) {
-        Log.d("EXPLOREFRAGMENT", "FETCHIN");
         String origin = currentLocation.getLatitude() + "," + currentLocation.getLongitude(); // Replace with current location
         String dest = destination.latitude + "," + destination.longitude;
         String apiKey = getString(R.string.google_maps_key);;
@@ -429,22 +480,22 @@ public class ExploreFragment extends Fragment {
         // Soft outline (wider, lighter color)
         PolylineOptions outlineOptions = new PolylineOptions()
                 .addAll(points)
-                .width(18f) // Slightly wider than the main line
-                .color(Color.argb(200, 0, 255, 255)) // Transparent cyan
+                .width(18f)
+                .color(Color.argb(200, 0, 255, 255))
                 .geodesic(true)
-                .startCap(new RoundCap()) // Rounded start
-                .endCap(new RoundCap()) // Rounded end
-                .jointType(JointType.ROUND); // Rounded joints
+                .startCap(new RoundCap())
+                .endCap(new RoundCap())
+                .jointType(JointType.ROUND);
 
         // Main route (solid color)
         PolylineOptions polylineOptions = new PolylineOptions()
                 .addAll(points)
-                .width(12f) // Inner line
+                .width(12f)
                 .color(Color.BLUE)
                 .geodesic(true)
-                .startCap(new RoundCap()) // Rounded start
-                .endCap(new RoundCap()) // Rounded end
-                .jointType(JointType.ROUND); // Rounded joints
+                .startCap(new RoundCap())
+                .endCap(new RoundCap())
+                .jointType(JointType.ROUND);
 
         if (googleMap != null) {
             routeOutline = googleMap.addPolyline(outlineOptions);
@@ -457,6 +508,7 @@ public class ExploreFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mapView.onPause();
+        sensorManager.unregisterListener(sensorEventListener);
     }
 
     @Override
@@ -472,13 +524,16 @@ public class ExploreFragment extends Fragment {
             mediaListener.remove();
             mediaListener = null;
         }
-        if (placesClient instanceof Closeable) {
-            try {
-                ((Closeable) placesClient).close(); // Properly close the client
-            } catch (IOException e) {
-                Log.e("PlacesClient", "Error shutting down PlacesClient", e);
-            }
+        placesClient = null;
+        if (clusterManager != null) {
+            clusterManager.clearItems();
+            clusterManager = null;
         }
+        googleMap.setOnMapClickListener(null);
+        googleMap.setOnMarkerClickListener(null);
+        googleMap.setOnCameraIdleListener(null);
+        googleMap.clear();
+        googleMap = null;
     }
 
     @Override
