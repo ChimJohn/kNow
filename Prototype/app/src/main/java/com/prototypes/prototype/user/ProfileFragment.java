@@ -169,7 +169,7 @@ public class ProfileFragment extends Fragment {
                 customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                 mapRecyclerView.setAdapter(customMapAdaptor);
                 // Create "Add" map element
-                CustomMap addMap = new CustomMap("Add", null, null);
+                CustomMap addMap = new CustomMap("Add", null, null, "");
                 customMapAdaptor.addItemToTop(addMap);
             }
             @Override
@@ -179,7 +179,7 @@ public class ProfileFragment extends Fragment {
                 mapRecyclerView.setAdapter(customMapAdaptor);
 
                 // Create "Add" map element
-                CustomMap addMap = new CustomMap("Add", null, null);
+                CustomMap addMap = new CustomMap("Add", null, null, "");
                 customMapAdaptor.addItemToTop(addMap);
             }
 

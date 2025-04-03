@@ -109,8 +109,8 @@ public class CreateCustomMap extends AppCompatActivity {
     }
     // Add map date to firestore
     public void create_map(FirestoreManager firestoreManager, String mapName, String owner, String imgUrl){
-        CustomMap customMap = new CustomMap(mapName, owner, imgUrl);
-        firestoreManager.writeDocument("map", null, customMap, new FirestoreManager.FirestoreCallback() {
+        CustomMap customMap = new CustomMap(mapName, owner, imgUrl, "");
+        firestoreManager.writeDocumentWithId("map", null, customMap, new FirestoreManager.FirestoreCallback() {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "Map added to firestore");

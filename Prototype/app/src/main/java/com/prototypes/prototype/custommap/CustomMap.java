@@ -6,13 +6,16 @@ public class CustomMap {
     private String name;
     private String owner;
     private String imageUrl;
+    private String id;
 
     public CustomMap() {}
-    public CustomMap(String name, String owner, String imageUrl) {
+    public CustomMap(String name, String owner, String imageUrl, String id) {
         this.name = name;
         this.owner = owner;
         this.imageUrl = imageUrl;
+        this.id = id;
     }
+
 
     public String getName() {
         return name;

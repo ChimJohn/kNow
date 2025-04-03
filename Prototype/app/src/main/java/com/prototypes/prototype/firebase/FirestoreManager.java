@@ -39,6 +39,24 @@ public class FirestoreManager<T> {
         }
     }
 
+    public void writeDocumentWithId(String collection, String documentId, T object, FirestoreCallback callback) {
+        // If no documentId is provided, create a new document and add the ID as a field
+        db.collection(collection)
+                .add(object)
+                .addOnSuccessListener(documentReference -> {
+                    // Adding document ID to the object
+                    Map<String, Object> updatedObject = new HashMap<>();
+                    updatedObject.put("id", documentReference.getId());
+                    // Update the document with the document ID fiel
+                    documentReference.update(updatedObject)
+                            .addOnSuccessListener(aVoid -> callback.onSuccess())
+                            .addOnFailureListener(callback::onFailure);
+                })
+                .addOnFailureListener(callback::onFailure);
+
+    }
+
+
     // Update specific attribute
     // Inputs: collection, documentID, attributeName in Firestore, new value
     public void updateDocument(String collection, String documentId, String attributeName, String updatedValue,
