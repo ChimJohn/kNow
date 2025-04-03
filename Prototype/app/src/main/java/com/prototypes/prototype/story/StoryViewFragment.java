@@ -22,7 +22,7 @@ import java.util.List;
 public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGpsClickListener{
     private ArrayList<Story> storyList;
     private ViewPager2 viewPager2;
-    private StoryViewAdapter adapter;
+    private StoryViewAdapter storyViewAdapter;
     public static StoryViewFragment newInstance(List<Story> stories) {
         StoryViewFragment fragment = new StoryViewFragment();
         Bundle bundle = new Bundle();
@@ -45,8 +45,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
-        adapter = new StoryViewAdapter(getContext(), storyList, this, viewPager2);
-        viewPager2.setAdapter(adapter);
+        storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this, viewPager2);
+        viewPager2.setAdapter(storyViewAdapter);
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
         preloadMedia();
     }
@@ -78,6 +78,9 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
             if (bottomNav != null) {
                 bottomNav.setVisibility(View.VISIBLE);
             }
+        }
+        if (storyViewAdapter != null) {
+            storyViewAdapter.removeAutoScrollCallbacks();
         }
     }
 }

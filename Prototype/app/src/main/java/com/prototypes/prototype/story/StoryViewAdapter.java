@@ -46,10 +46,10 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener, ViewPager2 viewPager2) {
         this.context = context;
         this.storyList = stories;
-        setHasStableIds(true);
         this.gpsClickListener = gpsClickListener;
         this.viewPager2 = viewPager2;
         this.autoScrollHandler = new Handler(Looper.getMainLooper());
+        setHasStableIds(true);
     }
 
     @NonNull
@@ -108,6 +108,12 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         super.onViewDetachedFromWindow(holder);
         holder.pausePlayer();
     }
+
+    public void removeAutoScrollCallbacks() {
+        if (autoScrollHandler != null) {
+            autoScrollHandler.removeCallbacksAndMessages(null);
+        }
+    }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
         private final PlayerView playerView;
@@ -147,7 +153,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 exoPlayer.play();
                 playerView.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> {
                     if (visibility == View.VISIBLE) {
-                        playerView.setBackgroundColor(Color.TRANSPARENT); // Remove dim effect
+                        playerView.setBackgroundColor(Color.TRANSPARENT);
                     }
                 });
             } else {
