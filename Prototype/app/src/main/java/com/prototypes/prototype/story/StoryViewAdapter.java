@@ -3,7 +3,8 @@ package com.prototypes.prototype.story;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,12 +15,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.OptIn;
 import androidx.media3.common.MediaItem;
-import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -33,17 +33,23 @@ import java.util.ArrayList;
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList;
     private final Context context;
+    private final ViewPager2 viewPager2;
+    private final Handler autoScrollHandler;
+    private Runnable autoScrollRunnable;
+
+
     public interface OnGpsClickListener {
         void onGpsClick(double latitude, double longitude);
     }
     private final OnGpsClickListener gpsClickListener;
 
-    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener) {
+    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener, ViewPager2 viewPager2) {
         this.context = context;
         this.storyList = stories;
         setHasStableIds(true);
         this.gpsClickListener = gpsClickListener;
-
+        this.viewPager2 = viewPager2;
+        this.autoScrollHandler = new Handler(Looper.getMainLooper());
     }
 
     @NonNull
@@ -69,7 +75,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
-        Log.d("POSITION", String.valueOf(position));
         holder.bind(story, gpsClickListener);
     }
 
@@ -87,7 +92,15 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        holder.restartVideo();
+        autoScrollHandler.removeCallbacks(autoScrollRunnable);
+        autoScrollRunnable = () -> {
+            int nextItem = viewPager2.getCurrentItem() + 1;
+            if (nextItem < getItemCount()) {
+                viewPager2.setCurrentItem(nextItem, true);
+            } else {
+            }
+        };
+        autoScrollHandler.postDelayed(autoScrollRunnable, 4000);
     }
 
     @Override
@@ -101,7 +114,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         private final TextView storyCaption;
         private final Button gpsButton;
         private ExoPlayer exoPlayer;
-        private final ProgressBar imageLoader; // Add this
+        private final ProgressBar imageLoader;
 
         public StoryViewHolder(View itemView) {
             super(itemView);

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.prototypes.prototype.ExploreFragment;
 import com.prototypes.prototype.R;
 
@@ -44,7 +45,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
-        adapter = new StoryViewAdapter(getContext(), storyList, this);
+        adapter = new StoryViewAdapter(getContext(), storyList, this, viewPager2);
         viewPager2.setAdapter(adapter);
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
         preloadMedia();
@@ -68,5 +69,15 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 .replace(R.id.fragment_container, exploreFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() != null) {
+            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+            if (bottomNav != null) {
+                bottomNav.setVisibility(View.VISIBLE);
+            }
+        }
     }
 }
