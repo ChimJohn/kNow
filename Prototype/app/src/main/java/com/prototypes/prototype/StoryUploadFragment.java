@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ import android.graphics.Bitmap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -29,6 +31,7 @@ import com.prototypes.prototype.firebase.FirebaseAuthManager;
 public class StoryUploadFragment extends Fragment {
     private static final String ARG_MEDIA_URI = "mediaUri";
     private ImageView imageView;
+    ImageButton btnExit;
     private EditText captionEditText;
     private Button saveButton;
     private ChipGroup categoryChipGroup;
@@ -54,17 +57,23 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
+
         CurrentLocationViewModel currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+
+        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
         firebaseAuthManager = new FirebaseAuthManager(requireActivity());
+
         imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
         categoryChipGroup = view.findViewById(R.id.chipGroup);
         saveButton = view.findViewById(R.id.saveButton);
+        btnExit = view.findViewById(R.id.btnExit);
+
         String userId = firebaseAuthManager.getCurrentUser().getUid();
         String mediaUriString = getArguments().
                 getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
+
         mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
         if (mediaUri.toString().endsWith(".mp4")) {
             try {
@@ -83,6 +92,7 @@ public class StoryUploadFragment extends Fragment {
                     .load(mediaUri)
                     .into(imageView);
         }
+
         Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
         lat = lastKnownLocation.getLatitude();
         lng = lastKnownLocation.getLongitude();
@@ -103,6 +113,12 @@ public class StoryUploadFragment extends Fragment {
                     .addToBackStack(null) // Optional, allows going back to previous fragment
                     .commit();
             Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
+        });
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
         });
     }
 
