@@ -17,7 +17,8 @@ public class User {
         this.following = new ArrayList<>();
     };
 
-    public User(String username, String email){
+    public User(String name, String username, String email){
+        this.name = name;
         this.username = username;
         this.email = email;
         this.followers = new ArrayList<>();

@@ -66,6 +66,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="20dp">
 
+        <!-- Name Label -->
+        <TextView
+            android:id="@+id/nameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/grey"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Name Input -->
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Enter your name"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/custom_input"
+            android:inputType="textEmailAddress"
+            android:textSize="14sp"
+            android:fontFamily="@font/inter_regular"
+            android:layout_marginTop="10dp"/>
+
         <!-- Username Label -->
         <TextView
             android:id="@+id/usernameLabel"
@@ -74,6 +99,7 @@
             android:text="Username"
             android:textSize="14sp"
             android:fontFamily="@font/inter_medium"
+            android:layout_marginTop="16dp"
             android:textColor="@color/grey"
             app:layout_constraintStart_toStartOf="parent" />
 
