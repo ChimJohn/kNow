@@ -42,17 +42,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (getActivity() != null) {
-            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
-            if (bottomNav != null) {
-                bottomNav.setVisibility(View.VISIBLE); // Show it again
-            }
-        }
-    }
-
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
@@ -61,7 +50,19 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
         preloadMedia();
     }
-
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (getActivity() != null) {
+            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+            if (bottomNav != null) {
+                bottomNav.setVisibility(View.VISIBLE);
+            }
+        }
+        if (storyViewAdapter != null) {
+            storyViewAdapter.removeAutoScrollCallbacks();
+        }
+    }
     private void preloadMedia() {
         if (storyList == null || storyList.isEmpty()) return;
         for (int i = 0; i < storyList.size(); i++) {
@@ -80,18 +81,5 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 .replace(R.id.fragment_container, exploreFragment)
                 .addToBackStack(null)
                 .commit();
-    }
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (getActivity() != null) {
-            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
-            if (bottomNav != null) {
-                bottomNav.setVisibility(View.VISIBLE);
-            }
-        }
-        if (storyViewAdapter != null) {
-            storyViewAdapter.removeAutoScrollCallbacks();
-        }
     }
 }
