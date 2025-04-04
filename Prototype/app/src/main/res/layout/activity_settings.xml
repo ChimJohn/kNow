@@ -93,6 +93,17 @@
                 android:layout_marginBottom="4dp" />
 
             <TextView
+                android:id="@+id/tvDeleteAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delete account"
+                android:textColor="@android:color/holo_red_dark"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:fontFamily="@font/inter_medium"
+                android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/tvLogout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
