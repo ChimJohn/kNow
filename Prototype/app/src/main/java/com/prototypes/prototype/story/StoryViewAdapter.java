@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -19,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
@@ -55,7 +55,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         this.viewPager2 = viewPager2;
         this.autoScrollHandler = new Handler(Looper.getMainLooper());
         setHasStableIds(true);
-
     }
 
     @NonNull
@@ -66,22 +65,9 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     }
 
     @Override
-    public long getItemId(int position) {
-        return stringToLongHash(storyList.get(position).getId());
-    }
-
-    private long stringToLongHash(String firebaseId) {
-        long hash = 0;
-        for (int i = 0; i < firebaseId.length(); i++) {
-            hash = 31 * hash + firebaseId.charAt(i);
-        }
-        return Math.abs(hash);
-    }
-    @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
         holder.bind(story, gpsClickListener);
-
     }
 
     @Override
@@ -98,24 +84,22 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        autoScrollHandler.removeCallbacks(autoScrollRunnable);
-        autoScrollRunnable = () -> {
-            int nextItem = viewPager2.getCurrentItem() + 1;
-            if (nextItem < getItemCount()) {
-                viewPager2.setCurrentItem(nextItem, true);
-            } else {
-            }
-        };
-        autoScrollHandler.postDelayed(autoScrollRunnable, 4000);
+//        autoScrollHandler.removeCallbacks(autoScrollRunnable);
+//        autoScrollRunnable = () -> {
+//            int nextItem = viewPager2.getCurrentItem() + 1;
+//            if (nextItem < getItemCount()) {
+//                viewPager2.setCurrentItem(nextItem, true);
+//            } else {
+//            }
+//        };
+        holder.prepareAndPlayVideo();
+//        autoScrollHandler.postDelayed(autoScrollRunnable, 4000);
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull StoryViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder.countDownTimer != null) {
-            holder.countDownTimer.cancel();
-        }
-        holder.pausePlayer();
+        holder.releasePlayer(); // Add this line
     }
 
     public void removeAutoScrollCallbacks() {
@@ -128,10 +112,10 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         private final PlayerView playerView;
         private final TextView storyCaption;
         private final Button gpsButton;
-        public CountDownTimer countDownTimer;
         private ExoPlayer exoPlayer;
         private final ProgressBar imageLoader;
         private ProgressBar progressBar;
+        private Story story;
 
         public StoryViewHolder(View itemView) {
             super(itemView);
@@ -141,49 +125,33 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             gpsButton = itemView.findViewById(R.id.btnGps);
             imageLoader = itemView.findViewById(R.id.image_loader);
             progressBar = itemView.findViewById(R.id.storyProgressBar);
-
         }
 
         public void bind(Story story, OnGpsClickListener gpsClickListener) {
+            this.story = story;
             progressBar.setProgress(0);
-            if (countDownTimer != null) {
-                countDownTimer.cancel();
-            }
             storyCaption.setText(story.getCaption());
-            gpsButton.bringToFront();
             gpsButton.setOnClickListener(v -> {
                 if (gpsClickListener != null) {
                     gpsClickListener.onGpsClick(story.getLatitude(), story.getLongitude());
                 }
             });
-            if (story.isVideo()) {
-                imageView.setVisibility(View.GONE);
-                imageLoader.setVisibility(View.VISIBLE);
-                playerView.setVisibility(View.INVISIBLE); // Hide controls
-                if (exoPlayer == null) {
-                    exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
-                    playerView.setPlayer(exoPlayer);
-                }
-                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
-                exoPlayer.setMediaItem(mediaItem);
-                exoPlayer.prepare();
-                exoPlayer.addListener(new Player.Listener() {
-                    @Override
-                    public void onPlaybackStateChanged(int state) {
-                        if (state == Player.STATE_READY) {
-                            long duration = exoPlayer.getDuration();
-                            Log.d("Duration", "Duration in ms: " + duration);
 
-                            if (duration <= 0) {  // Check duration AFTER player is ready
-                                imageView.setVisibility(View.VISIBLE);
-                                imageLoader.setVisibility(View.VISIBLE);
-                                playerView.setVisibility(View.GONE);
-                                loadFirstFrame(story.getMediaUrl(), imageView);
-                            }
-                        }
-                    }
-                });
-            } else {
+//            if (story.isVideo()) {
+//                imageView.setVisibility(View.INVISIBLE);
+//                imageLoader.setVisibility(View.VISIBLE);
+//                playerView.setVisibility(View.INVISIBLE);
+//                if (exoPlayer == null) {
+//                    exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
+//                    playerView.setPlayer(exoPlayer);
+//                }
+//                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
+//                exoPlayer.setMediaItem(mediaItem);
+//                exoPlayer.prepare();
+//
+//            } else {
+            if (!story.isVideo()) {
+                Log.d("WHYYY", "NOT VIDEO - " + story.getMediaUrl());
                 playerView.setVisibility(View.GONE);
                 imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
@@ -195,6 +163,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                                 imageLoader.setVisibility(View.GONE);
                                 return false;
                             }
+
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 imageLoader.setVisibility(View.GONE);
@@ -203,21 +172,71 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                         })
                         .into(imageView);
             }
-            countDownTimer = new CountDownTimer(8000, 100) {  // Updates every 100ms
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    // Calculate the progress as a percentage
-                    int progress = (int) (100 - (millisUntilFinished / 80));
-                    progressBar.setProgress(progress);
-                }
+//            }
+        }
 
+        public void prepareAndPlayVideo() {
+            if (!story.isVideo()){
+                return;
+            }
+            imageView.setVisibility(View.GONE);
+            imageLoader.setVisibility(View.VISIBLE);
+            playerView.setVisibility(View.INVISIBLE);
+            if (exoPlayer == null) {
+                exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
+                playerView.setPlayer(exoPlayer);
+            }
+            MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
+            Log.d("WHYYY MediaUrl:", String.valueOf(story.getMediaUrl()));
+            exoPlayer.setMediaItem(mediaItem);
+            exoPlayer.addListener(new Player.Listener() {
                 @Override
-                public void onFinish() {
-                    // When the timer finishes, trigger the next story
+                public void onPlayerError(PlaybackException error) {
+                    Log.e("WHYYY Error", "Player error: " + error.getMessage());
+                    // Handle error (show message to user or retry)
                 }
-            };
-            // Start the timer
-            countDownTimer.start();
+                @Override
+                public void onPlaybackStateChanged(int state) {
+                    Log.d("WHYYY State:", String.valueOf(state));
+                    switch (state) {
+                        case Player.STATE_BUFFERING:
+                            Log.d("WHYYY", "Buffering...");
+                            imageView.setVisibility(View.INVISIBLE);
+                            imageLoader.setVisibility(View.VISIBLE);
+                            playerView.setVisibility(View.GONE);
+                            break;
+
+                        case Player.STATE_READY:
+                            long duration = exoPlayer.getDuration();
+                            Log.d("WHYYY Duration:", String.valueOf(duration));
+
+                            if (duration <= 0) {
+                                imageView.setVisibility(View.VISIBLE);
+                                imageLoader.setVisibility(View.VISIBLE);
+                                playerView.setVisibility(View.GONE);
+                                loadFirstFrame(story.getMediaUrl(), imageView);
+                            } else {
+                                playerView.setVisibility(View.VISIBLE);
+                                imageView.setVisibility(View.GONE);
+                                imageLoader.setVisibility(View.GONE);
+                            }
+                            break;
+
+                        case Player.STATE_ENDED:
+                            Log.d("WHYYY", "Playback ended.");
+                            break;
+
+                        case Player.STATE_IDLE:
+                            Log.d("WHYYY", "Player is idle.");
+                            break;
+
+                        default:
+                            Log.d("WHYYY", "Unknown state: " + state);
+                            break;
+                    }
+                }
+            });
+            exoPlayer.prepare();
         }
         private void loadFirstFrame(String videoUrl, ImageView imageView) {
             new Thread(() -> {
@@ -225,6 +244,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 try {
                     retriever.setDataSource(videoUrl, new HashMap<>());
                     Bitmap bitmap = retriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                    Log.d("WHYYY", bitmap.toString());
                     if (bitmap != null) {
                         imageView.post(() -> {
                             Glide.with(imageView.getContext())
