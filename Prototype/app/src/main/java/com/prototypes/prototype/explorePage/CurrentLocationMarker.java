@@ -1,7 +1,7 @@
-package com.prototypes.prototype.story;
+package com.prototypes.prototype.explorePage;
 
 import android.animation.ValueAnimator;
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Color;
 import android.location.Location;
 
@@ -10,34 +10,24 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.prototypes.prototype.R;
 
-public class MapManager {
-    private final GoogleMap googleMap;
+public class CurrentLocationMarker {
     private Marker gpsMarker;
     private Circle pulsatingCircle;
-    private ValueAnimator pulseAnimator;
-    private final Context context;
-
-    public MapManager(Context context, GoogleMap googleMap) {
-        this.context = context;
+    private GoogleMap googleMap;
+    ValueAnimator pulseAnimator;
+    public CurrentLocationMarker(Activity activity, GoogleMap googleMap) {
         this.googleMap = googleMap;
-        setMapSettings();
     }
-
-    private void setMapSettings() {
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style));
-        googleMap.getUiSettings().setMapToolbarEnabled(false);
-        googleMap.getUiSettings().setCompassEnabled(false);
-        googleMap.getUiSettings().setRotateGesturesEnabled(false);
-        googleMap.getUiSettings().setTiltGesturesEnabled(false);
+    public Marker getGpsMarker(){
+        return this.gpsMarker;
     }
-
     public void updateGpsMarker(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
         if (gpsMarker == null) {
             gpsMarker = googleMap.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -48,7 +38,10 @@ public class MapManager {
             gpsMarker.setPosition(latLng);
             gpsMarker.setRotation(location.getBearing());
         }
+        updatePulsatingCircle(latLng);
+    }
 
+    private void updatePulsatingCircle(LatLng latLng) {
         if (pulsatingCircle == null) {
             pulsatingCircle = googleMap.addCircle(new CircleOptions()
                     .center(latLng)
@@ -66,11 +59,16 @@ public class MapManager {
         pulseAnimator.setDuration(1000);
         pulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
         pulseAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
+        pulseAnimator.addUpdateListener(animation -> {
+            if (pulsatingCircle != null) {
+                pulsatingCircle.setRadius((Float) animation.getAnimatedValue());
+            }
+        });
         pulseAnimator.start();
     }
 
-    public void cleanup() {
-        if (pulseAnimator != null) pulseAnimator.cancel();
+    public void stopPulsatingEffect(){
+        pulseAnimator.cancel();
     }
+
 }

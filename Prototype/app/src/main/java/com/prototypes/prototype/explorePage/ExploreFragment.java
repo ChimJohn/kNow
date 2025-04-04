@@ -1,5 +1,10 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.explorePage;
 
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
@@ -37,12 +42,12 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
-import com.prototypes.prototype.story.CurrentLocationMarker;
-import com.prototypes.prototype.story.RouteHandler;
+import com.prototypes.prototype.CurrentLocationViewModel;
+import com.prototypes.prototype.R;
+import com.prototypes.prototype.UserSearchAdapter;
 import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
@@ -72,6 +77,9 @@ public class ExploreFragment extends Fragment {
     private static final String ARG_LONGITUDE = "longitude";
     private RouteHandler routeHandler;
     private CurrentLocationMarker currentLocationMarker;
+    private SensorManager sensorManager;
+    private Sensor rotationVectorSensor;
+    private float currentBearing = 0f;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
@@ -89,6 +97,8 @@ public class ExploreFragment extends Fragment {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
+        sensorManager = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
+        rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     @Override
@@ -148,7 +158,6 @@ public class ExploreFragment extends Fragment {
             clusterManager = new ClusterManager<>(requireContext(), googleMap);
             clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
             googleMap.setOnCameraIdleListener(clusterManager);
-            googleMap.setOnMarkerClickListener(clusterManager);
             NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
             algorithm.setMaxDistanceBetweenClusteredItems(30);
             clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
@@ -277,7 +286,6 @@ public class ExploreFragment extends Fragment {
                                     locationNames.add(prediction.getPrimaryText(null).toString());
                                     locationPlaceIds.add(prediction.getPlaceId());
                                 }
-
                                 userSearchAdapter = new UserSearchAdapter(locationNames, selectedName -> {
                                     int index = locationNames.indexOf(selectedName);
                                     if (index != -1) {
@@ -304,10 +312,27 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (currentLocationMarker != null) {
-            currentLocationMarker.registerSensorListener();
+        if (rotationVectorSensor != null) {
+            sensorManager.registerListener(sensorEventListener, rotationVectorSensor, SensorManager.SENSOR_DELAY_UI);
         }
     }
+    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float[] rotationMatrix = new float[9];
+            float[] orientationAngles = new float[3];
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+            SensorManager.getOrientation(rotationMatrix, orientationAngles);
+            currentBearing = (float) Math.toDegrees(orientationAngles[0]);
+            currentBearing = (currentBearing + 360) % 360;
+            if (currentLocationMarker != null && currentLocationMarker.getGpsMarker() != null) {
+                currentLocationMarker.getGpsMarker().setRotation(currentBearing);
+            }
+        }
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    };
+
     private void listenToMarkersData() {
         mediaListener = db.collection("media")
                 .addSnapshotListener((snapshots, e) -> {
@@ -315,51 +340,44 @@ public class ExploreFragment extends Fragment {
                         Log.e("Firestore", "Listen failed.", e);
                         return;
                     }
-                    updateMarkers(snapshots);
+                    if (snapshots == null) return;
+                    for (DocumentChange change : snapshots.getDocumentChanges()) {
+                        DocumentSnapshot documentSnapshot = change.getDocument();
+                        String id = documentSnapshot.getId();
+                        String userId = documentSnapshot.getString("userId");
+                        String caption = documentSnapshot.getString("caption");
+                        String category = documentSnapshot.getString("category");
+                        String mediaUrl = documentSnapshot.getString("mediaUrl");
+                        String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
+                        String mediaType = documentSnapshot.getString("mediaType");
+                        Double latitude = documentSnapshot.getDouble("latitude");
+                        Double longitude = documentSnapshot.getDouble("longitude");
+                        if (latitude == null || longitude == null) continue;
+                        StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
+                        switch (change.getType()) {
+                            case ADDED:
+                                clusterManager.addItem(storyCluster);
+                                allMarkers.put(id, storyCluster);
+                                break;
+                            case MODIFIED:
+                                removeMarkerById(id);
+                                clusterManager.addItem(storyCluster);
+                                allMarkers.put(id, storyCluster);
+                                break;
+                            case REMOVED:
+                                removeMarkerById(id);
+                                break;
+                        }
+                    }
+                    clusterManager.cluster();
                 });
     }
-
-    private void updateMarkers(QuerySnapshot snapshots) {
-        if (snapshots == null) return;
-        for (DocumentChange change : snapshots.getDocumentChanges()) {
-            DocumentSnapshot documentSnapshot = change.getDocument();
-            String id = documentSnapshot.getId();
-            String userId = documentSnapshot.getString("userId");
-            String caption = documentSnapshot.getString("caption");
-            String category = documentSnapshot.getString("category");
-            String mediaUrl = documentSnapshot.getString("mediaUrl");
-            String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
-            String mediaType = documentSnapshot.getString("mediaType");
-            Double latitude = documentSnapshot.getDouble("latitude");
-            Double longitude = documentSnapshot.getDouble("longitude");
-            if (latitude == null || longitude == null) continue;
-            StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
-            switch (change.getType()) {
-                case ADDED:
-                    clusterManager.addItem(storyCluster);
-                    allMarkers.put(id, storyCluster);
-                    break;
-                case MODIFIED:
-                    removeMarkerById(id);
-                    clusterManager.addItem(storyCluster);
-                    allMarkers.put(id, storyCluster);
-                    break;
-                case REMOVED:
-                    removeMarkerById(id);
-                    break;
-            }
-        }
-        clusterManager.cluster();
-    }
-
     private void removeMarkerById(String id) {
         StoryCluster marker = allMarkers.remove(id);
         if (marker != null) {
             clusterManager.removeItem(marker);
         }
     }
-
-
     private void fetchAndZoomToPlace(String placeId) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
         placesClient.fetchPlace(
@@ -407,9 +425,7 @@ public class ExploreFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mapView.onPause();
-        if (currentLocationMarker != null) {
-            currentLocationMarker.unregisterSensorListener();
-        }
+        sensorManager.unregisterListener(sensorEventListener);
     }
 
     @Override
@@ -435,9 +451,6 @@ public class ExploreFragment extends Fragment {
         googleMap.setOnCameraIdleListener(null);
         googleMap.clear();
         googleMap = null;
-        if (currentLocationMarker != null) {
-            currentLocationMarker.unregisterSensorListener();
-        }
     }
 
     @Override
@@ -446,8 +459,10 @@ public class ExploreFragment extends Fragment {
         if (mapView != null) {
             mapView.onDestroy();
         }
-        if (currentLocationMarker != null) {
-            currentLocationMarker.unregisterSensorListener();
+        currentLocationMarker.stopPulsatingEffect();
+        sensorManager.unregisterListener(sensorEventListener);
+        if (placesClient != null) {
+            placesClient = null; // This shuts down the client and associated resources
         }
     }
 

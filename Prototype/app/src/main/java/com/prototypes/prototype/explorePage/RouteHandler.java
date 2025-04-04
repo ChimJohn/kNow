@@ -1,4 +1,4 @@
-package com.prototypes.prototype.story;
+package com.prototypes.prototype.explorePage;
 
 import android.content.Context;
 import android.graphics.Color;

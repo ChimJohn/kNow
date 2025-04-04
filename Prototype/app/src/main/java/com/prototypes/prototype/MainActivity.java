@@ -6,7 +6,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,10 +23,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prototypes.prototype.story.StoryViewFragment;
+import com.prototypes.prototype.explorePage.ExploreFragment;
+import com.prototypes.prototype.upload.TakePhotoFragment;
 import com.prototypes.prototype.user.ProfileFragment;
-
-import android.Manifest;
 
 import java.util.Map;
 

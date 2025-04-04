@@ -13,7 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prototypes.prototype.ExploreFragment;
+import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.R;
 
 import java.util.ArrayList;

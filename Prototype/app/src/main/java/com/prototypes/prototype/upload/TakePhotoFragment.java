@@ -1,4 +1,4 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.upload;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -36,6 +36,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.prototypes.prototype.R;
+import com.prototypes.prototype.story.StoryUploadFragment;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
