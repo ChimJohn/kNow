@@ -18,12 +18,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
-import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -39,7 +37,6 @@ import java.util.HashMap;
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList;
     private final Context context;
-    private final ViewPager2 viewPager2;
     private final Handler autoScrollHandler;
     private Runnable autoScrollRunnable;
 
@@ -48,13 +45,11 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     }
     private final OnGpsClickListener gpsClickListener;
 
-    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener, ViewPager2 viewPager2) {
+    public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener) {
         this.context = context;
         this.storyList = stories;
         this.gpsClickListener = gpsClickListener;
-        this.viewPager2 = viewPager2;
         this.autoScrollHandler = new Handler(Looper.getMainLooper());
-        setHasStableIds(true);
     }
 
     @NonNull
@@ -84,16 +79,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-//        autoScrollHandler.removeCallbacks(autoScrollRunnable);
-//        autoScrollRunnable = () -> {
-//            int nextItem = viewPager2.getCurrentItem() + 1;
-//            if (nextItem < getItemCount()) {
-//                viewPager2.setCurrentItem(nextItem, true);
-//            } else {
-//            }
-//        };
         holder.prepareAndPlayVideo();
-//        autoScrollHandler.postDelayed(autoScrollRunnable, 4000);
     }
 
     @Override
@@ -136,20 +122,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                     gpsClickListener.onGpsClick(story.getLatitude(), story.getLongitude());
                 }
             });
-
-//            if (story.isVideo()) {
-//                imageView.setVisibility(View.INVISIBLE);
-//                imageLoader.setVisibility(View.VISIBLE);
-//                playerView.setVisibility(View.INVISIBLE);
-//                if (exoPlayer == null) {
-//                    exoPlayer = new ExoPlayer.Builder(itemView.getContext()).build();
-//                    playerView.setPlayer(exoPlayer);
-//                }
-//                MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
-//                exoPlayer.setMediaItem(mediaItem);
-//                exoPlayer.prepare();
-//
-//            } else {
             if (!story.isVideo()) {
                 Log.d("WHYYY", "NOT VIDEO - " + story.getMediaUrl());
                 playerView.setVisibility(View.GONE);
@@ -172,9 +144,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                         })
                         .into(imageView);
             }
-//            }
         }
-
         public void prepareAndPlayVideo() {
             if (!story.isVideo()){
                 return;
@@ -191,25 +161,15 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
             exoPlayer.setMediaItem(mediaItem);
             exoPlayer.addListener(new Player.Listener() {
                 @Override
-                public void onPlayerError(PlaybackException error) {
-                    Log.e("WHYYY Error", "Player error: " + error.getMessage());
-                    // Handle error (show message to user or retry)
-                }
-                @Override
                 public void onPlaybackStateChanged(int state) {
-                    Log.d("WHYYY State:", String.valueOf(state));
                     switch (state) {
                         case Player.STATE_BUFFERING:
-                            Log.d("WHYYY", "Buffering...");
                             imageView.setVisibility(View.INVISIBLE);
                             imageLoader.setVisibility(View.VISIBLE);
                             playerView.setVisibility(View.GONE);
                             break;
-
                         case Player.STATE_READY:
                             long duration = exoPlayer.getDuration();
-                            Log.d("WHYYY Duration:", String.valueOf(duration));
-
                             if (duration <= 0) {
                                 imageView.setVisibility(View.VISIBLE);
                                 imageLoader.setVisibility(View.VISIBLE);
@@ -220,18 +180,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                                 imageView.setVisibility(View.GONE);
                                 imageLoader.setVisibility(View.GONE);
                             }
-                            break;
-
-                        case Player.STATE_ENDED:
-                            Log.d("WHYYY", "Playback ended.");
-                            break;
-
-                        case Player.STATE_IDLE:
-                            Log.d("WHYYY", "Player is idle.");
-                            break;
-
-                        default:
-                            Log.d("WHYYY", "Unknown state: " + state);
                             break;
                     }
                 }

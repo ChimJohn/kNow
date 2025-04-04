@@ -44,10 +44,10 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewPager2 = view.findViewById(R.id.storyViewPager); // RecyclerView to display the stories
-        storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this, viewPager2);
+        viewPager2 = view.findViewById(R.id.storyViewPager);
+        storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this);
         viewPager2.setAdapter(storyViewAdapter);
-        viewPager2.setOffscreenPageLimit(2); // Load 2 adjacent pages in memory
+        viewPager2.setOffscreenPageLimit(2);
         preloadMedia();
     }
     @Override
@@ -65,10 +65,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     }
     private void preloadMedia() {
         if (storyList == null || storyList.isEmpty()) return;
-        for (int i = 0; i < storyList.size(); i++) {
-            Story story = storyList.get(i);
+        for (Story story : storyList) {
             if (!story.isVideo()) {
-                // Preload image
                 Glide.with(requireContext()).load(story.getMediaUrl()).preload();
             }
         }

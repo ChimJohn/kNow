@@ -92,8 +92,7 @@ public class ExploreFragment extends Fragment {
     private boolean isFirstLocationUpdate = true;
     private ListenerRegistration mediaListener;
     private final Map<String, StoryCluster> allMarkers = new HashMap<>();
-    private Polyline routePolyline;
-    private Polyline routeOutline;
+    private Polyline routePolyline, routeOutline;
     private PlacesClient placesClient;
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
@@ -493,7 +492,6 @@ public class ExploreFragment extends Fragment {
         if (routeOutline != null) {
             routeOutline.remove();
         }
-
         // Soft outline (wider, lighter color)
         PolylineOptions outlineOptions = new PolylineOptions()
                 .addAll(points)
@@ -503,7 +501,6 @@ public class ExploreFragment extends Fragment {
                 .startCap(new RoundCap())
                 .endCap(new RoundCap())
                 .jointType(JointType.ROUND);
-
         // Main route (solid color)
         PolylineOptions polylineOptions = new PolylineOptions()
                 .addAll(points)
