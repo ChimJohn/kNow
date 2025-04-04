@@ -1,12 +1,5 @@
 package com.prototypes.prototype;
 
-import android.animation.ValueAnimator;
-import android.content.Context;
-import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
@@ -29,17 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.Place;
@@ -54,12 +38,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
-import com.prototypes.prototype.directions.DirectionsApiService;
-import com.prototypes.prototype.directions.DirectionsResponse;
+import com.prototypes.prototype.story.CurrentLocationMarker;
+import com.prototypes.prototype.story.RouteHandler;
 import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
@@ -72,12 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
 public class ExploreFragment extends Fragment {
     private RecyclerView rvUserSearchResults;
     private UserSearchAdapter userSearchAdapter;
@@ -85,21 +62,16 @@ public class ExploreFragment extends Fragment {
     private GoogleMap googleMap;
     private CurrentLocationViewModel currentLocationViewModel;
     private Double latitude, longitude;
-    private Circle pulsatingCircle;
-    private ValueAnimator pulseAnimator;
     private FirebaseFirestore db;
     private ClusterManager<StoryCluster> clusterManager;
     private boolean isFirstLocationUpdate = true;
     private ListenerRegistration mediaListener;
     private final Map<String, StoryCluster> allMarkers = new HashMap<>();
-    private Polyline routePolyline, routeOutline;
     private PlacesClient placesClient;
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
-    private SensorManager sensorManager;
-    private Sensor rotationVectorSensor;
-    private float currentBearing = 0f;
-    private Marker gpsMarker;
+    private RouteHandler routeHandler;
+    private CurrentLocationMarker currentLocationMarker;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
@@ -117,8 +89,6 @@ public class ExploreFragment extends Fragment {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
-        sensorManager = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
-        rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     @Override
@@ -144,13 +114,13 @@ public class ExploreFragment extends Fragment {
             googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
             LatLng singapore = new LatLng(1.3521, 103.8198);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
-
+            routeHandler = new RouteHandler(getContext(), googleMap);
+            currentLocationMarker = new CurrentLocationMarker(requireActivity(), googleMap);
             final long FETCH_INTERVAL = 30000; // 30 seconds
             AtomicLong lastFetchTime = new AtomicLong(); // Stores last fetch timestamp
-
             currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
                 if (location != null) {
-                    updateGpsMarker(location);
+                    currentLocationMarker.updateGpsMarker(location);
                     if (isFirstLocationUpdate) {
                         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 20));
                     }
@@ -160,7 +130,7 @@ public class ExploreFragment extends Fragment {
                         long currentTime = System.currentTimeMillis(); // Get current time
                         LatLng latLng = new LatLng(latitude, longitude);
                         if (currentTime - lastFetchTime.get() >= FETCH_INTERVAL) {
-                            fetchRoute(location, latLng); // Call fetch function
+                            routeHandler.fetchRoute(location, latLng); // Call fetch function
                             lastFetchTime.set(currentTime); // Update last fetch time
                             Log.d("API_CALL", "Fetching route at: " + currentTime);
                         } else {
@@ -334,30 +304,10 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (rotationVectorSensor != null) {
-            sensorManager.registerListener(sensorEventListener, rotationVectorSensor, SensorManager.SENSOR_DELAY_UI);
+        if (currentLocationMarker != null) {
+            currentLocationMarker.registerSensorListener();
         }
     }
-
-    private final SensorEventListener sensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            float[] rotationMatrix = new float[9];
-            float[] orientationAngles = new float[3];
-            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-            SensorManager.getOrientation(rotationMatrix, orientationAngles);
-            currentBearing = (float) Math.toDegrees(orientationAngles[0]);
-            currentBearing = (currentBearing + 360) % 360;
-            if (gpsMarker != null) {
-                gpsMarker.setRotation(currentBearing);
-            }
-        }
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-    };
-
-
-
     private void listenToMarkersData() {
         mediaListener = db.collection("media")
                 .addSnapshotListener((snapshots, e) -> {
@@ -409,30 +359,6 @@ public class ExploreFragment extends Fragment {
         }
     }
 
-    private void updateGpsMarker(Location location) {
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        if (gpsMarker == null) {
-            gpsMarker = googleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow_up_gps))
-                    .anchor(0.5f, 0.5f)
-                    .rotation(location.getBearing()));
-        } else {
-            gpsMarker.setPosition(latLng);
-            gpsMarker.setRotation(location.getBearing());
-        }
-
-        if (pulsatingCircle == null) {
-            pulsatingCircle = googleMap.addCircle(new CircleOptions()
-                    .center(latLng)
-                    .radius(1)
-                    .strokeWidth(0f)
-                    .fillColor(Color.argb(100, 10, 163, 223)));
-            startPulsatingEffect();
-        } else {
-            pulsatingCircle.setCenter(latLng);
-        }
-    }
 
     private void fetchAndZoomToPlace(String placeId) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
@@ -447,74 +373,6 @@ public class ExploreFragment extends Fragment {
         }).addOnFailureListener(e -> {
             Log.e("PlaceZoom", "Failed to fetch place", e);
         });
-    }
-
-    private void startPulsatingEffect() {
-        pulseAnimator = ValueAnimator.ofFloat(10, 20);
-        pulseAnimator.setDuration(1000);
-        pulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        pulseAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
-        pulseAnimator.start();
-    }
-
-    private void fetchRoute(Location currentLocation, LatLng destination) {
-        String origin = currentLocation.getLatitude() + "," + currentLocation.getLongitude(); // Replace with current location
-        String dest = destination.latitude + "," + destination.longitude;
-        String apiKey = getString(R.string.google_maps_key);;
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://maps.googleapis.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        DirectionsApiService service = retrofit.create(DirectionsApiService.class);
-        Call<DirectionsResponse> call = service.getWalkingDirections(origin, dest, "walking", apiKey);
-        call.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().routes.isEmpty()) {
-                    String polyline = response.body().routes.get(0).overviewPolyline.points;
-                    drawRoute(polyline);
-                }
-            }
-            @Override
-            public void onFailure(Call<DirectionsResponse> call, Throwable t) {
-                Log.e("Directions API", "Error fetching directions: " + t.getMessage());
-            }
-        });
-    }
-
-    private void drawRoute(String encodedPolyline) {
-        List<LatLng> points = PolyUtil.decode(encodedPolyline);
-
-        if (routePolyline != null) {
-            routePolyline.remove();
-        }
-        if (routeOutline != null) {
-            routeOutline.remove();
-        }
-        // Soft outline (wider, lighter color)
-        PolylineOptions outlineOptions = new PolylineOptions()
-                .addAll(points)
-                .width(18f)
-                .color(Color.argb(200, 0, 255, 255))
-                .geodesic(true)
-                .startCap(new RoundCap())
-                .endCap(new RoundCap())
-                .jointType(JointType.ROUND);
-        // Main route (solid color)
-        PolylineOptions polylineOptions = new PolylineOptions()
-                .addAll(points)
-                .width(12f)
-                .color(Color.BLUE)
-                .geodesic(true)
-                .startCap(new RoundCap())
-                .endCap(new RoundCap())
-                .jointType(JointType.ROUND);
-
-        if (googleMap != null) {
-            routeOutline = googleMap.addPolyline(outlineOptions);
-            routePolyline = googleMap.addPolyline(polylineOptions);
-        }
     }
 
     private void handleUserClick(String username) {
@@ -549,7 +407,9 @@ public class ExploreFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mapView.onPause();
-        sensorManager.unregisterListener(sensorEventListener);
+        if (currentLocationMarker != null) {
+            currentLocationMarker.unregisterSensorListener();
+        }
     }
 
     @Override
@@ -575,6 +435,9 @@ public class ExploreFragment extends Fragment {
         googleMap.setOnCameraIdleListener(null);
         googleMap.clear();
         googleMap = null;
+        if (currentLocationMarker != null) {
+            currentLocationMarker.unregisterSensorListener();
+        }
     }
 
     @Override
@@ -583,8 +446,8 @@ public class ExploreFragment extends Fragment {
         if (mapView != null) {
             mapView.onDestroy();
         }
-        if (pulseAnimator != null) {
-            pulseAnimator.cancel();
+        if (currentLocationMarker != null) {
+            currentLocationMarker.unregisterSensorListener();
         }
     }
 
