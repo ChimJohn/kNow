@@ -31,6 +31,7 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoRecordEvent;
 
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -54,7 +55,7 @@ public class TakePhotoFragment extends Fragment {
     private ExecutorService cameraExecutor;
 
     private androidx.camera.view.PreviewView cameraPreview;
-    private ImageButton btnCapture, btnFlash, btnFlip, btnClose, btnRecord;
+    private ImageButton btnCapture, btnFlash, btnFlip, btnRecord;
 
     private boolean isFlashOn = false;
     private boolean isFrontCamera = false;
@@ -82,7 +83,6 @@ public class TakePhotoFragment extends Fragment {
         btnCapture = rootView.findViewById(R.id.btnCapture);
         btnFlash = rootView.findViewById(R.id.btnFlash);
         btnFlip = rootView.findViewById(R.id.btnFlip);
-        btnClose = rootView.findViewById(R.id.btnClose);
         btnRecord = rootView.findViewById(R.id.btnRecord); // Button to start/stop recording
 
         timerText = rootView.findViewById(R.id.timerText);
@@ -118,9 +118,6 @@ public class TakePhotoFragment extends Fragment {
 
         // Flip Camera
         btnFlip.setOnClickListener(v -> flipCamera());
-
-        // Close Camera
-        btnClose.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
 
         // Start/Stop Video Recording
         btnRecord.setOnClickListener(v -> {
@@ -227,7 +224,22 @@ public class TakePhotoFragment extends Fragment {
                     }
                 });
         videoStartTime = System.currentTimeMillis();
-        btnRecord.setImageResource(R.drawable.ic_flash); // Change icon to stop button
+        btnRecord.setImageResource(R.drawable.shutter_video);
+        // Set button size to 66dp by 66dp
+        ViewGroup.LayoutParams params = btnRecord.getLayoutParams();
+        params.width = (int) (66 * getResources().getDisplayMetrics().density);
+        params.height = (int) (66 * getResources().getDisplayMetrics().density);
+        btnRecord.setLayoutParams(params);
+
+        // Add app:layout_constraintStart_toStartOf="parent" programmatically
+        if (btnRecord.getLayoutParams() instanceof ConstraintLayout.LayoutParams) {
+            ConstraintLayout.LayoutParams constraintParams = (ConstraintLayout.LayoutParams) btnRecord.getLayoutParams();
+            constraintParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;  // Set start constraint to parent
+            constraintParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;  // Set end constraint to parent
+            btnRecord.setLayoutParams(constraintParams);
+        }
+
+        // Change icon to stop button
         timerText.setVisibility(View.VISIBLE);
 
         timerRunnable = new Runnable() {
