@@ -48,6 +48,7 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -63,6 +64,7 @@ import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.story.StoryClusterRenderer;
 import com.prototypes.prototype.story.StoryViewFragment;
+import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -233,7 +235,7 @@ public class ExploreFragment extends Fragment {
         EditText etSearch = view.findViewById(R.id.etSearch);
         rvUserSearchResults = view.findViewById(R.id.rvSearchResults);
         rvUserSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
-//        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), this::handleUserClick);
+        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), this::handleUserClick);
         rvUserSearchResults.setAdapter(userSearchAdapter);
 
         // Near me button
@@ -256,6 +258,8 @@ public class ExploreFragment extends Fragment {
                 String query = s.toString().trim();
                 if (query.startsWith("@")) {
                     String usernameQuery = query.substring(1).toLowerCase();
+                    String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
                     db.collection("Users")
                             .orderBy("username")
                             .startAt(usernameQuery)
@@ -263,18 +267,29 @@ public class ExploreFragment extends Fragment {
                             .limit(10)
                             .get()
                             .addOnSuccessListener(snapshot -> {
-                                List<String> matched = new ArrayList<>();
+                                List<UserWithFollowers> matchedUsers = new ArrayList<>();
                                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                                    if (doc.getId().equals(currentUserId)) continue; // Skip current user
+
                                     String username = doc.getString("username");
-                                    if (username != null) matched.add(username);
+                                    List<?> followersList = (List<?>) doc.get("followers");
+                                    int followerCount = (followersList != null) ? followersList.size() : 0;
+
+                                    if (username != null) {
+                                        matchedUsers.add(new UserWithFollowers(username, followerCount));
+                                    }
                                 }
-                                userSearchAdapter.updateData(matched);
-                                rvUserSearchResults.setVisibility(matched.isEmpty() ? View.GONE : View.VISIBLE);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("UserSearch", "Error fetching users", e);
-                                rvUserSearchResults.setVisibility(View.GONE);
+
+                                List<UserWithFollowers> sortedUsers = mergeSort(matchedUsers);
+                                List<String> sortedUsernames = new ArrayList<>();
+                                for (UserWithFollowers user : sortedUsers) {
+                                    sortedUsernames.add(user.username);
+                                }
+
+                                userSearchAdapter.updateData(sortedUsernames);
+                                rvUserSearchResults.setVisibility(sortedUsernames.isEmpty() ? View.GONE : View.VISIBLE);
                             });
+
                 } else if (!query.isEmpty()) {
                     RectangularBounds bounds = RectangularBounds.newInstance(
                             new LatLng(1.1304753, 103.6920359),
@@ -293,7 +308,7 @@ public class ExploreFragment extends Fragment {
                                     locationNames.add(prediction.getPrimaryText(null).toString());
                                     locationPlaceIds.add(prediction.getPlaceId());
                                 }
-                                // Set new adapter with location click handling
+
                                 userSearchAdapter = new UserSearchAdapter(locationNames, selectedName -> {
                                     int index = locationNames.indexOf(selectedName);
                                     if (index != -1) {
@@ -312,8 +327,10 @@ public class ExploreFragment extends Fragment {
                     rvUserSearchResults.setVisibility(View.GONE);
                 }
             }
+
             @Override public void afterTextChanged(Editable s) {}
         });
+
     }
     @Override
     public void onResume() {
@@ -503,6 +520,33 @@ public class ExploreFragment extends Fragment {
         }
     }
 
+    private void handleUserClick(String username) {
+        // Query Firestore to get the user ID for this username
+        db.collection("Users")
+                .whereEqualTo("username", username)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
+                        String userId = document.getId();
+
+                        // Navigate to the user's profile
+                        UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, userProfileFragment)
+                                .addToBackStack(null)
+                                .commit();
+
+                        // Clear search results
+                        rvUserSearchResults.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UserSearch", "Error finding user", e);
+                });
+    }
 
     @Override
     public void onPause() {
@@ -545,5 +589,43 @@ public class ExploreFragment extends Fragment {
         if (pulseAnimator != null) {
             pulseAnimator.cancel();
         }
+    }
+
+    private static class UserWithFollowers {
+        String username;
+        int followerCount;
+
+        UserWithFollowers(String username, int followerCount) {
+            this.username = username;
+            this.followerCount = followerCount;
+        }
+    }
+
+    private List<UserWithFollowers> mergeSort(List<UserWithFollowers> users) {
+        if (users.size() <= 1) return users;
+
+        int mid = users.size() / 2;
+        List<UserWithFollowers> left = mergeSort(users.subList(0, mid));
+        List<UserWithFollowers> right = mergeSort(users.subList(mid, users.size()));
+
+        return merge(left, right);
+    }
+
+    private List<UserWithFollowers> merge(List<UserWithFollowers> left, List<UserWithFollowers> right) {
+        List<UserWithFollowers> merged = new ArrayList<>();
+        int i = 0, j = 0;
+
+        while (i < left.size() && j < right.size()) {
+            if (left.get(i).followerCount >= right.get(j).followerCount) {
+                merged.add(left.get(i++));
+            } else {
+                merged.add(right.get(j++));
+            }
+        }
+
+        while (i < left.size()) merged.add(left.get(i++));
+        while (j < right.size()) merged.add(right.get(j++));
+
+        return merged;
     }
 }

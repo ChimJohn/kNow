@@ -47,10 +47,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirestoreManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirestoreManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/UserProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/UserProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +59,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/Jeffrey_1/.android/avd/Medium_Phone_API_35.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/nickyho/.android/avd/Pixel_9_Pro_API_35.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$/Prototype">
       <ProjectState />
@@ -95,6 +94,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "ChimJohn"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ChimJohn/kNowPrototype.git",
+    "accountId": "7718792b-1536-4682-8207-89a05f157deb"
+  }
+}]]></component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -119,7 +130,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "other-user-profile-jeff",
+    "git-widget-placeholder": "WIP",
     "kotlin-language-version-configured": "true",
     "settings.editor.selected.configurable": "preferences.general"
   }
@@ -219,12 +230,12 @@
       <map>
         <entry key="com.prototypes.prototype">
           <value>
-            <CheckInfo lastCheckTimestamp="1743603189025" />
+            <CheckInfo lastCheckTimestamp="1743770306118" />
           </value>
         </entry>
         <entry key="com.prototypes.prototype.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1743603189021" />
+            <CheckInfo lastCheckTimestamp="1743770306118" />
           </value>
         </entry>
       </map>
