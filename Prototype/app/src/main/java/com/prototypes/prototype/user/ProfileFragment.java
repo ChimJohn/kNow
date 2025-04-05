@@ -119,7 +119,7 @@ public class ProfileFragment extends Fragment {
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
                 tvName.setText(name);
-                tvHandle.setText(username);
+                tvHandle.setText("@"+username);
                 if (profile == null){
                     Glide.with(ProfileFragment.this)
                             .load(R.drawable.default_profile)

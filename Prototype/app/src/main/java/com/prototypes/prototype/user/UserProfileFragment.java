@@ -9,15 +9,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.custommap.CustomMap;
+import com.prototypes.prototype.custommap.CustomMapAdaptor;
+import com.prototypes.prototype.custommap.OtherCustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.story.Story;
@@ -27,15 +32,17 @@ import java.util.List;
 public class UserProfileFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String TAG = "UserProfileFragment";
-    private String userId;
+    private String userId, profile;
     private FirebaseFirestore db;
     private ImageView imgProfile;
     private TextView tvName, tvHandle, tvFollowers;
-    private RecyclerView galleryRecyclerView;
+    private RecyclerView galleryRecyclerView, mapRecyclerView;
     private GalleryAdaptor galleryAdaptor;
     private FollowManager followManager;
     private Button followButton;
     private boolean isFollowing = false;
+    LinearLayout linearLayoutMaps;
+    OtherCustomMapAdaptor otherCustomMapAdaptor;
     FirebaseAuthManager authManager;
     FirestoreManager firestoreStoriesManager;
 
@@ -72,18 +79,17 @@ public class UserProfileFragment extends Fragment {
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
         galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
-
-        // Hide maps section if it exists in the layout
-        RecyclerView mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
-        if (mapRecyclerView != null) {
-            mapRecyclerView.setVisibility(View.GONE);
-        }
+        mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
+        mapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        linearLayoutMaps = view.findViewById(R.id.linearLayoutMaps);
 
         followButton = view.findViewById(R.id.btnFollow);
         followButton.setOnClickListener(v -> toggleFollowStatus());
 
         // Load user data
         loadUserData();
+        // Load user maps
+        loadUserMaps();
 
         return view;
     }
@@ -96,7 +102,8 @@ public class UserProfileFragment extends Fragment {
             public void onSuccess(User user) {
                 // Update UI with user data
                 tvName.setText(user.getName());
-                tvHandle.setText(user.getUsername());
+                tvHandle.setText("@"+user.getUsername());
+                profile = user.getProfile();
 
                 List<String> followersList = user.getFollowers();
                 if (followersList == null) {
@@ -106,9 +113,15 @@ public class UserProfileFragment extends Fragment {
                 }
 
                 // Load profile image
-                Glide.with(UserProfileFragment.this)
-                        .load(user.getProfile())
-                        .into(imgProfile);
+                if (profile == null){
+                    Glide.with(getActivity())
+                            .load(R.drawable.default_profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }else{
+                    Glide.with(getActivity())
+                            .load(profile)
+                            .into(imgProfile); //TODO: add buffering img
+                }
 
                 // Load user's media
                 loadUserMedia();
@@ -122,31 +135,34 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadUserMedia() {
-        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback<Story>() {
-            @Override
-            public void onMapsLoaded(ArrayList<Story> customMaps) {
-                if (customMaps.isEmpty()) {
-                    galleryRecyclerView.setVisibility(View.GONE);
-                    TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
-                    tvNoPhotos.setVisibility(View.VISIBLE);
-                } else {
-                    galleryRecyclerView.setVisibility(View.VISIBLE);
-                    TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
-                    tvNoPhotos.setVisibility(View.GONE);
+        FirestoreManager<Story> firestoreStoriesManager = new FirestoreManager<>(db, Story.class);
 
-                    galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
-                    galleryRecyclerView.setAdapter(galleryAdaptor);
-                }
-            }
+        firestoreStoriesManager.queryDocuments("media", "userId", userId,
+                new FirestoreManager.FirestoreQueryCallback<Story>() {
+                    @Override
+                    public void onEmpty(ArrayList<Story> storyList) {
+                        galleryRecyclerView.setVisibility(View.GONE);
+                        TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
+                        tvNoPhotos.setVisibility(View.VISIBLE);
+                    }
 
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Failed to load user media: " + e.getMessage());
-            }
-        });
+                    @Override
+                    public void onSuccess(ArrayList<Story> storyList) {
+                        galleryRecyclerView.setVisibility(View.VISIBLE);
+                        TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
+                        tvNoPhotos.setVisibility(View.GONE);
 
+                        galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
+                        galleryRecyclerView.setAdapter(galleryAdaptor);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Failed to load user media: " + e.getMessage());
+                    }
+                });
         // Check if current user is following this user
-        String currentUserId = User.getUid(getActivity());
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         followManager.checkFollowingStatus(currentUserId, userId, new FollowManager.FollowStatusCallback() {
             @Override
             public void onResult(boolean isFollowing) {
@@ -156,6 +172,26 @@ public class UserProfileFragment extends Fragment {
         });
     }
 
+    private void loadUserMaps() {
+        FirestoreManager<CustomMap> firestoreStoriesManager = new FirestoreManager<>(db, CustomMap.class);
+        firestoreStoriesManager.queryDocuments("map", "owner", userId, new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+            @Override
+            public void onEmpty(ArrayList<CustomMap> results) {
+                Log.d(TAG, "Empty maps list");
+                linearLayoutMaps.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onSuccess(ArrayList<CustomMap> results) {
+                otherCustomMapAdaptor = new OtherCustomMapAdaptor(getActivity(), results);
+                mapRecyclerView.setAdapter(otherCustomMapAdaptor);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "Error: "+e.getMessage());
+            }
+        });
+    }
     private void toggleFollowStatus() {
         followManager.toggleFollowStatus(userId, new FollowManager.FollowCallback() {
             @Override
