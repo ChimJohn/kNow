@@ -1,6 +1,7 @@
-package com.prototypes.prototype;
+package com.prototypes.prototype.story;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -15,25 +16,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.material.chip.ChipGroup;
-
-import android.graphics.Bitmap;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.prototypes.prototype.CurrentLocationViewModel;
+import com.prototypes.prototype.MediaViewModel;
+import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.CustomMap;
-import com.prototypes.prototype.custommap.CustomMapAdaptor;
+import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.upload.SelectMapAdaptor;
 import com.prototypes.prototype.user.User;
 

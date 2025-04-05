@@ -8,16 +8,9 @@ import com.google.firebase.Timestamp;
 import java.util.List;
 
 public class Story implements Parcelable {
-    private String id;
-    private String userId;
-    private String caption;
-    private String category;
-    private String mediaType;
-    private String mediaUrl;
-    private String thumbnailUrl;
+    private String id, userId, caption, category, mediaType, mediaUrl, thumbnailUrl;
     private Timestamp timestamp;
-    private double latitude;
-    private double longitude;
+    private double latitude, longitude;
     private List<String> mapsID;
 
     public Story(){}
@@ -40,9 +33,9 @@ public class Story implements Parcelable {
     public String getMediaUrl() { return mediaUrl; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
-    public Boolean isVideo(){ return mediaType.equals("video"); }
     public String getMediaType() { return this.mediaType; }
-    public String getCategory() {return category;}
+    public String getCategory() { return category; }
+    public Boolean isVideo(){ return mediaType.equals("video"); }
     protected Story(Parcel in) {
         id = in.readString();
         userId = in.readString();
@@ -80,7 +73,6 @@ public class Story implements Parcelable {
         public Story createFromParcel(Parcel in) {
             return new Story(in);
         }
-
         @Override
         public Story[] newArray(int size) {
             return new Story[size];

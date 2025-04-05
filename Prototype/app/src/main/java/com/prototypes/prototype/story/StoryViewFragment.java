@@ -13,7 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prototypes.prototype.ExploreFragment;
+import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.R;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.List;
 public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGpsClickListener{
     private ArrayList<Story> storyList;
     private ViewPager2 viewPager2;
-    private StoryViewAdapter adapter;
+    private StoryViewAdapter storyViewAdapter;
     public static StoryViewFragment newInstance(List<Story> stories) {
         StoryViewFragment fragment = new StoryViewFragment();
         Bundle bundle = new Bundle();
@@ -42,31 +42,31 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewPager2 = view.findViewById(R.id.storyViewPager);
+        storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this);
+        viewPager2.setAdapter(storyViewAdapter);
+        viewPager2.setOffscreenPageLimit(2);
+        preloadMedia();
+    }
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (getActivity() != null) {
             BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
             if (bottomNav != null) {
-                bottomNav.setVisibility(View.VISIBLE); // Show it again
+                bottomNav.setVisibility(View.VISIBLE);
             }
         }
+        if (storyViewAdapter != null) {
+            storyViewAdapter.removeAutoScrollCallbacks();
+        }
     }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        viewPager2 = view.findViewById(R.id.storyViewPager);
-        adapter = new StoryViewAdapter(getContext(), storyList, this, viewPager2);
-        viewPager2.setAdapter(adapter);
-        preloadMedia();
-    }
-
     private void preloadMedia() {
         if (storyList == null || storyList.isEmpty()) return;
-        for (int i = 0; i < storyList.size(); i++) {
-            Story story = storyList.get(i);
+        for (Story story : storyList) {
             if (!story.isVideo()) {
-                // Preload image
                 Glide.with(requireContext()).load(story.getMediaUrl()).preload();
             }
         }

@@ -42,10 +42,7 @@
 
     public class StoryClusterRenderer extends DefaultAdvancedMarkersClusterRenderer<StoryCluster> {
         private final Context context;
-        private final ClusterManager<StoryCluster> clusterManager;
-
-        private Map<String, Marker> markerMap = new HashMap<>();
-
+        private final Map<String, Marker> markerMap = new HashMap<>();
         private final LruCache<String, BitmapDescriptor> iconCache = new LruCache<>(200); // Max 50 items
         private final Map<Set<StoryCluster>, BitmapDescriptor> clusterIconCache =
                 new LinkedHashMap<Set<StoryCluster>, BitmapDescriptor>(100, 0.75f, true) {
@@ -57,7 +54,6 @@
         public StoryClusterRenderer(Context context, GoogleMap map, ClusterManager<StoryCluster> clusterManager) {
             super(context, map, clusterManager);
             this.context = context;
-            this.clusterManager = clusterManager;
         }
         @Override
         protected void onBeforeClusterRendered(@NonNull Cluster<StoryCluster> cluster,
@@ -145,25 +141,21 @@
             }
         }
         private BitmapDescriptor createPieChart(List<Bitmap> thumbnails, int size, int clusterSize) {
-            // Define min and max size constraints
-            int minSize = 50;  // Minimum circle size
-            int maxSize = 300; // Maximum circle size
-            size = Math.max(minSize, Math.min(size, maxSize)); // Clamp the size
+            int minSize = 50;
+            int maxSize = 300;
+            size = Math.max(minSize, Math.min(size, maxSize));
             if (thumbnails.size() > 6) {
                 thumbnails = thumbnails.subList(0, 6);
             }
             Paint paint = new Paint();
             paint.setAntiAlias(true);
-            // Create the bitmap to represent the cluster icon
             Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(output);
 
-            // Darken the background by adding a gray circle
             paint.setColor(Color.argb(150, 169, 169, 169));  // Gray color (50% opacity)
             float radius = size / 2f;  // Radius of the circle
             canvas.drawCircle(radius, radius, radius, paint);  // Draw gray circle background
 
-            // If there are thumbnails, draw them in a pie chart
             if (!thumbnails.isEmpty()) {
                 paint.setColor(Color.argb(150, 0, 0, 0));  // Semi-transparent black background
                 canvas.drawCircle(radius, radius, radius, paint);  // Draw dark circle
