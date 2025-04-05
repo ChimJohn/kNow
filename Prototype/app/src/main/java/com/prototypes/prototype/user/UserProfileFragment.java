@@ -120,34 +120,31 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadUserMedia() {
-        FirestoreManager<Story> firestoreStoriesManager = new FirestoreManager<>(db, Story.class);
+        User.getStories(getActivity(), new User.UserCallback<Story>() {
+            @Override
+            public void onMapsLoaded(ArrayList<Story> customMaps) {
+                if (customMaps.isEmpty()) {
+                    galleryRecyclerView.setVisibility(View.GONE);
+                    TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
+                    tvNoPhotos.setVisibility(View.VISIBLE);
+                } else {
+                    galleryRecyclerView.setVisibility(View.VISIBLE);
+                    TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
+                    tvNoPhotos.setVisibility(View.GONE);
 
-        firestoreStoriesManager.queryDocuments("media", "userId", userId,
-                new FirestoreManager.FirestoreQueryCallback<Story>() {
-                    @Override
-                    public void onEmpty(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.GONE);
-                        TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
-                        tvNoPhotos.setVisibility(View.VISIBLE);
-                    }
+                    galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
+                    galleryRecyclerView.setAdapter(galleryAdaptor);
+                }
+            }
 
-                    @Override
-                    public void onSuccess(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.VISIBLE);
-                        TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
-                        tvNoPhotos.setVisibility(View.GONE);
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Failed to load user media: " + e.getMessage());
+            }
+        });
 
-                        galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                        galleryRecyclerView.setAdapter(galleryAdaptor);
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.e(TAG, "Failed to load user media: " + e.getMessage());
-                    }
-                });
         // Check if current user is following this user
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String currentUserId = User.getUid(getActivity());
         followManager.checkFollowingStatus(currentUserId, userId, new FollowManager.FollowStatusCallback() {
             @Override
             public void onResult(boolean isFollowing) {
