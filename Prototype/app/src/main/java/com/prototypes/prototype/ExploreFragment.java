@@ -237,7 +237,7 @@ public class ExploreFragment extends Fragment {
         EditText etSearch = view.findViewById(R.id.etSearch);
         rvUserSearchResults = view.findViewById(R.id.rvSearchResults);
         rvUserSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
-        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), item -> {});
+        userSearchAdapter = new UserSearchAdapter(new ArrayList<>(), this::handleUserClick);
         rvUserSearchResults.setAdapter(userSearchAdapter);
 
         // Near me button

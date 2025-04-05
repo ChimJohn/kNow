@@ -94,9 +94,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
         // Retrieve all media related to user
         getMedia();
         // Retrieve all maps
