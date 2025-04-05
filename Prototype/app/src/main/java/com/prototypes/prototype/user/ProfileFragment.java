@@ -33,8 +33,8 @@ import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-//    DocumentSnapshot document;
+    FirebaseFirestore db ;
+    FirestoreManager firestoreManager, firestoreMapManager, firestoreStoriesManager;
     String name, username, profile;
     List<String> followersList, stories;
     ImageView imgProfile;
@@ -50,6 +50,11 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        db = FirebaseFirestore.getInstance();
+        firestoreManager = new FirestoreManager(db, User.class);
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
 
         // Get UI elements
         imgProfile = view.findViewById(R.id.imageProfile);
@@ -98,7 +103,7 @@ public class ProfileFragment extends Fragment {
         getMaps();
     }
     public void getUser(){
-        User.getUserData(getActivity(), new User.UserReadCallback<User>() {
+        User.getUserData(getActivity(), firestoreManager, new User.UserReadCallback<User>() {
             @Override
             public void onSuccess(User user) {
                 name = user.getName();
@@ -132,7 +137,6 @@ public class ProfileFragment extends Fragment {
                 // Retrieve all maps
                 getMaps();
             }
-
             @Override
             public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreManager failed: "+ e);
@@ -140,7 +144,7 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void getMedia(){
-        User.getStories(getActivity(), new User.UserCallback() {
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback() {
             @Override
             public void onMapsLoaded(ArrayList customMaps) {
                 if (customMaps.isEmpty()){
@@ -160,7 +164,7 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void getMaps(){
-        User.getMaps(getActivity(), new User.UserCallback<CustomMap>() {
+        User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
             public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
                 if (customMaps.isEmpty()){
