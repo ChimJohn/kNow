@@ -14,11 +14,13 @@ import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
+import com.prototypes.prototype.user.User;
 
 import java.util.ArrayList;
 
 public class EditMaps extends AppCompatActivity {
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    FirebaseFirestore db;
+    FirestoreManager firestoreMapManager;
     Toolbar toolbar;
     RecyclerView mapsRecycler;
     private static final String TAG = "Edit Maps Activity";
@@ -29,8 +31,8 @@ public class EditMaps extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_maps);
 
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        db = FirebaseFirestore.getInstance();
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
 
         toolbar = findViewById(R.id.toolbarEditMaps);
         mapsRecycler = findViewById(R.id.rvMaps);
@@ -41,29 +43,21 @@ public class EditMaps extends AppCompatActivity {
             finish(); // Return to ProfileFragment
         });
 
-        firestoreMapManager.queryDocuments("map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+        // Get maps retlated to the user
+        User.getMaps(this, firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
-            public void onEmpty(ArrayList results) {
-                Log.d(TAG, "No Maps");
+            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+                if (customMaps.size() > 0) {
+                    EditMapsAdaptor editMapsAdaptor = new EditMapsAdaptor(EditMaps.this, customMaps);
+                    mapsRecycler.setAdapter(editMapsAdaptor);
+                } else {
+                    Log.d(TAG, "No Maps");
+                }
             }
-
             @Override
-            public void onSuccess(ArrayList<CustomMap> results) {
-                Log.d(TAG, "Success. Number of results: "+ results.size());
-                Log.d(TAG, "Test: "+ results.get(1).getName());
-
-                EditMapsAdaptor editMapsAdaptor = new EditMapsAdaptor(EditMaps.this, results);
-                mapsRecycler.setAdapter(editMapsAdaptor);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.d(TAG, "Error getting maps: "+e.toString());
+            public void onError(Exception e) {
+                Log.d(TAG, "Error");
             }
         });
-
-
-
-
     }
 }

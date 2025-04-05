@@ -41,6 +41,8 @@ import java.util.ArrayList;
 
 public class StoryUploadFragment extends Fragment {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuthManager firebaseAuthManager;
+    FirestoreManager firestoreStoriesManager, firestoreMapManager;
     private static final String ARG_MEDIA_URI = "mediaUri";
     private ImageView imageView;
     ImageButton btnExit;
@@ -48,8 +50,6 @@ public class StoryUploadFragment extends Fragment {
     private EditText captionEditText;
     private Button saveButton;
     private ChipGroup categoryChipGroup;
-    private FirebaseAuthManager firebaseAuthManager;
-    FirestoreManager firestoreMapManager;
     private MediaViewModel mediaViewModel;
     private static final String TAG = "Story Upload Fragment";
 
@@ -80,6 +80,7 @@ public class StoryUploadFragment extends Fragment {
         mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
         firebaseAuthManager = new FirebaseAuthManager(requireActivity());
         firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
 
         imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
@@ -95,7 +96,7 @@ public class StoryUploadFragment extends Fragment {
         Uri mediaUri = Uri.parse(mediaUriString);
 
         // Display all custom maps in recycler view
-        getMaps(firestoreMapManager, firebaseAuthManager);
+        getMaps();
 
         mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
         if (mediaUri.toString().endsWith(".mp4")) {
@@ -157,23 +158,19 @@ public class StoryUploadFragment extends Fragment {
         return "None"; // Default category if none is selected
     }
 
-    public void getMaps(FirestoreManager firestoreMapManager, FirebaseAuthManager firebaseAuthManager){
-        firestoreMapManager.queryDocuments("map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+    public void getMaps(){
+        User.getMaps(getActivity(),firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
-            public void onEmpty(ArrayList<CustomMap> customMaps) {
-                Log.d(TAG, "Number of Custom Maps: 0");
+            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+                if (customMaps.size() > 0) {
+                    SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
+                    selectMapRecyclerView.setAdapter(selectMapAdaptor);
+                } else {
+                    Log.d(TAG, "No Maps");
+                }
             }
             @Override
-            public void onSuccess(ArrayList<CustomMap> customMaps) {
-                Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
-                Log.d(TAG, "Map name: "+ customMaps.get(1).getName());
-
-                SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
-                selectMapRecyclerView.setAdapter(selectMapAdaptor);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
+            public void onError(Exception e) {
                 Log.d(TAG, "firestoreMapManager failed: "+ e);
             }
         });

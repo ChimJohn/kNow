@@ -11,6 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.inputmethod.InputMethodManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -80,6 +81,7 @@ public class ExploreFragment extends Fragment {
     private SensorManager sensorManager;
     private Sensor rotationVectorSensor;
     private float currentBearing = 0f;
+    private boolean suppressSearch = false;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
@@ -233,6 +235,8 @@ public class ExploreFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (suppressSearch) return;
+
                 String query = s.toString().trim();
                 if (query.startsWith("@")) {
                     String usernameQuery = query.substring(1).toLowerCase();
@@ -275,7 +279,7 @@ public class ExploreFragment extends Fragment {
                     );
                     FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                             .setQuery(query)
-                            .setLocationBias(bounds)
+                            .setLocationRestriction(bounds)
                             .setTypeFilter(TypeFilter.ADDRESS)
                             .build();
                     placesClient.findAutocompletePredictions(request)
@@ -290,10 +294,22 @@ public class ExploreFragment extends Fragment {
                                     int index = locationNames.indexOf(selectedName);
                                     if (index != -1) {
                                         String placeId = locationPlaceIds.get(index);
+
+                                        // Hide keyboard
+                                        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                        imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+
+                                        // Prevent TextWatcher logic from being triggered
+                                        suppressSearch = true;
+                                        etSearch.setText(selectedName);
+                                        etSearch.clearFocus();
+                                        suppressSearch = false;
+
+                                        rvUserSearchResults.setVisibility(View.GONE);
                                         fetchAndZoomToPlace(placeId);
                                     }
                                 });
-                                rvUserSearchResults.setAdapter(userSearchAdapter);
+
                                 rvUserSearchResults.setVisibility(locationNames.isEmpty() ? View.GONE : View.VISIBLE);
                             })
                             .addOnFailureListener(e -> {

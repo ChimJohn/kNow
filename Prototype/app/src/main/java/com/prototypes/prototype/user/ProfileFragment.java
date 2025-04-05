@@ -33,8 +33,8 @@ import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-//    DocumentSnapshot document;
+    FirebaseFirestore db ;
+    FirestoreManager firestoreManager, firestoreMapManager, firestoreStoriesManager;
     String name, username, profile;
     List<String> followersList, stories;
     ImageView imgProfile;
@@ -51,10 +51,10 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(this.getActivity());
-        FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        db = FirebaseFirestore.getInstance();
+        firestoreManager = new FirestoreManager(db, User.class);
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
 
         // Get UI elements
         imgProfile = view.findViewById(R.id.imageProfile);
@@ -87,7 +87,23 @@ public class ProfileFragment extends Fragment {
             }
         });
         // Get user details
-        firestoreManager.readDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreReadCallback<User>() {
+        getUser();
+
+        return view;
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
+        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
+        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        // Retrieve all media related to user
+        getMedia();
+        // Retrieve all maps
+        getMaps();
+    }
+    public void getUser(){
+        User.getUserData(getActivity(), firestoreManager, new User.UserReadCallback<User>() {
             @Override
             public void onSuccess(User user) {
                 name = user.getName();
@@ -117,96 +133,60 @@ public class ProfileFragment extends Fragment {
                             .into(imgProfile); //TODO: add buffering img
                 }
                 // Retrieve all media related to user
-                getMedia(firestoreStoriesManager, firebaseAuthManager);
+                getMedia();
                 // Retrieve all maps
-                getMaps(firestoreMapManager, firebaseAuthManager);
+                getMaps();
             }
             @Override
             public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
-        return view;
     }
-    @Override
-    public void onResume(){
-        super.onResume();
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
-        // Retrieve all media related to user
-        getMedia(firestoreStoriesManager, firebaseAuthManager);
-        // Retrieve all maps
-        getMaps(firestoreMapManager, firebaseAuthManager);
-    }
-    public void getMedia(FirestoreManager firestoreStoriesManager, FirebaseAuthManager firebaseAuthManager){
-        firestoreStoriesManager.queryDocuments("media", "userId", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<Story>() {
+    public void getMedia(){
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback() {
             @Override
-            public void onEmpty(ArrayList<Story> storyList) {
-                galleryRecyclerView.setVisibility(View.GONE);
-                tvNoPhotos.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onSuccess(ArrayList<Story> storyList) {
-                galleryRecyclerView.setVisibility(View.VISIBLE);
-                tvNoPhotos.setVisibility(View.GONE);
-                galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                galleryRecyclerView.setAdapter(galleryAdaptor);
+            public void onMapsLoaded(ArrayList customMaps) {
+                if (customMaps.isEmpty()){
+                    galleryRecyclerView.setVisibility(View.GONE);
+                    tvNoPhotos.setVisibility(View.VISIBLE);
+                }else{
+                    galleryRecyclerView.setVisibility(View.VISIBLE);
+                    tvNoPhotos.setVisibility(View.GONE);
+                    galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
+                    galleryRecyclerView.setAdapter(galleryAdaptor);
+                }
             }
             @Override
-            public void onFailure(Exception e) {
+            public void onError(Exception e) {
                 Log.d(TAG, "firestoreStoriesManager failed: " + e);
             }
         });
-
     }
-    public void getMaps(FirestoreManager firestoreMapManager, FirebaseAuthManager firebaseAuthManager){
-        firestoreMapManager.queryDocuments("map", "owner", firebaseAuthManager.getCurrentUser().getUid(), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
+    public void getMaps(){
+        User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
-            public void onEmpty(ArrayList<CustomMap> customMaps) {
-                Log.d(TAG, "Number of Custom Maps: 0");
-                customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
-                mapRecyclerView.setAdapter(customMapAdaptor);
-                // Create "Add" map element
-                CustomMap addMap = new CustomMap("Add", null, null, "");
-                customMapAdaptor.addItemToTop(addMap);
-            }
-            @Override
-            public void onSuccess(ArrayList<CustomMap> customMaps) {
-                Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
-                customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
-                mapRecyclerView.setAdapter(customMapAdaptor);
+            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+                if (customMaps.isEmpty()){
+                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                    mapRecyclerView.setAdapter(customMapAdaptor);
+                    // Create "Add" map element
+                    CustomMap addMap = new CustomMap("Add", null, null, "");
+                    customMapAdaptor.addItemToTop(addMap);
+                }else{
+                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                    mapRecyclerView.setAdapter(customMapAdaptor);
 
-                // Create "Add" map element
-                CustomMap addMap = new CustomMap("Add", null, null, "");
-                customMapAdaptor.addItemToTop(addMap);
+                    // Create "Add" map element
+                    CustomMap addMap = new CustomMap("Add", null, null, "");
+                    customMapAdaptor.addItemToTop(addMap);
+                }
             }
 
             @Override
-            public void onFailure(Exception e) {
-                Log.d(TAG, "firestoreMapManager failed: "+ e);
+            public void onError(Exception e) {
+                    Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
     }
-    // ignore this method
-//    public void test(FirestoreManager firestoreStoriesManager){
-//        firestoreStoriesManager.queryArrayInDocuments("test", "userId", "hh8PYvfd5wONjq3Xk508kgvDBjE3", "maps", "uzERlkCHjEGWhDvzrRgH", new FirestoreManager.FirestoreQueryCallback() {
-//            @Override
-//            public void onEmpty(ArrayList results) {
-//                Log.e(TAG, "Empty List");
-//            }
-//
-//            @Override
-//            public void onSuccess(ArrayList results) {
-//                Log.e(TAG, "SUCCESS");
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//                Log.e(TAG, "FAILLLSLSL");
-//
-//            }
-//        });
-//    }
 }

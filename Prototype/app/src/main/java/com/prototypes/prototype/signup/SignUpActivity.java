@@ -21,7 +21,7 @@ import com.prototypes.prototype.R;
 import com.prototypes.prototype.user.User;
 
 public class SignUpActivity extends AppCompatActivity {
-    TextView tvEmail, tvPassword, tvUsername;
+    TextView tvUsername, tvName, tvEmail, tvPassword;
     Button btnSignUp;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -35,6 +35,7 @@ public class SignUpActivity extends AppCompatActivity {
         FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
 
         // Reference UI elements
+        tvName = findViewById(R.id.etName);
         tvUsername = findViewById(R.id.etUsername);
         tvEmail = findViewById(R.id.etSignUpEmail);
         tvPassword = findViewById(R.id.etSignUpPassword);
@@ -43,10 +44,16 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String name = tvName.getText().toString();
                 String username = tvUsername.getText().toString().trim();
                 String email = tvEmail.getText().toString();
                 String password = tvPassword.getText().toString().trim();
 
+                // Check if name is empty
+                if (TextUtils.isEmpty(name)){
+                    Toast.makeText(SignUpActivity.this, "Enter name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 // Check if username is empty
                 if (TextUtils.isEmpty(username)){
                     Toast.makeText(SignUpActivity.this, "Enter username", Toast.LENGTH_SHORT).show();
@@ -71,7 +78,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
 
                         // Create user object and add to firestore
-                        User newuser = new User(username, email);
+                        User newuser = new User(name, username, email);
                         firestoreManager.writeDocument("Users", firebaseAuthManager.getCurrentUser().getUid(), newuser, new FirestoreManager.FirestoreCallback() {
                             @Override
                             public void onSuccess() {

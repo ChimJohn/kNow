@@ -18,7 +18,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final String TAG = "SettingsActivity";
     private FirebaseAuthManager authManager;
-    TextView tvLogout;
+    TextView tvLogout, tvDeleteAccount;
     Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,5 +56,28 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(intent);
             Log.d(TAG, "Navigated to login screen after logout.");
         });
+
+        tvDeleteAccount = findViewById(R.id.tvDeleteAccount);
+        tvDeleteAccount.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Confirm Deletion")
+                    .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        authManager.deleteUser(SettingsActivity.this, () -> {
+                            runOnUiThread(() -> {
+                                Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                Log.d(TAG, "Navigated to login screen after account deletion.");
+                            });
+                        });
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .setCancelable(true)
+                    .show();
+        });
+
+
     }
 }
