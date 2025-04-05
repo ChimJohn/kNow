@@ -51,14 +51,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/UserSearchAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/UserSearchAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirebaseAuthManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirebaseAuthManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/settings/SettingsActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/settings/SettingsActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml" afterDir="false" />
-    </list>
+    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -67,7 +60,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/nickyho/.android/avd/Pixel_9_Pro_API_35.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/Jeffrey_1/.android/avd/Pixel_9_Pro_XL.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$/Prototype">
       <ProjectState />
@@ -129,20 +122,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.Prototype.app.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "settings.editor.selected.configurable": "preferences.general"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.Prototype.app.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.prototypes.prototype" />
