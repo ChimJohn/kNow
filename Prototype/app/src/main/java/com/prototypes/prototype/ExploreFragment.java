@@ -103,7 +103,7 @@ public class ExploreFragment extends Fragment {
     private float currentBearing = 0f;
     private Marker gpsMarker;
     private boolean suppressSearch = false;
-    private int zoomInt = 18;
+    private int zoomInt = 16;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
