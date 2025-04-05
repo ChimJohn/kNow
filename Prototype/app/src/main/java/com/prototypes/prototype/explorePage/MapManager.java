@@ -1,76 +1,175 @@
 package com.prototypes.prototype.explorePage;
 
-import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
-import android.location.Location;
+import android.util.Log;
+import android.view.View;
 
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
+import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.story.Story;
+import com.prototypes.prototype.story.StoryCluster;
+import com.prototypes.prototype.story.StoryClusterRenderer;
+import com.prototypes.prototype.story.StoryViewFragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MapManager {
-    private final GoogleMap googleMap;
-    private Marker gpsMarker;
-    private Circle pulsatingCircle;
-    private ValueAnimator pulseAnimator;
     private final Context context;
+    private final Activity activity;
+    private final GoogleMap googleMap;
+    private ClusterManager<StoryCluster> clusterManager;
+    private final Map<String, StoryCluster> allMarkers = new HashMap<>();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private ListenerRegistration mediaListener;
+    private RouteHandler routeHandler;
+    FragmentManager parentFragmentManager;
 
-    public MapManager(Context context, GoogleMap googleMap) {
+
+    public MapManager(Activity activity, Context context, FragmentManager parentFragmentManager, GoogleMap map) {
+        this.activity = activity;
         this.context = context;
-        this.googleMap = googleMap;
-        setMapSettings();
+        this.parentFragmentManager = parentFragmentManager;
+        this.googleMap = map;
     }
 
-    private void setMapSettings() {
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style));
+    public void setupMap(){
+        LatLng singapore = new LatLng(1.3521, 103.8198);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setCompassEnabled(false);
         googleMap.getUiSettings().setRotateGesturesEnabled(false);
         googleMap.getUiSettings().setTiltGesturesEnabled(false);
+        clusterManager = new ClusterManager<>(context, googleMap);
+        clusterManager.setRenderer(new StoryClusterRenderer(context, googleMap, clusterManager));
+        googleMap.setOnCameraIdleListener(clusterManager);
+        NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+        algorithm.setMaxDistanceBetweenClusteredItems(30);
+        clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
+
+        clusterManager.setOnClusterItemClickListener(storyCluster -> {
+            Story story = new Story(
+                    storyCluster.getId(),
+                    storyCluster.getUserId(),
+                    storyCluster.getCaption(),
+                    storyCluster.getCategory(),
+                    storyCluster.getMediaUrl(),
+                    storyCluster.getLatitude(),
+                    storyCluster.getLongitude(),
+                    storyCluster.getMediaType()
+            );
+            ArrayList<Story> storyList = new ArrayList<>();
+            storyList.add(story);
+            FragmentTransaction transaction = parentFragmentManager.beginTransaction();
+            transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
+            transaction.addToBackStack(null);
+            transaction.commit();
+            if (activity != null) {
+                BottomNavigationView bottomNav = activity.findViewById(R.id.bottomNavigationView);
+                if (bottomNav != null) {
+                    bottomNav.setVisibility(View.GONE);
+                }
+            }
+            return true;
+        });
+
+        clusterManager.setOnClusterClickListener(cluster -> {
+            List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
+            ArrayList<Story> storyList = new ArrayList<>();
+            for (StoryCluster storyCluster : clusterItems) {
+                storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
+            }
+            FragmentTransaction transaction = parentFragmentManager.beginTransaction();
+            transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
+            transaction.addToBackStack(null);
+            transaction.commit();
+            if (activity != null) {
+                BottomNavigationView bottomNav = activity.findViewById(R.id.bottomNavigationView);
+                if (bottomNav != null) {
+                    bottomNav.setVisibility(View.GONE);
+                }
+            }
+            return true;
+        });
     }
 
-    public void updateGpsMarker(Location location) {
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        if (gpsMarker == null) {
-            gpsMarker = googleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow_up_gps))
-                    .anchor(0.5f, 0.5f)
-                    .rotation(location.getBearing()));
-        } else {
-            gpsMarker.setPosition(latLng);
-            gpsMarker.setRotation(location.getBearing());
+    private void removeMarker(String id) {
+        StoryCluster existing = allMarkers.remove(id);
+        if (existing != null) {
+            clusterManager.removeItem(existing);
         }
+    }
 
-        if (pulsatingCircle == null) {
-            pulsatingCircle = googleMap.addCircle(new CircleOptions()
-                    .center(latLng)
-                    .radius(1)
-                    .strokeWidth(0f)
-                    .fillColor(Color.argb(100, 10, 163, 223)));
-            startPulsatingEffect();
-        } else {
-            pulsatingCircle.setCenter(latLng);
+
+    public void clear() {
+        if (mediaListener != null) {
+            mediaListener.remove();
+            mediaListener = null;
+        }
+        clusterManager.clearItems();
+        allMarkers.clear();
+    }
+
+    public void listenToMarkersData() {
+        mediaListener = db.collection("media")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.e("listenToMarkersData()", "Listen failed.", e);
+                        return;
+                    }
+                    if (snapshots == null) return;
+                    for (DocumentChange change : snapshots.getDocumentChanges()) {
+                        DocumentSnapshot documentSnapshot = change.getDocument();
+                        String id = documentSnapshot.getId();
+                        String userId = documentSnapshot.getString("userId");
+                        String caption = documentSnapshot.getString("caption");
+                        String category = documentSnapshot.getString("category");
+                        String mediaUrl = documentSnapshot.getString("mediaUrl");
+                        String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
+                        String mediaType = documentSnapshot.getString("mediaType");
+                        Double latitude = documentSnapshot.getDouble("latitude");
+                        Double longitude = documentSnapshot.getDouble("longitude");
+                        if (latitude == null || longitude == null) continue;
+                        StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
+                        switch (change.getType()) {
+                            case ADDED:
+                                clusterManager.addItem(storyCluster);
+                                allMarkers.put(id, storyCluster);
+                                break;
+                            case MODIFIED:
+                                removeMarkerById(id);
+                                clusterManager.addItem(storyCluster);
+                                allMarkers.put(id, storyCluster);
+                                break;
+                            case REMOVED:
+                                removeMarkerById(id);
+                                break;
+                        }
+                    }
+                    clusterManager.cluster();
+                });
+    }
+    private void removeMarkerById(String id) {
+        StoryCluster marker = allMarkers.remove(id);
+        if (marker != null) {
+            clusterManager.removeItem(marker);
         }
     }
 
-    private void startPulsatingEffect() {
-        pulseAnimator = ValueAnimator.ofFloat(10, 20);
-        pulseAnimator.setDuration(1000);
-        pulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        pulseAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        pulseAnimator.addUpdateListener(animation -> pulsatingCircle.setRadius((float) animation.getAnimatedValue()));
-        pulseAnimator.start();
-    }
-
-    public void cleanup() {
-        if (pulseAnimator != null) pulseAnimator.cancel();
-    }
 }

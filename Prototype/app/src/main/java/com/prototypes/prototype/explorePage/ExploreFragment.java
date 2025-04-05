@@ -11,16 +11,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.inputmethod.InputMethodManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,7 +28,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.Place;
@@ -37,22 +35,15 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
-import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 import com.prototypes.prototype.CurrentLocationViewModel;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.UserSearchAdapter;
-import com.prototypes.prototype.story.Story;
 import com.prototypes.prototype.story.StoryCluster;
-import com.prototypes.prototype.story.StoryClusterRenderer;
-import com.prototypes.prototype.story.StoryViewFragment;
 import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.util.ArrayList;
@@ -82,6 +73,7 @@ public class ExploreFragment extends Fragment {
     private Sensor rotationVectorSensor;
     private float currentBearing = 0f;
     private boolean suppressSearch = false;
+    private MapManager mapManager;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
@@ -123,9 +115,9 @@ public class ExploreFragment extends Fragment {
 
         mapView.getMapAsync(map -> {
             googleMap = map;
-            googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
-            LatLng singapore = new LatLng(1.3521, 103.8198);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
+            mapManager = new MapManager(requireActivity(), requireContext(), getParentFragmentManager(), googleMap);
+            mapManager.setupMap();
+            mapManager.listenToMarkersData();
             routeHandler = new RouteHandler(getContext(), googleMap);
             currentLocationMarker = new CurrentLocationMarker(requireActivity(), googleMap);
             final long FETCH_INTERVAL = 30000; // 30 seconds
@@ -151,65 +143,6 @@ public class ExploreFragment extends Fragment {
                     }
                 }
             });
-
-            googleMap.getUiSettings().setMapToolbarEnabled(false);
-            googleMap.getUiSettings().setCompassEnabled(false);
-            googleMap.getUiSettings().setRotateGesturesEnabled(false);
-            googleMap.getUiSettings().setTiltGesturesEnabled(false);
-
-            clusterManager = new ClusterManager<>(requireContext(), googleMap);
-            clusterManager.setRenderer(new StoryClusterRenderer(requireContext(), googleMap, clusterManager));
-            googleMap.setOnCameraIdleListener(clusterManager);
-            NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
-            algorithm.setMaxDistanceBetweenClusteredItems(30);
-            clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
-
-            clusterManager.setOnClusterItemClickListener(storyCluster -> {
-                Story story = new Story(
-                        storyCluster.getId(),
-                        storyCluster.getUserId(),
-                        storyCluster.getCaption(),
-                        storyCluster.getCategory(),
-                        storyCluster.getMediaUrl(),
-                        storyCluster.getLatitude(),
-                        storyCluster.getLongitude(),
-                        storyCluster.getMediaType()
-                );
-                ArrayList<Story> storyList = new ArrayList<>();
-                storyList.add(story);
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
-                transaction.addToBackStack(null);
-                transaction.commit();
-                if (getActivity() != null) {
-                    BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
-                    if (bottomNav != null) {
-                        bottomNav.setVisibility(View.GONE);
-                    }
-                }
-                return true;
-            });
-
-            clusterManager.setOnClusterClickListener(cluster -> {
-                List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
-                ArrayList<Story> storyList = new ArrayList<>();
-                for (StoryCluster storyCluster : clusterItems) {
-                    storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
-                }
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
-                transaction.addToBackStack(null);
-                transaction.commit();
-                if (getActivity() != null) {
-                    BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
-                    if (bottomNav != null) {
-                        bottomNav.setVisibility(View.GONE);
-                    }
-                }
-                return true;
-            });
-
-            listenToMarkersData();
         });
 
         EditText etSearch = view.findViewById(R.id.etSearch);
@@ -290,7 +223,7 @@ public class ExploreFragment extends Fragment {
                                     locationNames.add(prediction.getPrimaryText(null).toString());
                                     locationPlaceIds.add(prediction.getPlaceId());
                                 }
-                                userSearchAdapter = new UserSearchAdapter(locationNames, selectedName -> {
+                                userSearchAdapter.updateData(locationNames, selectedName -> {
                                     int index = locationNames.indexOf(selectedName);
                                     if (index != -1) {
                                         String placeId = locationPlaceIds.get(index);
@@ -349,51 +282,6 @@ public class ExploreFragment extends Fragment {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {}
     };
 
-    private void listenToMarkersData() {
-        mediaListener = db.collection("media")
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        Log.e("Firestore", "Listen failed.", e);
-                        return;
-                    }
-                    if (snapshots == null) return;
-                    for (DocumentChange change : snapshots.getDocumentChanges()) {
-                        DocumentSnapshot documentSnapshot = change.getDocument();
-                        String id = documentSnapshot.getId();
-                        String userId = documentSnapshot.getString("userId");
-                        String caption = documentSnapshot.getString("caption");
-                        String category = documentSnapshot.getString("category");
-                        String mediaUrl = documentSnapshot.getString("mediaUrl");
-                        String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
-                        String mediaType = documentSnapshot.getString("mediaType");
-                        Double latitude = documentSnapshot.getDouble("latitude");
-                        Double longitude = documentSnapshot.getDouble("longitude");
-                        if (latitude == null || longitude == null) continue;
-                        StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
-                        switch (change.getType()) {
-                            case ADDED:
-                                clusterManager.addItem(storyCluster);
-                                allMarkers.put(id, storyCluster);
-                                break;
-                            case MODIFIED:
-                                removeMarkerById(id);
-                                clusterManager.addItem(storyCluster);
-                                allMarkers.put(id, storyCluster);
-                                break;
-                            case REMOVED:
-                                removeMarkerById(id);
-                                break;
-                        }
-                    }
-                    clusterManager.cluster();
-                });
-    }
-    private void removeMarkerById(String id) {
-        StoryCluster marker = allMarkers.remove(id);
-        if (marker != null) {
-            clusterManager.removeItem(marker);
-        }
-    }
     private void fetchAndZoomToPlace(String placeId) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
         placesClient.fetchPlace(
