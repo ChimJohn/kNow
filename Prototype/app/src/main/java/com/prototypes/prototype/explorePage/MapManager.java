@@ -183,11 +183,11 @@ public class MapManager {
         this.mediaListener = db.collection("media")
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
-                        Log.e("listenToStoryMarkersData()", "Listen failed.", e);
+                        Log.e("listenToStoryMarkersData", "Listen failed.", e);
                         return;
                     }
                     if (snapshots == null) {
-                        Log.e("listenToStoryMarkersData()", "No snapshots");
+                        Log.e("listenToStoryMarkersData", "No snapshots");
                         return;
                     };
                     for (DocumentChange change : snapshots.getDocumentChanges()) {
