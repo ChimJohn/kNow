@@ -19,6 +19,8 @@ import com.prototypes.prototype.user.User;
 import java.util.ArrayList;
 
 public class EditMaps extends AppCompatActivity {
+    FirebaseFirestore db;
+    FirestoreManager firestoreMapManager;
     Toolbar toolbar;
     RecyclerView mapsRecycler;
     private static final String TAG = "Edit Maps Activity";
@@ -28,6 +30,9 @@ public class EditMaps extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_maps);
+
+        db = FirebaseFirestore.getInstance();
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
 
         toolbar = findViewById(R.id.toolbarEditMaps);
         mapsRecycler = findViewById(R.id.rvMaps);
@@ -39,7 +44,7 @@ public class EditMaps extends AppCompatActivity {
         });
 
         // Get maps retlated to the user
-        User.getMaps(this, new User.UserCallback<CustomMap>() {
+        User.getMaps(this, firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
             public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
                 if (customMaps.size() > 0) {

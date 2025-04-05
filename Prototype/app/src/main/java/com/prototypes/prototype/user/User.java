@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.Firebase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.CustomMap;
@@ -109,10 +110,9 @@ public class User {
         return firebaseAuthManager.getCurrentUser().getUid();
     }
 
-    public static void  getUserData(Activity activity, UserReadCallback callback){
+    public static void  getUserData(Activity activity, FirestoreManager firestoreManager ,UserReadCallback callback){
         String TAG = "getUserData: User class";
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
+//        FirestoreManager firestoreManager = new FirestoreManager(db, User.class);
 
         firestoreManager.readDocument("Users", User.getUid(activity), new FirestoreManager.FirestoreReadCallback<User>() {
             @Override
@@ -128,10 +128,9 @@ public class User {
 
 
     };
-    public static void getMaps(Activity activity, UserCallback callback){
+    public static void getMaps(Activity activity, FirestoreManager firestoreMapManager,UserCallback callback){
         String TAG = "getMaps: User class";
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+//        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
 
         firestoreMapManager.queryDocuments("map", "owner", getUid(activity), new FirestoreManager.FirestoreQueryCallback<CustomMap>() {
             @Override
@@ -151,10 +150,8 @@ public class User {
             }
         });
     }
-    public static void getStories(Activity activity, UserCallback callback){
+    public static void getStories(Activity activity, FirestoreManager firestoreStoriesManager, UserCallback callback){
         String TAG = "getStories: User class";
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
         firestoreStoriesManager.queryDocuments("media", "userId", getUid(activity), new FirestoreManager.FirestoreQueryCallback<Story>() {
             @Override
             public void onEmpty(ArrayList<Story> storyList) {

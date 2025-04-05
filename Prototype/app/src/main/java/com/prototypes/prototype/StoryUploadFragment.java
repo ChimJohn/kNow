@@ -41,6 +41,8 @@ import java.util.ArrayList;
 
 public class StoryUploadFragment extends Fragment {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuthManager firebaseAuthManager;
+    FirestoreManager firestoreStoriesManager, firestoreMapManager;
     private static final String ARG_MEDIA_URI = "mediaUri";
     private ImageView imageView;
     ImageButton btnExit;
@@ -48,8 +50,6 @@ public class StoryUploadFragment extends Fragment {
     private EditText captionEditText;
     private Button saveButton;
     private ChipGroup categoryChipGroup;
-    private FirebaseAuthManager firebaseAuthManager;
-    FirestoreManager firestoreMapManager;
     private MediaViewModel mediaViewModel;
     private static final String TAG = "Story Upload Fragment";
 
@@ -80,6 +80,7 @@ public class StoryUploadFragment extends Fragment {
         mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
         firebaseAuthManager = new FirebaseAuthManager(requireActivity());
         firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
 
         imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
@@ -158,7 +159,7 @@ public class StoryUploadFragment extends Fragment {
     }
 
     public void getMaps(){
-        User.getMaps(getActivity(), new User.UserCallback<CustomMap>() {
+        User.getMaps(getActivity(),firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
             public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
                 if (customMaps.size() > 0) {

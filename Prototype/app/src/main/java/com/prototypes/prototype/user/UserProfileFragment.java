@@ -27,7 +27,6 @@ import java.util.List;
 public class UserProfileFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String TAG = "UserProfileFragment";
-
     private String userId;
     private FirebaseFirestore db;
     private ImageView imgProfile;
@@ -37,6 +36,8 @@ public class UserProfileFragment extends Fragment {
     private FollowManager followManager;
     private Button followButton;
     private boolean isFollowing = false;
+    FirebaseAuthManager authManager;
+    FirestoreManager firestoreStoriesManager;
 
     public static UserProfileFragment newInstance(String userId) {
         UserProfileFragment fragment = new UserProfileFragment();
@@ -53,7 +54,8 @@ public class UserProfileFragment extends Fragment {
             userId = getArguments().getString(ARG_USER_ID);
         }
         db = FirebaseFirestore.getInstance();
-        FirebaseAuthManager authManager = new FirebaseAuthManager(getActivity());
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
+        authManager = new FirebaseAuthManager(getActivity());
         followManager = new FollowManager(db, authManager);
     }
 
@@ -120,7 +122,7 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadUserMedia() {
-        User.getStories(getActivity(), new User.UserCallback<Story>() {
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback<Story>() {
             @Override
             public void onMapsLoaded(ArrayList<Story> customMaps) {
                 if (customMaps.isEmpty()) {
