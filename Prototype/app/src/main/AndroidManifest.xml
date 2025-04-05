@@ -27,9 +27,6 @@
             android:exported="false" />
         <activity
             android:name=".custommap.editmaps.EditMaps"
-            android:exported="false" />
-        <activity
-            android:name=".signup.SignUpFinal"
             android:exported="false" /> <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.gms.auth.api.credentials.CREDENTIALS_PROVIDER"

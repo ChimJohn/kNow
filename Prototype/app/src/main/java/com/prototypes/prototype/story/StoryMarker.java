@@ -13,17 +13,14 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.prototypes.prototype.R;
 
 public class StoryMarker extends LinearLayout {
-
     public StoryMarker(Context context) {
         super(context);
         init(context);
     }
-
     public StoryMarker(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
-
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.story_marker, this, true);
     }
@@ -34,7 +31,4 @@ public class StoryMarker extends LinearLayout {
                 .load(imageUrl)
                 .into(target);
     }
-
-    // Generate a bitmap for cluster markers with a count label
-
 }
