@@ -2,6 +2,7 @@ package com.prototypes.prototype.explorePage;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 import android.view.View;
 
@@ -29,41 +30,61 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MapManager {
     private final Context context;
     private final Activity activity;
-    private final GoogleMap googleMap;
+    private GoogleMap googleMap;
     private ClusterManager<StoryCluster> clusterManager;
     private final Map<String, StoryCluster> allMarkers = new HashMap<>();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ListenerRegistration mediaListener;
     private RouteHandler routeHandler;
+    private CurrentLocationMarker currentLocationMarker;
     FragmentManager parentFragmentManager;
+    private boolean isFirstLocationUpdate = true;
+    AtomicLong lastRouteFetchTime = new AtomicLong(); // Stores last fetch timestamp
 
-
-    public MapManager(Activity activity, Context context, FragmentManager parentFragmentManager, GoogleMap map) {
+    public MapManager(Activity activity, Context context, FragmentManager parentFragmentManager) {
         this.activity = activity;
         this.context = context;
         this.parentFragmentManager = parentFragmentManager;
-        this.googleMap = map;
     }
-
+    public void initMap(GoogleMap map){
+        this.googleMap = map;
+        this.routeHandler = new RouteHandler(context, map);
+        this.currentLocationMarker = new CurrentLocationMarker(activity, map);
+        setupMap();
+    }
+    public GoogleMap getMap(){
+        return this.googleMap;
+    }
+    public RouteHandler getRouteHandler(){
+        return this.routeHandler;
+    }
+    public CurrentLocationMarker getCurrentLocationMarker(){
+        return this.currentLocationMarker;
+    }
+    public void animateCamera(LatLng latLng, Integer zoom){
+        if (this.googleMap != null) {
+            this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        }
+    }
     public void setupMap(){
         LatLng singapore = new LatLng(1.3521, 103.8198);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
-        googleMap.getUiSettings().setMapToolbarEnabled(false);
-        googleMap.getUiSettings().setCompassEnabled(false);
-        googleMap.getUiSettings().setRotateGesturesEnabled(false);
-        googleMap.getUiSettings().setTiltGesturesEnabled(false);
-        clusterManager = new ClusterManager<>(context, googleMap);
-        clusterManager.setRenderer(new StoryClusterRenderer(context, googleMap, clusterManager));
-        googleMap.setOnCameraIdleListener(clusterManager);
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
+        this.googleMap.getUiSettings().setMapToolbarEnabled(false);
+        this.googleMap.getUiSettings().setCompassEnabled(false);
+        this.googleMap.getUiSettings().setRotateGesturesEnabled(false);
+        this.googleMap.getUiSettings().setTiltGesturesEnabled(false);
+        this.clusterManager = new ClusterManager<>(context, this.googleMap);
+        this.clusterManager.setRenderer(new StoryClusterRenderer(context, this.googleMap, this.clusterManager));
+        this.googleMap.setOnCameraIdleListener(this.clusterManager);
         NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
         algorithm.setMaxDistanceBetweenClusteredItems(30);
-        clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
-
-        clusterManager.setOnClusterItemClickListener(storyCluster -> {
+        this.clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
+        this.clusterManager.setOnClusterItemClickListener(storyCluster -> {
             Story story = new Story(
                     storyCluster.getId(),
                     storyCluster.getUserId(),
@@ -108,6 +129,26 @@ public class MapManager {
             return true;
         });
     }
+    public void setOwnMarkerLocation(Location location){
+        if (location != null) {
+            getCurrentLocationMarker().updateGpsMarker(location);
+            if (isFirstLocationUpdate) {
+                animateCamera(new LatLng(location.getLatitude(), location.getLongitude()), 20);
+            }
+            isFirstLocationUpdate = false;
+        }
+    }
+
+    public void routeToDestination(Location location, Double destinationLatitude, Double destinationLongitude){
+        long currentTime = System.currentTimeMillis();
+        LatLng latLng = new LatLng(destinationLatitude, destinationLongitude);
+        if (currentTime - lastRouteFetchTime.get() >= 30000) { // 30 Seconds
+            getRouteHandler().fetchRoute(location, latLng);
+            lastRouteFetchTime.set(currentTime);
+        } else {
+            Log.d("routeToDestination", "Skipping fetch, waiting for next interval.");
+        }
+    }
 
     private void removeMarker(String id) {
         StoryCluster existing = allMarkers.remove(id);
@@ -118,22 +159,37 @@ public class MapManager {
 
 
     public void clear() {
-        if (mediaListener != null) {
-            mediaListener.remove();
-            mediaListener = null;
+        if (this.mediaListener != null) {
+            this.mediaListener.remove();
+            this.mediaListener = null;
         }
-        clusterManager.clearItems();
-        allMarkers.clear();
+        if (this.googleMap != null){
+            this.googleMap.setOnMapClickListener(null);
+            this.googleMap.setOnMarkerClickListener(null);
+            this.googleMap.setOnCameraIdleListener(null);
+            this.googleMap.clear();
+            this.googleMap = null;
+        }
+        if (this.clusterManager != null){
+            this.clusterManager.clearItems();
+        }
+        if (this.currentLocationMarker != null){
+            this.currentLocationMarker.stopPulsatingEffect();
+        }
+        this.allMarkers.clear();
     }
 
-    public void listenToMarkersData() {
-        mediaListener = db.collection("media")
+    public void listenToStoryMarkersData() {
+        this.mediaListener = db.collection("media")
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
-                        Log.e("listenToMarkersData()", "Listen failed.", e);
+                        Log.e("listenToStoryMarkersData()", "Listen failed.", e);
                         return;
                     }
-                    if (snapshots == null) return;
+                    if (snapshots == null) {
+                        Log.e("listenToStoryMarkersData()", "No snapshots");
+                        return;
+                    };
                     for (DocumentChange change : snapshots.getDocumentChanges()) {
                         DocumentSnapshot documentSnapshot = change.getDocument();
                         String id = documentSnapshot.getId();

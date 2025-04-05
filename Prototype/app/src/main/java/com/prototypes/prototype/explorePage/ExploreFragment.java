@@ -24,8 +24,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
@@ -38,48 +36,33 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.maps.android.clustering.ClusterManager;
 import com.prototypes.prototype.CurrentLocationViewModel;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.UserSearchAdapter;
-import com.prototypes.prototype.story.StoryCluster;
 import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ExploreFragment extends Fragment {
     private RecyclerView rvUserSearchResults;
     private UserSearchAdapter userSearchAdapter;
     private MapView mapView;
-    private GoogleMap googleMap;
     private CurrentLocationViewModel currentLocationViewModel;
-    private Double latitude, longitude;
     private FirebaseFirestore db;
-    private ClusterManager<StoryCluster> clusterManager;
-    private boolean isFirstLocationUpdate = true;
-    private ListenerRegistration mediaListener;
-    private final Map<String, StoryCluster> allMarkers = new HashMap<>();
     private PlacesClient placesClient;
-    private static final String ARG_LATITUDE = "latitude";
-    private static final String ARG_LONGITUDE = "longitude";
-    private RouteHandler routeHandler;
-    private CurrentLocationMarker currentLocationMarker;
     private SensorManager sensorManager;
     private Sensor rotationVectorSensor;
-    private float currentBearing = 0f;
-    private boolean suppressSearch = false;
     private MapManager mapManager;
-
-    public static ExploreFragment newInstance(double latitude, double longitude) {
+    private boolean suppressSearch = false;
+    private static final String DESTINATION_LATITUDE = "destinationLatitude";
+    private static final String DESTINATION_LONGITUDE = "destinationLongitude";
+    private Double destinationLatitude, destinationLongitude;
+    public static ExploreFragment newInstance(double destinationLatitude, double destinationLongitude) {
         ExploreFragment fragment = new ExploreFragment();
         Bundle args = new Bundle();
-        args.putDouble(ARG_LATITUDE, latitude);
-        args.putDouble(ARG_LONGITUDE, longitude);
+        args.putDouble(DESTINATION_LATITUDE, destinationLatitude);
+        args.putDouble(DESTINATION_LONGITUDE, destinationLongitude);
         fragment.setArguments(args);
         return fragment;
     }
@@ -88,8 +71,8 @@ public class ExploreFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            latitude = getArguments().getDouble(ARG_LATITUDE);
-            longitude = getArguments().getDouble(ARG_LONGITUDE);
+            destinationLatitude = getArguments().getDouble(DESTINATION_LATITUDE);
+            destinationLongitude = getArguments().getDouble(DESTINATION_LONGITUDE);
         }
         sensorManager = (SensorManager) requireActivity().getSystemService(Context.SENSOR_SERVICE);
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -114,33 +97,13 @@ public class ExploreFragment extends Fragment {
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
 
         mapView.getMapAsync(map -> {
-            googleMap = map;
-            mapManager = new MapManager(requireActivity(), requireContext(), getParentFragmentManager(), googleMap);
-            mapManager.setupMap();
-            mapManager.listenToMarkersData();
-            routeHandler = new RouteHandler(getContext(), googleMap);
-            currentLocationMarker = new CurrentLocationMarker(requireActivity(), googleMap);
-            final long FETCH_INTERVAL = 30000; // 30 seconds
-            AtomicLong lastFetchTime = new AtomicLong(); // Stores last fetch timestamp
+            mapManager = new MapManager(requireActivity(), requireContext(), getParentFragmentManager());
+            mapManager.initMap(map);
+            mapManager.listenToStoryMarkersData();
             currentLocationViewModel.getCurrentLocation().observe(getViewLifecycleOwner(), location -> {
-                if (location != null) {
-                    currentLocationMarker.updateGpsMarker(location);
-                    if (isFirstLocationUpdate) {
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 20));
-                    }
-                    isFirstLocationUpdate = false;
-
-                    if (latitude != null && longitude != null){
-                        long currentTime = System.currentTimeMillis(); // Get current time
-                        LatLng latLng = new LatLng(latitude, longitude);
-                        if (currentTime - lastFetchTime.get() >= FETCH_INTERVAL) {
-                            routeHandler.fetchRoute(location, latLng); // Call fetch function
-                            lastFetchTime.set(currentTime); // Update last fetch time
-                            Log.d("API_CALL", "Fetching route at: " + currentTime);
-                        } else {
-                            Log.d("API_CALL", "Skipping fetch, waiting for next interval.");
-                        }
-                    }
+                mapManager.setOwnMarkerLocation(location);
+                if (destinationLatitude != null && destinationLongitude != null) {
+                    mapManager.routeToDestination(location, destinationLatitude, destinationLongitude);
                 }
             });
         });
@@ -155,9 +118,8 @@ public class ExploreFragment extends Fragment {
         View locationButton = view.findViewById(R.id.floatingActionButton3);
         locationButton.setOnClickListener(v -> {
             Location currentLocation = currentLocationViewModel.getCurrentLocation().getValue();
-            if (googleMap != null && currentLocation != null) {
-                LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18));
+            if (currentLocation != null) {
+                mapManager.animateCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 18);
             } else {
                 Toast.makeText(requireContext(), "Current location unavailable", Toast.LENGTH_SHORT).show();
             }
@@ -253,7 +215,6 @@ public class ExploreFragment extends Fragment {
                     rvUserSearchResults.setVisibility(View.GONE);
                 }
             }
-
             @Override public void afterTextChanged(Editable s) {}
         });
 
@@ -272,10 +233,10 @@ public class ExploreFragment extends Fragment {
             float[] orientationAngles = new float[3];
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
             SensorManager.getOrientation(rotationMatrix, orientationAngles);
-            currentBearing = (float) Math.toDegrees(orientationAngles[0]);
+            float currentBearing = (float) Math.toDegrees(orientationAngles[0]);
             currentBearing = (currentBearing + 360) % 360;
-            if (currentLocationMarker != null && currentLocationMarker.getGpsMarker() != null) {
-                currentLocationMarker.getGpsMarker().setRotation(currentBearing);
+            if (mapManager != null && mapManager.getCurrentLocationMarker() != null && mapManager.getCurrentLocationMarker().getGpsMarker() != null) {
+                mapManager.getCurrentLocationMarker().getGpsMarker().setRotation(currentBearing);
             }
         }
         @Override
@@ -289,8 +250,8 @@ public class ExploreFragment extends Fragment {
         ).addOnSuccessListener(fetchPlaceResponse -> {
             Place place = fetchPlaceResponse.getPlace();
             LatLng latLng = place.getLatLng();
-            if (latLng != null && googleMap != null) {
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+            if (latLng != null) {
+                mapManager.animateCamera(latLng, 18);
             }
         }).addOnFailureListener(e -> {
             Log.e("PlaceZoom", "Failed to fetch place", e);
@@ -341,33 +302,20 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mediaListener != null) {
-            mediaListener.remove();
-            mediaListener = null;
+        if (mapView != null) {
+            mapView.onDestroy();
         }
-        placesClient = null;
-        if (clusterManager != null) {
-            clusterManager.clearItems();
-            clusterManager = null;
-        }
-        googleMap.setOnMapClickListener(null);
-        googleMap.setOnMarkerClickListener(null);
-        googleMap.setOnCameraIdleListener(null);
-        googleMap.clear();
-        googleMap = null;
+        mapManager.clear();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mapView != null) {
-            mapView.onDestroy();
-        }
-        currentLocationMarker.stopPulsatingEffect();
         sensorManager.unregisterListener(sensorEventListener);
         if (placesClient != null) {
             placesClient = null; // This shuts down the client and associated resources
         }
+        mapManager.clear();
     }
 
     private static class UserWithFollowers {
