@@ -9,9 +9,11 @@
 
     <!-- Full-Screen Google MapView (Background) -->
     <com.google.android.gms.maps.MapView
+        xmlns:map="http://schemas.android.com/apk/res-auto"
         android:id="@+id/mapView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        map:mapId="@string/map_id"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

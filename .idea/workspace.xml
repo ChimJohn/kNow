@@ -54,10 +54,8 @@
     <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/ExploreFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/UserSearchAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/UserSearchAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirebaseAuthManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirebaseAuthManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/settings/SettingsActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/settings/SettingsActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_explore.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_explore.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/values/strings.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,7 +136,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Exa",
     "kotlin-language-version-configured": "true",
     "settings.editor.selected.configurable": "preferences.general"
   }
@@ -238,12 +236,12 @@
       <map>
         <entry key="com.prototypes.prototype">
           <value>
-            <CheckInfo lastCheckTimestamp="1743770306118" />
+            <CheckInfo lastCheckTimestamp="1743866380949" />
           </value>
         </entry>
         <entry key="com.prototypes.prototype.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1743770306118" />
+            <CheckInfo lastCheckTimestamp="1743866380949" />
           </value>
         </entry>
       </map>

@@ -65,7 +65,7 @@ public class CreateCustomMap extends AppCompatActivity {
         tvSetCover = findViewById(R.id.tvSetCover);
         imgCover = findViewById(R.id.ivCustomMap);
 
-        // Destory activity when x button is pressed
+        // Destroy activity when x button is pressed
         btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

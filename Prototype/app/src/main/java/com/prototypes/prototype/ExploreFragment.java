@@ -103,6 +103,7 @@ public class ExploreFragment extends Fragment {
     private float currentBearing = 0f;
     private Marker gpsMarker;
     private boolean suppressSearch = false;
+    private int zoomInt = 18;
 
     public static ExploreFragment newInstance(double latitude, double longitude) {
         ExploreFragment fragment = new ExploreFragment();
@@ -146,7 +147,7 @@ public class ExploreFragment extends Fragment {
             googleMap = map;
             googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.map_style));
             LatLng singapore = new LatLng(1.3521, 103.8198);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, zoomInt));
 
             final long FETCH_INTERVAL = 30000; // 30 seconds
             AtomicLong lastFetchTime = new AtomicLong(); // Stores last fetch timestamp
@@ -155,7 +156,7 @@ public class ExploreFragment extends Fragment {
                 if (location != null) {
                     updateGpsMarker(location);
                     if (isFirstLocationUpdate) {
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 20));
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), zoomInt));
                     }
                     isFirstLocationUpdate = false;
 
@@ -246,7 +247,7 @@ public class ExploreFragment extends Fragment {
             Location currentLocation = currentLocationViewModel.getCurrentLocation().getValue();
             if (googleMap != null && currentLocation != null) {
                 LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomInt));
             } else {
                 Toast.makeText(requireContext(), "Current location unavailable", Toast.LENGTH_SHORT).show();
             }
@@ -461,7 +462,7 @@ public class ExploreFragment extends Fragment {
             Place place = fetchPlaceResponse.getPlace();
             LatLng latLng = place.getLatLng();
             if (latLng != null && googleMap != null) {
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomInt));
             }
         }).addOnFailureListener(e -> {
             Log.e("PlaceZoom", "Failed to fetch place", e);
