@@ -151,6 +151,9 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                                 imageLoader.setVisibility(View.GONE);
                             }
                             break;
+                        case Player.STATE_ENDED:
+                        case Player.STATE_IDLE:
+                            break;
                     }
                 }
             });

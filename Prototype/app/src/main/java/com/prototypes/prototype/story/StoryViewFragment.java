@@ -15,16 +15,22 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.explorePage.ExploreFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGpsClickListener{
     private ArrayList<Story> storyList;
     private ViewPager2 viewPager2;
     private StoryViewAdapter storyViewAdapter;
+    private final Map<String, Object> userCache = new HashMap<>();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     public static StoryViewFragment newInstance(List<Story> stories) {
         StoryViewFragment fragment = new StoryViewFragment();
         Bundle bundle = new Bundle();
@@ -43,6 +49,9 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
+
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -52,6 +61,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         viewPager2.setOffscreenPageLimit(2);
         TextView storyPositionText = view.findViewById(R.id.story_position);
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
+        TextView storyUsernameText = view.findViewById(R.id.story_username);
+
         Button gpsButton = view.findViewById(R.id.btnGps);
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private boolean isLastPage = false;
@@ -62,6 +73,36 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 Story currentStory = storyList.get(position);
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
                 storyCaptionText.setText(currentStory.getCaption());
+                String userId = currentStory.getUserId();
+
+                if (userCache.containsKey(userId)) {
+                    Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);
+                    String username = (String) cachedUser.get("username");
+                    storyUsernameText.setText(username);
+                } else {
+                    Log.d("HEHEHE", "HAHAHAH");
+                    db.collection("Users").document(userId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    // Cache the user data
+                                    Map<String, Object> user = documentSnapshot.getData();
+                                    if (user != null) {
+                                        Log.d("HEHEHE", "WHAT");
+                                        userCache.put(userId, user);
+                                        String username = (String) user.get("username");
+                                        storyUsernameText.setText(username);
+                                    } else{
+                                        storyUsernameText.setText("Deleted account");
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                // Handle the error (e.g., show a default message)
+                                storyUsernameText.setText("Error loading username");
+                                Log.e("StoryViewFragment", "Error fetching user data", e);
+                            });
+                }
+
                 gpsButton.setOnClickListener(v -> {
                     onGpsClick(currentStory.getLatitude(), currentStory.getLongitude());
                 });
