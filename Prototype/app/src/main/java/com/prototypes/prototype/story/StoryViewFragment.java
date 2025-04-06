@@ -75,20 +75,17 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
                 storyCaptionText.setText(currentStory.getCaption());
                 String userId = currentStory.getUserId();
-
+                Log.d("HEHEHE", userId);
                 if (userCache.containsKey(userId)) {
                     Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);
                     String username = (String) cachedUser.get("username");
                     storyUsernameText.setText(username);
                 } else {
-                    Log.d("HEHEHE", "HAHAHAH");
                     db.collection("Users").document(userId).get()
                             .addOnSuccessListener(documentSnapshot -> {
                                 if (documentSnapshot.exists()) {
-                                    // Cache the user data
                                     Map<String, Object> user = documentSnapshot.getData();
                                     if (user != null) {
-                                        Log.d("HEHEHE", "WHAT");
                                         userCache.put(userId, user);
                                         String username = (String) user.get("username");
                                         storyUsernameText.setText(username);
@@ -100,7 +97,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                             .addOnFailureListener(e -> {
                                 // Handle the error (e.g., show a default message)
                                 storyUsernameText.setText("Error loading username");
-                                Log.e("StoryViewFragment", "Error fetching user data", e);
                             });
                 }
 
