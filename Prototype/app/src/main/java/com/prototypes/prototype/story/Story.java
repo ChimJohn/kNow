@@ -56,6 +56,10 @@ public class Story implements Parcelable {
         longitude = in.readDouble();
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);

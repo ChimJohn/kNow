@@ -29,6 +29,10 @@
             android:name=".custommap.editmaps.EditMaps"
             android:exported="false" />
         <activity
+            android:name=".custommap.editmaps.EditMapDetails"
+            android:label="Edit Map Details"
+            android:exported="false"/>
+        <activity
             android:name=".signup.SignUpFinal"
             android:exported="false" /> <!-- Google Maps API Key -->
         <meta-data

@@ -5,6 +5,16 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_create_custom_map.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_edit_map_details.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml">
         <config>
           <theme>@style/Theme.Prototype</theme>
@@ -45,13 +55,30 @@
           <theme>@style/Theme.Prototype</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/gallery_item.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/story_selection_item.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
     </layouts>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="" />
+    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/custommap/CustomMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/custommap/CustomMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/custommap/editmaps/EditMapsAdaptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/custommap/editmaps/EditMapsAdaptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirestoreManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/firebase/FirestoreManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/story/Story.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/story/Story.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,7 +87,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/Jeffrey_1/.android/avd/Pixel_9_Pro_XL.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/Jeffrey_1/.android/avd/Medium_Phone_API_35_2.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$/Prototype">
       <ProjectState />
@@ -231,12 +258,12 @@
       <map>
         <entry key="com.prototypes.prototype">
           <value>
-            <CheckInfo lastCheckTimestamp="1743770306118" />
+            <CheckInfo lastCheckTimestamp="1743857313366" />
           </value>
         </entry>
         <entry key="com.prototypes.prototype.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1743770306118" />
+            <CheckInfo lastCheckTimestamp="1743857313365" />
           </value>
         </entry>
       </map>

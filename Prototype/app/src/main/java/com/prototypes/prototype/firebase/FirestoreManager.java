@@ -7,6 +7,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.prototypes.prototype.custommap.CustomMap;
+import com.prototypes.prototype.story.Story;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,6 +102,14 @@ public class FirestoreManager<T> {
                     }
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         T object = document.toObject(type);
+
+                        // Set document ID for Story/CustomMap objects
+                        if (object instanceof Story) {
+                            ((Story) object).setId(document.getId()); // Add this line
+                        } else if (object instanceof CustomMap) {
+                            ((CustomMap) object).setId(document.getId());
+                        }
+
                         if (object != null) {
                             resultList.add(object);
                         }

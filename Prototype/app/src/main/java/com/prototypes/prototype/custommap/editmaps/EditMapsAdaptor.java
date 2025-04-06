@@ -1,6 +1,7 @@
 package com.prototypes.prototype.custommap.editmaps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,11 +42,10 @@ public class EditMapsAdaptor extends RecyclerView.Adapter<EditMapsAdaptor.EditMa
                 .load(customMap.getImageUrl())
                 .into(holder.mapImage); //TODO: add buffering img
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context, "Clicked on: " + customMap.getName(), Toast.LENGTH_SHORT).show();
-            }
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, EditMapDetails.class);
+            intent.putExtra("mapId", customMap.getId());
+            context.startActivity(intent);
         });
     }
 
