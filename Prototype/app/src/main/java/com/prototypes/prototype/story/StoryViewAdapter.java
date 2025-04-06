@@ -4,16 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,8 +32,6 @@ import java.util.HashMap;
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
     private final ArrayList<Story> storyList;
     private final Context context;
-    private final Handler autoScrollHandler;
-    private Runnable autoScrollRunnable;
 
     public interface OnGpsClickListener {
         void onGpsClick(double latitude, double longitude);
@@ -49,7 +42,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         this.context = context;
         this.storyList = stories;
         this.gpsClickListener = gpsClickListener;
-        this.autoScrollHandler = new Handler(Looper.getMainLooper());
     }
 
     @NonNull
@@ -62,7 +54,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
-        holder.bind(story, gpsClickListener);
+        holder.bind(story, gpsClickListener, position, storyList.size()); // pass position + total count
     }
 
     @Override
@@ -87,43 +79,23 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         super.onViewDetachedFromWindow(holder);
         holder.releasePlayer(); // Add this line
     }
-
-    public void removeAutoScrollCallbacks() {
-        if (autoScrollHandler != null) {
-            autoScrollHandler.removeCallbacksAndMessages(null);
-        }
-    }
     public static class StoryViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
         private final PlayerView playerView;
-        private final TextView storyCaption;
-        private final Button gpsButton;
-        private ExoPlayer exoPlayer;
         private final ProgressBar imageLoader;
-        private ProgressBar progressBar;
+        private ExoPlayer exoPlayer;
         private Story story;
 
         public StoryViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.story_image);
             playerView = itemView.findViewById(R.id.player_view);
-            storyCaption = itemView.findViewById(R.id.story_snippet);
-            gpsButton = itemView.findViewById(R.id.btnGps);
             imageLoader = itemView.findViewById(R.id.image_loader);
-            progressBar = itemView.findViewById(R.id.storyProgressBar);
         }
 
-        public void bind(Story story, OnGpsClickListener gpsClickListener) {
+        public void bind(Story story, OnGpsClickListener gpsClickListener, int position, int totalCount) {
             this.story = story;
-            progressBar.setProgress(0);
-            storyCaption.setText(story.getCaption());
-            gpsButton.setOnClickListener(v -> {
-                if (gpsClickListener != null) {
-                    gpsClickListener.onGpsClick(story.getLatitude(), story.getLongitude());
-                }
-            });
             if (!story.isVideo()) {
-                Log.d("WHYYY", "NOT VIDEO - " + story.getMediaUrl());
                 playerView.setVisibility(View.GONE);
                 imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
@@ -135,7 +107,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                                 imageLoader.setVisibility(View.GONE);
                                 return false;
                             }
-
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 imageLoader.setVisibility(View.GONE);
@@ -157,7 +128,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 playerView.setPlayer(exoPlayer);
             }
             MediaItem mediaItem = MediaItem.fromUri(story.getMediaUrl());
-            Log.d("WHYYY MediaUrl:", String.valueOf(story.getMediaUrl()));
             exoPlayer.setMediaItem(mediaItem);
             exoPlayer.addListener(new Player.Listener() {
                 @Override
@@ -192,7 +162,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 try {
                     retriever.setDataSource(videoUrl, new HashMap<>());
                     Bitmap bitmap = retriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-                    Log.d("WHYYY", bitmap.toString());
                     if (bitmap != null) {
                         imageView.post(() -> {
                             Glide.with(imageView.getContext())
