@@ -73,7 +73,7 @@ public class MapManager {
     }
     public void setupMap(){
         LatLng singapore = new LatLng(1.3521, 103.8198);
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 20));
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
         this.googleMap.getUiSettings().setMapToolbarEnabled(false);
         this.googleMap.getUiSettings().setCompassEnabled(false);
         this.googleMap.getUiSettings().setRotateGesturesEnabled(false);
@@ -133,7 +133,7 @@ public class MapManager {
         if (location != null) {
             getCurrentLocationMarker().updateGpsMarker(location);
             if (isFirstLocationUpdate) {
-                animateCamera(new LatLng(location.getLatitude(), location.getLongitude()), 20);
+                animateCamera(new LatLng(location.getLatitude(), location.getLongitude()), 16);
             }
             isFirstLocationUpdate = false;
         }

@@ -58,6 +58,8 @@ public class ExploreFragment extends Fragment {
     private static final String DESTINATION_LATITUDE = "destinationLatitude";
     private static final String DESTINATION_LONGITUDE = "destinationLongitude";
     private Double destinationLatitude, destinationLongitude;
+    private int zoomInt = 16;
+
     public static ExploreFragment newInstance(double destinationLatitude, double destinationLongitude) {
         ExploreFragment fragment = new ExploreFragment();
         Bundle args = new Bundle();
@@ -119,7 +121,7 @@ public class ExploreFragment extends Fragment {
         locationButton.setOnClickListener(v -> {
             Location currentLocation = currentLocationViewModel.getCurrentLocation().getValue();
             if (currentLocation != null) {
-                mapManager.animateCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), 18);
+                mapManager.animateCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), zoomInt);
             } else {
                 Toast.makeText(requireContext(), "Current location unavailable", Toast.LENGTH_SHORT).show();
             }
@@ -251,7 +253,7 @@ public class ExploreFragment extends Fragment {
             Place place = fetchPlaceResponse.getPlace();
             LatLng latLng = place.getLatLng();
             if (latLng != null) {
-                mapManager.animateCamera(latLng, 18);
+                mapManager.animateCamera(latLng, zoomInt);
             }
         }).addOnFailureListener(e -> {
             Log.e("PlaceZoom", "Failed to fetch place", e);
