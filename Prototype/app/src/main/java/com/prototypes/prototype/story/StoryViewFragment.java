@@ -46,16 +46,18 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewPager2 = view.findViewById(R.id.storyViewPager);
         storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this);
+        viewPager2 = view.findViewById(R.id.storyViewPager);
         viewPager2.setAdapter(storyViewAdapter);
         viewPager2.setOffscreenPageLimit(2);
         TextView storyPositionText = view.findViewById(R.id.story_position);
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
         Button gpsButton = view.findViewById(R.id.btnGps);
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            private boolean isLastPage = false;
             @Override
             public void onPageSelected(int position) {
+                isLastPage = position == storyList.size() - 1;
                 super.onPageSelected(position);
                 Story currentStory = storyList.get(position);
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
@@ -63,6 +65,19 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 gpsButton.setOnClickListener(v -> {
                     onGpsClick(currentStory.getLatitude(), currentStory.getLongitude());
                 });
+            }
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+                if (isLastPage && state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                    viewPager2.postDelayed(() -> {
+                        ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
+                        requireActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, exploreFragment)
+                                .commit();
+                    }, 150);
+                }
             }
         });
         preloadMedia();
