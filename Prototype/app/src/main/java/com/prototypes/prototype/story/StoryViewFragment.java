@@ -119,11 +119,16 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
             }
         });
 
-        ImageButton exitbtn = view.findViewById(R.id.btnExit);
-        exitbtn.setOnClickListener(new View.OnClickListener() {
+        ImageButton exitBtn = view.findViewById(R.id.btnExit);
+        exitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // close the story view
+                ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, exploreFragment)
+                        .commit();
             }
         });
         preloadMedia();
