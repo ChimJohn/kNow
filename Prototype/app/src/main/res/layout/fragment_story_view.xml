@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -7,52 +8,100 @@
         android:id="@+id/storyViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <TextView
-        android:id="@+id/story_position"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_margin="16dp"
-        android:padding="8dp"
-        android:text="1/15"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:background="#80000000"
-        android:alpha="0.8" />
-    <TextView
-        android:id="@+id/story_username"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center"
-        android:layout_margin="16dp"
-        android:padding="8dp"
-        android:text="Loading..."
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:background="#80000000"
-        android:alpha="0.8" />
-
-    <TextView
-        android:id="@+id/story_snippet"
+    <!--Exit, Nav, story counter-->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="62dp"
-        android:layout_gravity="bottom|start"
-        android:layout_margin="0dp"
-        android:alpha="0.9"
-        android:background="#80000000"
-        android:padding="8dp"
-        android:text="Story caption"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
-    <Button
-        android:id="@+id/btnGps"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:layout_margin="12dp"
-        android:text="Get Directions"
-        android:padding="8dp"
-        android:textSize="12sp"
-        android:backgroundTint="#AA000000"
-        android:textColor="@android:color/white"/>
-</FrameLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="42dp"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal"
+        android:gravity="top">
+        <!--Exit btn-->
+        <ImageButton
+            android:id="@+id/btnExit"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="center"
+            android:src="@drawable/ic_close"
+            android:layout_weight="0"
+            android:layout_gravity="start"
+            app:tint="@color/white" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_weight="1" />
+        <!--Nav, Counter-->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!--Nav btn-->
+            <ImageButton
+                android:id="@+id/btnGps"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitCenter"
+                android:src="@drawable/story_nav_btn"
+                app:tint="@color/white"
+                android:layout_weight="0"
+                android:layout_gravity="end" />
+            <!--Counter-->
+            <TextView
+                android:id="@+id/story_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="14dp"
+                android:fontFamily="@font/inter_medium" />
+        </LinearLayout>
+    </LinearLayout>
+    <!--User details, caption-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical">
+        <!--User profile-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="10dp">
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="100dp"
+                android:elevation="0dp">
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/default_profile"/>
+            </androidx.cardview.widget.CardView>
+            <TextView
+                android:id="@+id/story_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="handle"
+                android:textSize="16dp"
+                android:fontFamily="@font/inter_semibold"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+        <!--Story caption-->
+        <TextView
+            android:id="@+id/story_snippet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Story caption"
+            android:paddingHorizontal="6dp"
+            android:fontFamily="@font/inter_regular"
+            android:textColor="@color/white"
+            android:textSize="16dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

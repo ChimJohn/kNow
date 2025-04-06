@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -63,7 +64,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
         TextView storyUsernameText = view.findViewById(R.id.story_username);
 
-        Button gpsButton = view.findViewById(R.id.btnGps);
+        ImageButton gpsButton = view.findViewById(R.id.btnGps);
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private boolean isLastPage = false;
             @Override
@@ -119,6 +120,14 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                 .commit();
                     }, 150);
                 }
+            }
+        });
+
+        ImageButton exitbtn = view.findViewById(R.id.btnExit);
+        exitbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // close the story view
             }
         });
         preloadMedia();
