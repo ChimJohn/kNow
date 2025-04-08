@@ -43,11 +43,9 @@ public class StoryUploadFragment extends Fragment {
     private FirebaseAuthManager firebaseAuthManager;
     FirestoreManager firestoreStoriesManager, firestoreMapManager;
     private static final String ARG_MEDIA_URI = "mediaUri";
-    private ImageView imageView;
     ImageButton btnExit;
     RecyclerView selectMapRecyclerView;
     private EditText captionEditText;
-    private Button saveButton;
     private ChipGroup categoryChipGroup;
     private MediaViewModel mediaViewModel;
     private static final String TAG = "Story Upload Fragment";
@@ -81,15 +79,16 @@ public class StoryUploadFragment extends Fragment {
         firestoreMapManager = new FirestoreManager(db, CustomMap.class);
         firestoreStoriesManager = new FirestoreManager(db, Story.class);
 
-        imageView = view.findViewById(R.id.imageView);
+        ImageView imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
         categoryChipGroup = view.findViewById(R.id.chipGroup);
-        saveButton = view.findViewById(R.id.saveButton);
+        Button saveButton = view.findViewById(R.id.saveButton);
         btnExit = view.findViewById(R.id.btnExit);
         selectMapRecyclerView = view.findViewById(R.id.selectMapRecyclerView);
         selectMapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         String userId = firebaseAuthManager.getCurrentUser().getUid();
+        assert getArguments() != null;
         String mediaUriString = getArguments().
                 getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);

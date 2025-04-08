@@ -75,7 +75,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
                 storyCaptionText.setText(currentStory.getCaption());
                 String userId = currentStory.getUserId();
-                Log.d("HEHEHE", userId);
                 if (userCache.containsKey(userId)) {
                     Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);
                     String username = (String) cachedUser.get("username");
@@ -96,6 +95,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                             })
                             .addOnFailureListener(e -> {
                                 // Handle the error (e.g., show a default message)
+                                Log.e("ERR", e.getMessage());
                                 storyUsernameText.setText("Error loading username");
                             });
                 }
@@ -123,15 +123,14 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         exitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // close the story view
-                ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
+                  ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
                 requireActivity().getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.fragment_container, exploreFragment)
                         .commit();
             }
         });
-        preloadMedia();
+        PhotoStory.preloadPhotos(requireContext(), storyList);
     }
     @Override
     public void onDestroyView() {
@@ -143,14 +142,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
             }
         }
     }
-    private void preloadMedia() {
-        if (storyList == null || storyList.isEmpty()) return;
-        for (Story story : storyList) {
-            if (!story.isVideo()) {
-                Glide.with(requireContext()).load(story.getMediaUrl()).preload();
-            }
-        }
-    }
+
     @Override
     public void onGpsClick(double latitude, double longitude) {
         Log.d("StoryViewFragment", "GPS Clicked: " + latitude + ", " + longitude);

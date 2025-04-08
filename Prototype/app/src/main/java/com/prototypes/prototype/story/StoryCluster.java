@@ -8,34 +8,16 @@ import com.google.maps.android.clustering.ClusterItem;
 
 import java.util.Objects;
 
-public class StoryCluster implements ClusterItem {
-    private final Double latitude;
-    private final Double longitude;
-    private final String id;
-    private final String userId;
-    private final String mediaUrl;
-    private final String thumbnailUrl;
-    private final String caption;
+public class StoryCluster extends Story implements ClusterItem {
 
-
-    private final String category;
-    private final String mediaType;
-    public StoryCluster(String id, String userId, double lat, double lng, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
-        this.latitude = lat;
-        this.longitude = lng;
-        this.id = id;
-        this.userId = userId;
-        this.caption = caption;
-        this.category = category;
-        this.thumbnailUrl = thumbnailUrl;
-        this.mediaUrl = mediaUrl;
-        this.mediaType = mediaType;
+    public StoryCluster(String id, String userId, double latitude, double longitude, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
+        super(id, userId, caption, category, mediaUrl, latitude, longitude, mediaType, thumbnailUrl);
     }
 
     @NonNull
     @Override
     public LatLng getPosition() {
-        return new LatLng(latitude, longitude);
+        return new LatLng(getLatitude(), getLongitude());
     }
 
     @Nullable
@@ -43,51 +25,15 @@ public class StoryCluster implements ClusterItem {
     public String getTitle() {
         return "";
     }
-    @NonNull
-    public Double getLatitude() {
-        return latitude;
-    }
-    public Double getLongitude() {
-        return longitude;
-    }
-    public String getId(){
-        return id;
-    }
-    public String getUserId(){
-        return userId;
-    }
-    public String getCaption(){
-        return caption;
-    }
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
-    }
-    public String getMediaUrl() {
-        return mediaUrl;
-    }
-    public String getMediaType() {
-        return mediaType;
-    }
-    public String getCategory() {return category;}
+
     @Override
     public String getSnippet() {
-        return category;
+        return getCategory();
     }
     @Nullable
     @Override
     public Float getZIndex() {
         return 0f;
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        StoryCluster that = (StoryCluster) o;
-        return Objects.equals(this.getId(), that.getId());
-    }
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.getId(), this.getUserId());
     }
 
 }

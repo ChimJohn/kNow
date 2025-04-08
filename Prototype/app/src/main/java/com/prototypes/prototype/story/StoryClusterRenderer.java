@@ -45,7 +45,7 @@
         private final Map<String, Marker> markerMap = new HashMap<>();
         private final LruCache<String, BitmapDescriptor> iconCache = new LruCache<>(200); // Max 50 items
         private final Map<Set<StoryCluster>, BitmapDescriptor> clusterIconCache =
-                new LinkedHashMap<Set<StoryCluster>, BitmapDescriptor>(100, 0.75f, true) {
+                new LinkedHashMap<>(100, 0.75f, true) {
                     @Override
                     protected boolean removeEldestEntry(Map.Entry<Set<StoryCluster>, BitmapDescriptor> eldest) {
                         return size() > 100;  // Limit cache size to 100

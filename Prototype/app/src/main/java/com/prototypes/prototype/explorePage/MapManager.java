@@ -55,23 +55,6 @@ public class MapManager {
         this.googleMap = map;
         this.routeHandler = new RouteHandler(context, map);
         this.currentLocationMarker = new CurrentLocationMarker(activity, map);
-        setupMap();
-    }
-    public GoogleMap getMap(){
-        return this.googleMap;
-    }
-    public RouteHandler getRouteHandler(){
-        return this.routeHandler;
-    }
-    public CurrentLocationMarker getCurrentLocationMarker(){
-        return this.currentLocationMarker;
-    }
-    public void animateCamera(LatLng latLng, Integer zoom){
-        if (this.googleMap != null) {
-            this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        }
-    }
-    public void setupMap(){
         LatLng singapore = new LatLng(1.3521, 103.8198);
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
         this.googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -85,18 +68,8 @@ public class MapManager {
         algorithm.setMaxDistanceBetweenClusteredItems(30);
         this.clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
         this.clusterManager.setOnClusterItemClickListener(storyCluster -> {
-            Story story = new Story(
-                    storyCluster.getId(),
-                    storyCluster.getUserId(),
-                    storyCluster.getCaption(),
-                    storyCluster.getCategory(),
-                    storyCluster.getMediaUrl(),
-                    storyCluster.getLatitude(),
-                    storyCluster.getLongitude(),
-                    storyCluster.getMediaType()
-            );
             ArrayList<Story> storyList = new ArrayList<>();
-            storyList.add(story);
+            storyList.add(storyCluster);
             FragmentTransaction transaction = parentFragmentManager.beginTransaction();
             transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
             transaction.addToBackStack(null);
@@ -111,11 +84,7 @@ public class MapManager {
         });
 
         clusterManager.setOnClusterClickListener(cluster -> {
-            List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
-            ArrayList<Story> storyList = new ArrayList<>();
-            for (StoryCluster storyCluster : clusterItems) {
-                storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
-            }
+            ArrayList<Story> storyList = new ArrayList<>(cluster.getItems());
             FragmentTransaction transaction = parentFragmentManager.beginTransaction();
             transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
             transaction.addToBackStack(null);
@@ -127,7 +96,20 @@ public class MapManager {
                 }
             }
             return true;
-        });
+        });    }
+    public GoogleMap getMap(){
+        return this.googleMap;
+    }
+    public RouteHandler getRouteHandler(){
+        return this.routeHandler;
+    }
+    public CurrentLocationMarker getCurrentLocationMarker(){
+        return this.currentLocationMarker;
+    }
+    public void animateCamera(LatLng latLng, Integer zoom){
+        if (this.googleMap != null) {
+            this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        }
     }
     public void setOwnMarkerLocation(Location location){
         if (location != null) {
