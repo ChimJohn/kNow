@@ -141,9 +141,9 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void getMedia(){
-        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback() {
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback<Story>() {
             @Override
-            public void onMapsLoaded(ArrayList customMaps) {
+            public void onSuccess(ArrayList<Story> customMaps) {
                 if (customMaps.isEmpty()){
                     galleryRecyclerView.setVisibility(View.GONE);
                     tvNoPhotos.setVisibility(View.VISIBLE);
@@ -155,7 +155,7 @@ public class ProfileFragment extends Fragment {
                 }
             }
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreStoriesManager failed: " + e);
             }
         });
@@ -163,7 +163,7 @@ public class ProfileFragment extends Fragment {
     public void getMaps(){
         User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
-            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.isEmpty()){
                     customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                     mapRecyclerView.setAdapter(customMapAdaptor);
@@ -181,7 +181,7 @@ public class ProfileFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                     Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
