@@ -94,9 +94,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
         // Retrieve all media related to user
         getMedia();
         // Retrieve all maps
@@ -122,7 +119,7 @@ public class ProfileFragment extends Fragment {
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
                 tvName.setText(name);
-                tvHandle.setText(username);
+                tvHandle.setText("@"+username);
                 if (profile == null){
                     Glide.with(ProfileFragment.this)
                             .load(R.drawable.default_profile)
@@ -144,9 +141,9 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void getMedia(){
-        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback() {
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback<Story>() {
             @Override
-            public void onMapsLoaded(ArrayList customMaps) {
+            public void onSuccess(ArrayList<Story> customMaps) {
                 if (customMaps.isEmpty()){
                     galleryRecyclerView.setVisibility(View.GONE);
                     tvNoPhotos.setVisibility(View.VISIBLE);
@@ -158,7 +155,7 @@ public class ProfileFragment extends Fragment {
                 }
             }
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreStoriesManager failed: " + e);
             }
         });
@@ -166,7 +163,7 @@ public class ProfileFragment extends Fragment {
     public void getMaps(){
         User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
-            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.isEmpty()){
                     customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                     mapRecyclerView.setAdapter(customMapAdaptor);
@@ -184,7 +181,7 @@ public class ProfileFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                     Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });

@@ -46,7 +46,7 @@ public class EditMaps extends AppCompatActivity {
         // Get maps retlated to the user
         User.getMaps(this, firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
-            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.size() > 0) {
                     EditMapsAdaptor editMapsAdaptor = new EditMapsAdaptor(EditMaps.this, customMaps);
                     mapsRecycler.setAdapter(editMapsAdaptor);
@@ -55,7 +55,7 @@ public class EditMaps extends AppCompatActivity {
                 }
             }
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                 Log.d(TAG, "Error");
             }
         });
