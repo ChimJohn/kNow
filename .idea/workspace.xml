@@ -5,6 +5,11 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_create_custom_map.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/activity_settings.xml">
         <config>
           <theme>@style/Theme.Prototype</theme>
@@ -15,7 +20,17 @@
           <theme>@style/Theme.Prototype</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/custom_map_chip.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_camera.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_edit_profile.xml">
         <config>
           <theme>@style/Theme.Prototype</theme>
         </config>
@@ -45,6 +60,11 @@
           <theme>@style/Theme.Prototype</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/Prototype/app/src/main/res/xml/file_paths.xml">
+        <config>
+          <theme>@style/Theme.Prototype</theme>
+        </config>
+      </layout>
     </layouts>
   </component>
   <component name="AutoImportSettings">
@@ -53,8 +73,12 @@
   <component name="ChangeListManager">
     <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/explorePage/ExploreFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/explorePage/ExploreFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/explorePage/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/explorePage/MapManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/upload/TakePhotoFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/upload/TakePhotoFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/ProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/ProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_profile.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/gradle/libs.versions.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/gradle/libs.versions.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,9 +114,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="resourceFile" />
-        <option value="Class" />
         <option value="layoutResourceFile" />
+        <option value="Class" />
+        <option value="resourceFile" />
       </list>
     </option>
   </component>
@@ -135,7 +159,7 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Stretch",
     "kotlin-language-version-configured": "true",
     "settings.editor.selected.configurable": "preferences.general"
   }
@@ -235,12 +259,12 @@
       <map>
         <entry key="com.prototypes.prototype">
           <value>
-            <CheckInfo lastCheckTimestamp="1743866380949" />
+            <CheckInfo lastCheckTimestamp="1744110309066" />
           </value>
         </entry>
         <entry key="com.prototypes.prototype.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1743866380949" />
+            <CheckInfo lastCheckTimestamp="1744110309059" />
           </value>
         </entry>
       </map>

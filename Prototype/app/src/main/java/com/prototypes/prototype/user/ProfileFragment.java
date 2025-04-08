@@ -40,7 +40,7 @@ public class ProfileFragment extends Fragment {
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
     ImageButton btnMenu;
-    Button btnEditMap;
+    Button btnEditMap, btnEditProfile;
     RecyclerView galleryRecyclerView, mapRecyclerView;
     GalleryAdaptor galleryAdaptor;
     CustomMapAdaptor customMapAdaptor;
@@ -67,16 +67,34 @@ public class ProfileFragment extends Fragment {
         btnEditMap = view.findViewById(R.id.btnEditMap);
         btnMenu = view.findViewById(R.id.btnMenu);
 
-        // Menu button
-        btnMenu.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                Log.d(TAG, "Menu button clicked.");
-                Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(intent);
-            } else {
-                Log.e(TAG, "Activity is null, cannot start SettingsActivity");
-            }
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
+
+        btnEditProfile.setOnClickListener(v -> {
+            Log.d(TAG, "Edit Profile button clicked.");
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new EditProfileFragment()) // Ensure this ID matches your layout
+                    .addToBackStack(null)
+                    .commit();
         });
+
+
+        // Menu button
+        btnEditProfile.setOnClickListener(v -> {
+            Log.d(TAG, "Edit Profile button clicked.");
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,  // enter
+                            R.anim.slide_out_left,  // exit
+                            R.anim.slide_in_left,   // popEnter (back stack)
+                            R.anim.slide_out_right  // popExit (back stack)
+                    )
+                    .replace(R.id.fragment_container, new EditProfileFragment()) // Replace with your real container ID
+                    .addToBackStack(null)
+                    .commit();
+        });
+
 
         // Edit Maps
         btnEditMap.setOnClickListener(new View.OnClickListener() {
