@@ -160,7 +160,7 @@ public class StoryUploadFragment extends Fragment {
     public void getMaps(){
         User.getMaps(getActivity(),firestoreMapManager,new User.UserCallback<CustomMap>() {
             @Override
-            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.size() > 0) {
                     SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
                     selectMapRecyclerView.setAdapter(selectMapAdaptor);
@@ -169,7 +169,7 @@ public class StoryUploadFragment extends Fragment {
                 }
             }
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreMapManager failed: "+ e);
             }
         });

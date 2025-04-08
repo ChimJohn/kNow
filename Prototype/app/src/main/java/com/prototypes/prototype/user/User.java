@@ -136,17 +136,17 @@ public class User {
             @Override
             public void onEmpty(ArrayList<CustomMap> customMaps) {
                 Log.d(TAG, "Number of Custom Maps: 0");
-                callback.onMapsLoaded(customMaps);
+                callback.onSuccess(customMaps);
             }
             @Override
             public void onSuccess(ArrayList<CustomMap> customMaps) {
                 Log.d(TAG, "Number of Custom Maps: "+ customMaps.size());
-                callback.onMapsLoaded(customMaps);
+                callback.onSuccess(customMaps);
             }
             @Override
             public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreMapManager failed: "+ e);
-                callback.onError(e);
+                callback.onFailure(e);
             }
         });
     }
@@ -155,16 +155,16 @@ public class User {
         firestoreStoriesManager.queryDocuments("media", "userId", getUid(activity), new FirestoreManager.FirestoreQueryCallback<Story>() {
             @Override
             public void onEmpty(ArrayList<Story> storyList) {
-                callback.onMapsLoaded(storyList);
+                callback.onSuccess(storyList);
             }
             @Override
             public void onSuccess(ArrayList<Story> storyList) {
-                callback.onMapsLoaded(storyList);
+                callback.onSuccess(storyList);
             }
             @Override
             public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreStoriesManager failed: " + e);
-                callback.onError(e);
+                callback.onFailure(e);
             }
         });
     };
@@ -175,7 +175,7 @@ public class User {
         void onFailure(Exception e);
     }
     public interface UserCallback<T> {
-        void onMapsLoaded(ArrayList<T> results);
-        void onError(Exception e);
+        void onSuccess(ArrayList<T> results);
+        void onFailure(Exception e);
     }
 }

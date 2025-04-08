@@ -12,38 +12,6 @@
         app:show_buffering="when_playing"
         app:show_shuffle_button="true"
     />
-    <ProgressBar
-        android:id="@+id/storyProgressBar"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_gravity="top"
-        android:progressDrawable="@drawable/progress_bar_style"
-        android:max="100"
-        android:visibility="visible" />
-    <Button
-        android:id="@+id/btnGps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:background="@color/black"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="16dp"
-        android:text="Go To Location"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@id/story_snippet" />
-    <TextView
-        android:id="@+id/story_snippet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom"
-        android:background="@color/black"
-        android:padding="16dp"
-        android:text="Story Caption Goes Here"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp" />
     <ImageView
         android:background="#000000"
         android:id="@+id/story_image"
@@ -59,4 +27,5 @@
         android:layout_gravity="center"
         android:visibility="gone"
         android:indeterminate="true"/>
+
 </FrameLayout>
