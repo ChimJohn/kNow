@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.content.Intent;
 import android.widget.ImageButton;
@@ -41,7 +43,8 @@ public class ProfileFragment extends Fragment {
     TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
     ImageButton btnMenu;
     Button btnEditMap;
-    RecyclerView galleryRecyclerView, mapRecyclerView;
+    RecyclerView mapRecyclerView;
+    GridView galleryGridView;
     GalleryAdaptor galleryAdaptor;
     CustomMapAdaptor customMapAdaptor;
     private static final String TAG = "Profile Fragment";
@@ -61,7 +64,7 @@ public class ProfileFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
-        galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
+        galleryGridView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
         btnEditMap = view.findViewById(R.id.btnEditMap);
@@ -145,13 +148,15 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onSuccess(ArrayList<Story> customMaps) {
                 if (customMaps.isEmpty()){
-                    galleryRecyclerView.setVisibility(View.GONE);
+                    galleryGridView.setVisibility(View.GONE);
                     tvNoPhotos.setVisibility(View.VISIBLE);
                 }else{
-                    galleryRecyclerView.setVisibility(View.VISIBLE);
+                    galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
                     galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
-                    galleryRecyclerView.setAdapter(galleryAdaptor);
+                    galleryGridView.setAdapter(galleryAdaptor);
+                    setGridViewHeightBasedOnChildren(galleryGridView, 3);
+
                 }
             }
             @Override
@@ -185,5 +190,30 @@ public class ProfileFragment extends Fragment {
                     Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
+    }
+
+    public static void setGridViewHeightBasedOnChildren(GridView gridView, int numColumns) {
+        ListAdapter adapter = gridView.getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        int totalHeight = 0;
+        int items = adapter.getCount();
+        int rows = (int) Math.ceil((double) items / numColumns);
+
+        for (int i = 0; i < rows; i++) {
+            View listItem = adapter.getView(i, null, gridView);
+            listItem.measure(
+                    View.MeasureSpec.makeMeasureSpec(gridView.getWidth(), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            );
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = gridView.getLayoutParams();
+        params.height = totalHeight + (gridView.getVerticalSpacing() * (rows - 1));
+        gridView.setLayoutParams(params);
+        gridView.requestLayout();
     }
 }

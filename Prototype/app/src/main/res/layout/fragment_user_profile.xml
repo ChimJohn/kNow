@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".user.UserProfileFragment">
 
-    <!-- Scrollable content -->
-    <ScrollView
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        android:gravity="center_horizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -21,7 +23,6 @@
 
             <!-- Profile Img -->
             <androidx.cardview.widget.CardView
-                android:layout_marginTop="45dp"
                 android:layout_width="95dp"
                 android:layout_height="95dp"
                 app:cardCornerRadius="95dp"
@@ -52,7 +53,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="12dp">
-
                 <TextView
                     android:id="@+id/tvHandle"
                     android:layout_width="wrap_content"
@@ -81,17 +81,16 @@
                 android:orientation="horizontal">
 
                 <Button
-                    style="@style/SolidButton"
                     android:id="@+id/btnFollow"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="0dp"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/inter_semibold"
                     android:paddingVertical="12dp"
-                    android:text="Follow"
+                    android:layout_weight="1"
+                    android:text="Edit Profile"
+                    android:fontFamily="@font/inter_semibold"
                     android:textAllCaps="false"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    style="@style/SolidButton" />
             </LinearLayout>
 
             <!-- Map Section -->
@@ -136,15 +135,16 @@
                     android:textSize="20dp"
                     android:textColor="@color/black"/>
 
-                <androidx.recyclerview.widget.RecyclerView
+                <GridView
                     android:id="@+id/gallery_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="24dp"
                     android:visibility="gone"
-                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                    app:spanCount="3" />
+                    android:numColumns="3"
+                    android:horizontalSpacing="8dp"
+                    android:verticalSpacing="8dp"
+                    android:stretchMode="columnWidth" />
             </LinearLayout>
 
             <!-- No Photos Text -->
@@ -160,8 +160,6 @@
                 android:textSize="16dp"
                 android:fontFamily="@font/inter_semibold"/>
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
-    <!-- Top-right menu icon button -->
-
-</FrameLayout>
+</ScrollView>

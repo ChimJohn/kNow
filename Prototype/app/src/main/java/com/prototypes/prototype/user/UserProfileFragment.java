@@ -8,8 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,7 +38,8 @@ public class UserProfileFragment extends Fragment {
     private FirebaseFirestore db;
     private ImageView imgProfile;
     private TextView tvName, tvHandle, tvFollowers;
-    private RecyclerView galleryRecyclerView, mapRecyclerView;
+    private RecyclerView mapRecyclerView;
+    private GridView galleryGridView;
     private GalleryAdaptor galleryAdaptor;
     private FollowManager followManager;
     private Button followButton;
@@ -78,7 +81,7 @@ public class UserProfileFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
-        galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
+        galleryGridView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         mapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         linearLayoutMaps = view.findViewById(R.id.linearLayoutMaps);
@@ -141,19 +144,20 @@ public class UserProfileFragment extends Fragment {
                 new FirestoreManager.FirestoreQueryCallback<Story>() {
                     @Override
                     public void onEmpty(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.GONE);
+                        galleryGridView.setVisibility(View.GONE);
                         TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.VISIBLE);
                     }
 
                     @Override
                     public void onSuccess(ArrayList<Story> storyList) {
-                        galleryRecyclerView.setVisibility(View.VISIBLE);
+                        galleryGridView.setVisibility(View.VISIBLE);
                         TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.GONE);
 
                         galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                        galleryRecyclerView.setAdapter(galleryAdaptor);
+                        galleryGridView.setAdapter(galleryAdaptor);
+                        setGridViewHeightBasedOnChildren(galleryGridView, 3);
                     }
 
                     @Override
@@ -207,7 +211,6 @@ public class UserProfileFragment extends Fragment {
             }
         });
     }
-
     private void updateFollowButtonUI() {
         followButton.setText(isFollowing ? "Following" : "Follow");
 
@@ -220,5 +223,28 @@ public class UserProfileFragment extends Fragment {
             followButton.getBackground().clearColorFilter();
         }
     }
+    public static void setGridViewHeightBasedOnChildren(GridView gridView, int numColumns) {
+        ListAdapter adapter = gridView.getAdapter();
+        if (adapter == null) {
+            return;
+        }
 
+        int totalHeight = 0;
+        int items = adapter.getCount();
+        int rows = (int) Math.ceil((double) items / numColumns);
+
+        for (int i = 0; i < rows; i++) {
+            View listItem = adapter.getView(i, null, gridView);
+            listItem.measure(
+                    View.MeasureSpec.makeMeasureSpec(gridView.getWidth(), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            );
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = gridView.getLayoutParams();
+        params.height = totalHeight + (gridView.getVerticalSpacing() * (rows - 1));
+        gridView.setLayoutParams(params);
+        gridView.requestLayout();
+    }
 }
