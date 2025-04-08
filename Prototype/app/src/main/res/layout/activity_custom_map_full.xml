@@ -7,6 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".custommap.CustomMapFull">
 
+    <!-- Full-Screen Google MapView (Background) -->
+    <com.google.android.gms.maps.MapView
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/mapView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        map:mapId="@string/map_id"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
 
     <androidx.cardview.widget.CardView
         app:layout_constraintTop_toTopOf="parent"

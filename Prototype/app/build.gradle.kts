@@ -47,7 +47,7 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.glide)
     implementation(libs.places)
-
+    implementation(libs.circleimageview)
     annotationProcessor(libs.compiler)
 
     implementation(platform(libs.firebase.bom))

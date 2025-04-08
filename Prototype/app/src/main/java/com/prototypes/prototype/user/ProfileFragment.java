@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.content.Intent;
 import android.widget.ImageButton;
@@ -40,8 +42,9 @@ public class ProfileFragment extends Fragment {
     ImageView imgProfile;
     TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
     ImageButton btnMenu;
-    Button btnEditMap;
-    RecyclerView galleryRecyclerView, mapRecyclerView;
+    RecyclerView mapRecyclerView;
+    GridView galleryGridView;
+    Button btnEditMap, btnEditProfile;
     GalleryAdaptor galleryAdaptor;
     CustomMapAdaptor customMapAdaptor;
     private static final String TAG = "Profile Fragment";
@@ -61,22 +64,37 @@ public class ProfileFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
-        galleryRecyclerView = view.findViewById(R.id.gallery_recycler_view);
+        galleryGridView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
         btnEditMap = view.findViewById(R.id.btnEditMap);
         btnMenu = view.findViewById(R.id.btnMenu);
 
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
+
         // Menu button
         btnMenu.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                Log.d(TAG, "Menu button clicked.");
-                Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(intent);
-            } else {
-                Log.e(TAG, "Activity is null, cannot start SettingsActivity");
-            }
+            Log.d(TAG, "Menu button clicked. Launching SettingsActivity.");
+            Intent intent = new Intent(getActivity(), SettingsActivity.class);
+            startActivity(intent);
         });
+
+        // Edit profile button
+        btnEditProfile.setOnClickListener(v -> {
+            Log.d(TAG, "Edit Profile button clicked.");
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,  // enter
+                            R.anim.slide_out_left,  // exit
+                            R.anim.slide_in_left,   // popEnter (back stack)
+                            R.anim.slide_out_right  // popExit (back stack)
+                    )
+                    .replace(R.id.fragment_container, new EditProfileFragment()) // Replace with your real container ID
+                    .addToBackStack(null)
+                    .commit();
+        });
+
 
         // Edit Maps
         btnEditMap.setOnClickListener(new View.OnClickListener() {
@@ -94,9 +112,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(getActivity());
-        FirestoreManager firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        FirestoreManager firestoreMapManager = new FirestoreManager(db, CustomMap.class);
         // Retrieve all media related to user
         getMedia();
         // Retrieve all maps
@@ -122,7 +137,7 @@ public class ProfileFragment extends Fragment {
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
                 tvName.setText(name);
-                tvHandle.setText(username);
+                tvHandle.setText("@"+username);
                 if (profile == null){
                     Glide.with(ProfileFragment.this)
                             .load(R.drawable.default_profile)
@@ -144,21 +159,23 @@ public class ProfileFragment extends Fragment {
         });
     }
     public void getMedia(){
-        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback() {
+        User.getStories(getActivity(), firestoreStoriesManager, new User.UserCallback<Story>() {
             @Override
-            public void onMapsLoaded(ArrayList customMaps) {
+            public void onSuccess(ArrayList<Story> customMaps) {
                 if (customMaps.isEmpty()){
-                    galleryRecyclerView.setVisibility(View.GONE);
+                    galleryGridView.setVisibility(View.GONE);
                     tvNoPhotos.setVisibility(View.VISIBLE);
                 }else{
-                    galleryRecyclerView.setVisibility(View.VISIBLE);
+                    galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
                     galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
-                    galleryRecyclerView.setAdapter(galleryAdaptor);
+                    galleryGridView.setAdapter(galleryAdaptor);
+                    setGridViewHeightBasedOnChildren(galleryGridView, 3);
+
                 }
             }
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                 Log.d(TAG, "firestoreStoriesManager failed: " + e);
             }
         });
@@ -166,7 +183,7 @@ public class ProfileFragment extends Fragment {
     public void getMaps(){
         User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
-            public void onMapsLoaded(ArrayList<CustomMap> customMaps) {
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.isEmpty()){
                     customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                     mapRecyclerView.setAdapter(customMapAdaptor);
@@ -184,9 +201,34 @@ public class ProfileFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onFailure(Exception e) {
                     Log.d(TAG, "firestoreManager failed: "+ e);
             }
         });
+    }
+
+    public static void setGridViewHeightBasedOnChildren(GridView gridView, int numColumns) {
+        ListAdapter adapter = gridView.getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        int totalHeight = 0;
+        int items = adapter.getCount();
+        int rows = (int) Math.ceil((double) items / numColumns);
+
+        for (int i = 0; i < rows; i++) {
+            View listItem = adapter.getView(i, null, gridView);
+            listItem.measure(
+                    View.MeasureSpec.makeMeasureSpec(gridView.getWidth(), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            );
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = gridView.getLayoutParams();
+        params.height = totalHeight + (gridView.getVerticalSpacing() * (rows - 1));
+        gridView.setLayoutParams(params);
+        gridView.requestLayout();
     }
 }

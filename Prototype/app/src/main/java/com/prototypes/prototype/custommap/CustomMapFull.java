@@ -9,10 +9,12 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.google.android.gms.maps.MapView;
 import com.prototypes.prototype.R;
 
 public class CustomMapFull extends AppCompatActivity {
     ImageButton btnExit;
+    private MapView mapView;
     private static final String TAG = "Custom Map Full";
 
     @Override
@@ -21,6 +23,10 @@ public class CustomMapFull extends AppCompatActivity {
 //        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_custom_map_full);
         btnExit = findViewById(R.id.btnExit);
+
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.onResume();
 
         btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
