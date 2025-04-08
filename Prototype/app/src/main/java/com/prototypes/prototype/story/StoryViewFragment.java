@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,8 +15,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.explorePage.ExploreFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +50,21 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         storyViewAdapter = new StoryViewAdapter(getContext(), storyList, this);
         viewPager2.setAdapter(storyViewAdapter);
         viewPager2.setOffscreenPageLimit(2);
+        TextView storyPositionText = view.findViewById(R.id.story_position);
+        TextView storyCaptionText = view.findViewById(R.id.story_snippet);
+        Button gpsButton = view.findViewById(R.id.btnGps);
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                Story currentStory = storyList.get(position);
+                storyPositionText.setText((position + 1) + "/" + storyList.size());
+                storyCaptionText.setText(currentStory.getCaption());
+                gpsButton.setOnClickListener(v -> {
+                    onGpsClick(currentStory.getLatitude(), currentStory.getLongitude());
+                });
+            }
+        });
         preloadMedia();
     }
     @Override
@@ -58,9 +75,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
             if (bottomNav != null) {
                 bottomNav.setVisibility(View.VISIBLE);
             }
-        }
-        if (storyViewAdapter != null) {
-            storyViewAdapter.removeAutoScrollCallbacks();
         }
     }
     private void preloadMedia() {
