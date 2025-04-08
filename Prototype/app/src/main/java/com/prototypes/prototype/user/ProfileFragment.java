@@ -69,17 +69,14 @@ public class ProfileFragment extends Fragment {
 
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
 
-        btnEditProfile.setOnClickListener(v -> {
-            Log.d(TAG, "Edit Profile button clicked.");
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, new EditProfileFragment()) // Ensure this ID matches your layout
-                    .addToBackStack(null)
-                    .commit();
+        // Menu button
+        btnMenu.setOnClickListener(v -> {
+            Log.d(TAG, "Menu button clicked. Launching SettingsActivity.");
+            Intent intent = new Intent(getActivity(), SettingsActivity.class);
+            startActivity(intent);
         });
 
-
-        // Menu button
+        // Edit profile button
         btnEditProfile.setOnClickListener(v -> {
             Log.d(TAG, "Edit Profile button clicked.");
             requireActivity().getSupportFragmentManager()
