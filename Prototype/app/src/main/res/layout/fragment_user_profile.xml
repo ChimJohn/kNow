@@ -41,7 +41,6 @@
                 android:id="@+id/tvName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
                 android:fontFamily="@font/inter_bold"
                 android:textColor="@color/black"
                 android:textSize="20dp"
@@ -58,7 +57,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_medium"
-                    android:text="handle"
                     android:textSize="14dp"
                     android:textColor="@color/grey"/>
 
@@ -68,7 +66,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_medium"
-                    android:text="followers"
                     android:textSize="14dp"
                     android:textColor="@color/grey"/>
             </LinearLayout>
