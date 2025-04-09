@@ -181,25 +181,16 @@ public class TakePhotoFragment extends Fragment {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
-                        Log.d("TakePhotoFragment", "Photo captured: " + savedUri);
-
-                        // Send photo back to EditProfileFragment
-                        Bundle result = new Bundle();
-                        result.putParcelable("profile_image", savedUri);
-                        requireActivity().getSupportFragmentManager().setFragmentResult("profile_image_uri", result);
-
-                        // Go back to EditProfileFragment
-                        requireActivity().getSupportFragmentManager().popBackStack();
+                        openStoryUploadFragment(savedUri);
                     }
 
                     @Override
                     public void onError(@NonNull ImageCaptureException exception) {
-                        Log.e("TakePhotoFragment", "Photo capture failed: " + exception.getMessage());
+                        Log.e("UploadFragment", "Photo capture failed: " + exception.getMessage());
                     }
                 }
         );
     }
-
 
     private void startVideoRecording() {
         btnCapture.setVisibility(View.GONE);
