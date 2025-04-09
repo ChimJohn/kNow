@@ -1,6 +1,7 @@
 package com.prototypes.prototype;
 
 import android.app.Application;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -23,6 +25,11 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.firebase.FirebaseStorageManager;
+import com.prototypes.prototype.firebase.FirestoreManager;
+import com.prototypes.prototype.login.LoginActivity;
+import com.prototypes.prototype.signup.SignUpActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,16 +45,20 @@ public class MediaViewModel extends AndroidViewModel {
     private final MutableLiveData<String> thumbnailUrlLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isUploading = new MutableLiveData<>(false);
     private final MediatorLiveData<Pair<String, String>> allDataReady = new MediatorLiveData<>();
+    private final FirebaseStorageManager firebaseStorageManager;
+    private final FirestoreManager<Story> firestoreManager;
 
     public MediaViewModel(Application application) {
         super(application);
+        firebaseStorageManager = new FirebaseStorageManager();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        firestoreManager = new FirestoreManager(db, Story.class);
         allDataReady.addSource(mediaUrlLiveData, newMediaUrl -> {
             String latestThumbnailUrl = thumbnailUrlLiveData.getValue();
             if (newMediaUrl != null && latestThumbnailUrl != null) {
                 allDataReady.setValue(new Pair<>(newMediaUrl, latestThumbnailUrl));
             }
         });
-
         allDataReady.addSource(thumbnailUrlLiveData, newThumbnailUrl -> {
             String latestMediaUrl = mediaUrlLiveData.getValue();
             if (newThumbnailUrl != null && latestMediaUrl != null) {
@@ -55,7 +66,6 @@ public class MediaViewModel extends AndroidViewModel {
             }
         });
     }
-
     public void uploadMediaAndThumbnailInBackground(Uri mediaUri) {
         isUploading.setValue(true);
         new Thread(() -> {
@@ -81,7 +91,7 @@ public class MediaViewModel extends AndroidViewModel {
                 } else {
                     final StorageReference mediaRef = storage.getReference("Images/" + UUID.randomUUID().toString());
                     Bitmap originalBitmap = MediaStore.Images.Media.getBitmap(getApplication().getContentResolver(), mediaUri);
-                    originalBitmap = rotateImageIfRequired(originalBitmap, mediaUri);
+                    originalBitmap = Story.fixImageRotation(originalBitmap, mediaUri);
                     Bitmap fullImageBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);  // Create a mutable copy of the original image
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     fullImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);  // Compress at 50% quality
@@ -127,12 +137,6 @@ public class MediaViewModel extends AndroidViewModel {
             }
         }).start();
     }
-    public LiveData<String> getMediaUrlLiveData() {
-        return mediaUrlLiveData;
-    }
-    public LiveData<String> getThumbnailUrlLiveData() {
-        return thumbnailUrlLiveData;
-    }
     public MediatorLiveData<Pair<String, String>> getAllDataReady() {
         return allDataReady;
     }
@@ -143,12 +147,20 @@ public class MediaViewModel extends AndroidViewModel {
         thumbnailUrlLiveData.postValue(url);
     }
     public void saveMediaToFirebaseStorage(String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType) {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            Observer<Pair<String, String>> firestoreObserver = new Observer<Pair<String, String>>() {
+            Observer<Pair<String, String>> firestoreObserver = new Observer<>() {
                 @Override
                 public void onChanged(Pair<String, String> pair) {
-                    if (pair != null){
-                        saveMediaToFirestore(db, pair.first, pair.second, userId, caption, selectedCategory, lat, lng, mediaType);
+                    if (pair != null) {
+                        firestoreManager.writeDocument(
+                                "media",
+                                null,
+                                new Story(null, userId, caption, selectedCategory, pair.first, lat, lng, mediaType, pair.second),
+                                new FirestoreManager.FirestoreCallback() {
+                                    @Override
+                                    public void onSuccess() {}
+                                    @Override
+                                    public void onFailure(Exception e) {}
+                                });
                         mediaUrlLiveData.setValue(null);
                         thumbnailUrlLiveData.setValue(null);
                         allDataReady.setValue(null);
@@ -158,43 +170,14 @@ public class MediaViewModel extends AndroidViewModel {
             };
             getAllDataReady().observeForever(firestoreObserver);
     }
-    private void saveMediaToFirestore(FirebaseFirestore db, String mediaUrl, String thumbnailUrl, String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType) {
-        Map<String, Object> mediaData = new HashMap<>();
-        mediaData.put("mediaUrl", mediaUrl); //CHANGE IMAGE TO MEDIA
-        mediaData.put("thumbnailUrl", thumbnailUrl);
-        mediaData.put("userId", userId);
-        mediaData.put("caption", caption);
-        mediaData.put("category", selectedCategory);
-        mediaData.put("latitude", lat);
-        mediaData.put("longitude", lng);
-        mediaData.put("mediaType", mediaType);
-        mediaData.put("timestamp", FieldValue.serverTimestamp());
-        db.collection("media").add(mediaData)
-                .addOnSuccessListener(documentReference -> Log.d("Firestore", "Document added: " + documentReference.getId()))
-                .addOnFailureListener(e -> Log.e("Firestore", "Error adding document", e));
-    }
-    private Bitmap rotateImageIfRequired(Bitmap img, Uri uri) throws IOException {
-        ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        Matrix matrix = new Matrix();
-        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
-            matrix.postRotate(90);
-        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
-            matrix.postRotate(180);
-        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            matrix.postRotate(270);
-        }
-        Bitmap rotatedBitmap = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        img.recycle(); // Recycle the original bitmap to free memory
-        return rotatedBitmap;
-    }
-    private Task<Uri> createVideoThumbnail(Uri videoUri) {
+
+    private Task<Uri> createVideoThumbnail(Uri videoUri) throws IOException {
         TaskCompletionSource<Uri> taskCompletionSource = new TaskCompletionSource<>();
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
 
         try {
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(getApplication(), videoUri);
-            Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            mediaMetadataRetriever.setDataSource(getApplication(), videoUri);
+            Bitmap bitmap = mediaMetadataRetriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             File thumbnailFile = new File(getApplication().getCacheDir(), "thumbnail.jpg");
 
             try (FileOutputStream out = new FileOutputStream(thumbnailFile)) {
@@ -208,23 +191,21 @@ public class MediaViewModel extends AndroidViewModel {
                 Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
                 thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
             }
-            retriever.release();
-
-            // Upload the thumbnail to Firebase Storage
-            StorageReference thumbRef = FirebaseStorage.getInstance().getReference("Thumbnails/" + UUID.randomUUID().toString() + ".jpg");
-            thumbRef.putFile(Uri.fromFile(thumbnailFile))
-                    .continueWithTask(task -> {
-                        if (!task.isSuccessful()) {
-                            throw task.getException();
-                        }
-                        return thumbRef.getDownloadUrl();
-                    })
-                    .addOnSuccessListener(taskCompletionSource::setResult)
-                    .addOnFailureListener(taskCompletionSource::setException);
-
+            firebaseStorageManager.uploadFileOutURL(Uri.fromFile(thumbnailFile), "Thumbnails/" + UUID.randomUUID().toString() + ".jpg", new FirebaseStorageManager.UploadFileCallback() {
+                @Override
+                public void onSuccess(String url) {
+                    taskCompletionSource.setResult(Uri.parse(url));
+                }
+                @Override
+                public void onFailure(String error) {
+                    taskCompletionSource.setException(new Exception(error));
+                }
+            });
         } catch (Exception e) {
             Log.e("ThumbnailError", "Error creating thumbnail: " + e.getMessage());
             taskCompletionSource.setException(e);
+        } finally {
+            mediaMetadataRetriever.release();
         }
 
         return taskCompletionSource.getTask();

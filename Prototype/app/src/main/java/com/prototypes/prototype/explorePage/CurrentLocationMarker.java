@@ -27,7 +27,6 @@ public class CurrentLocationMarker {
     }
     public void updateGpsMarker(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
         if (gpsMarker == null) {
             gpsMarker = googleMap.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -55,6 +54,9 @@ public class CurrentLocationMarker {
     }
 
     private void startPulsatingEffect() {
+        if (pulseAnimator == null){
+            return;
+        }
         pulseAnimator = ValueAnimator.ofFloat(10, 20);
         pulseAnimator.setDuration(1000);
         pulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
@@ -68,7 +70,8 @@ public class CurrentLocationMarker {
     }
 
     public void stopPulsatingEffect(){
-        pulseAnimator.cancel();
+        if (pulseAnimator != null){
+            pulseAnimator.cancel();
+        }
     }
-
 }

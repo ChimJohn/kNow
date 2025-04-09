@@ -1,8 +1,5 @@
 package com.prototypes.prototype.firebase;
 
-import android.util.Log;
-
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -10,7 +7,6 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class FirestoreManager<T> {
@@ -108,6 +104,25 @@ public class FirestoreManager<T> {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void queryDocumentsById(String collection, String documentId,
+                                   FirestoreQueryCallback<T> callback) {
+        db.collection(collection)
+                .document(documentId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    ArrayList<T> resultList = new ArrayList<>();
+                    if (documentSnapshot.exists()) {
+                        T object = documentSnapshot.toObject(type);
+                        if (object != null) {
+                            resultList.add(object);
+                        }
+                    }
+                    callback.onSuccess(resultList);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
     // Query a collection for documents. Filters array field
     // Inputs: collection, arrayField (Field in document), arrayValue (Value in field)

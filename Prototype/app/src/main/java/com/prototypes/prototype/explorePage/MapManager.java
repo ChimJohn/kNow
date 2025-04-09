@@ -2,13 +2,20 @@ package com.prototypes.prototype.explorePage;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.location.Location;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -21,14 +28,11 @@ import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
 import com.google.maps.android.clustering.algo.PreCachingAlgorithmDecorator;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.story.Story;
-import com.prototypes.prototype.story.StoryCluster;
-import com.prototypes.prototype.story.StoryClusterRenderer;
-import com.prototypes.prototype.story.StoryViewFragment;
+import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -36,8 +40,8 @@ public class MapManager {
     private final Context context;
     private final Activity activity;
     private GoogleMap googleMap;
-    private ClusterManager<StoryCluster> clusterManager;
-    private final Map<String, StoryCluster> allMarkers = new HashMap<>();
+    private ClusterManager<RouteHandler.StoryCluster> clusterManager;
+    private final Map<String, RouteHandler.StoryCluster> allMarkers = new HashMap<>();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ListenerRegistration mediaListener;
     private RouteHandler routeHandler;
@@ -55,23 +59,6 @@ public class MapManager {
         this.googleMap = map;
         this.routeHandler = new RouteHandler(context, map);
         this.currentLocationMarker = new CurrentLocationMarker(activity, map);
-        setupMap();
-    }
-    public GoogleMap getMap(){
-        return this.googleMap;
-    }
-    public RouteHandler getRouteHandler(){
-        return this.routeHandler;
-    }
-    public CurrentLocationMarker getCurrentLocationMarker(){
-        return this.currentLocationMarker;
-    }
-    public void animateCamera(LatLng latLng, Integer zoom){
-        if (this.googleMap != null) {
-            this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        }
-    }
-    public void setupMap(){
         LatLng singapore = new LatLng(1.3521, 103.8198);
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(singapore, 12));
         this.googleMap.getUiSettings().setMapToolbarEnabled(false);
@@ -79,24 +66,14 @@ public class MapManager {
         this.googleMap.getUiSettings().setRotateGesturesEnabled(false);
         this.googleMap.getUiSettings().setTiltGesturesEnabled(false);
         this.clusterManager = new ClusterManager<>(context, this.googleMap);
-        this.clusterManager.setRenderer(new StoryClusterRenderer(context, this.googleMap, this.clusterManager));
+        this.clusterManager.setRenderer(new MarkerHandler.StoryClusterRenderer(context, this.googleMap, this.clusterManager));
         this.googleMap.setOnCameraIdleListener(this.clusterManager);
-        NonHierarchicalDistanceBasedAlgorithm<StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+        NonHierarchicalDistanceBasedAlgorithm<RouteHandler.StoryCluster> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
         algorithm.setMaxDistanceBetweenClusteredItems(30);
         this.clusterManager.setAlgorithm(new PreCachingAlgorithmDecorator<>(algorithm));
         this.clusterManager.setOnClusterItemClickListener(storyCluster -> {
-            Story story = new Story(
-                    storyCluster.getId(),
-                    storyCluster.getUserId(),
-                    storyCluster.getCaption(),
-                    storyCluster.getCategory(),
-                    storyCluster.getMediaUrl(),
-                    storyCluster.getLatitude(),
-                    storyCluster.getLongitude(),
-                    storyCluster.getMediaType()
-            );
             ArrayList<Story> storyList = new ArrayList<>();
-            storyList.add(story);
+            storyList.add(storyCluster);
             FragmentTransaction transaction = parentFragmentManager.beginTransaction();
             transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
             transaction.addToBackStack(null);
@@ -111,11 +88,7 @@ public class MapManager {
         });
 
         clusterManager.setOnClusterClickListener(cluster -> {
-            List<StoryCluster> clusterItems = new ArrayList<>(cluster.getItems());
-            ArrayList<Story> storyList = new ArrayList<>();
-            for (StoryCluster storyCluster : clusterItems) {
-                storyList.add(new Story(storyCluster.getId(), storyCluster.getUserId(), storyCluster.getCaption(), storyCluster.getCategory() ,storyCluster.getMediaUrl(), storyCluster.getLatitude(), storyCluster.getLongitude(), storyCluster.getMediaType()));
-            }
+            ArrayList<Story> storyList = new ArrayList<>(cluster.getItems());
             FragmentTransaction transaction = parentFragmentManager.beginTransaction();
             transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(storyList));
             transaction.addToBackStack(null);
@@ -127,7 +100,20 @@ public class MapManager {
                 }
             }
             return true;
-        });
+        });    }
+    public GoogleMap getMap(){
+        return this.googleMap;
+    }
+    public RouteHandler getRouteHandler(){
+        return this.routeHandler;
+    }
+    public CurrentLocationMarker getCurrentLocationMarker(){
+        return this.currentLocationMarker;
+    }
+    public void animateCamera(LatLng latLng, Integer zoom){
+        if (this.googleMap != null) {
+            this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        }
     }
     public void setOwnMarkerLocation(Location location){
         if (location != null) {
@@ -151,7 +137,7 @@ public class MapManager {
     }
 
     private void removeMarker(String id) {
-        StoryCluster existing = allMarkers.remove(id);
+        RouteHandler.StoryCluster existing = allMarkers.remove(id);
         if (existing != null) {
             clusterManager.removeItem(existing);
         }
@@ -202,7 +188,7 @@ public class MapManager {
                         Double latitude = documentSnapshot.getDouble("latitude");
                         Double longitude = documentSnapshot.getDouble("longitude");
                         if (latitude == null || longitude == null) continue;
-                        StoryCluster storyCluster = new StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
+                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
                         switch (change.getType()) {
                             case ADDED:
                                 clusterManager.addItem(storyCluster);
@@ -222,10 +208,30 @@ public class MapManager {
                 });
     }
     private void removeMarkerById(String id) {
-        StoryCluster marker = allMarkers.remove(id);
+        RouteHandler.StoryCluster marker = allMarkers.remove(id);
         if (marker != null) {
             clusterManager.removeItem(marker);
         }
     }
 
+    public static class StoryMarker extends LinearLayout {
+        public StoryMarker(Context context) {
+            super(context);
+            init(context);
+        }
+        public StoryMarker(Context context, @Nullable AttributeSet attrs) {
+            super(context, attrs);
+            init(context);
+        }
+        private void init(Context context) {
+            LayoutInflater.from(context).inflate(R.layout.story_marker, this, true);
+        }
+        public void setMarkerImage(Context context, String imageUrl, CustomTarget<Bitmap> target) {
+            Glide.with(context)
+                    .asBitmap()
+                    .override(250, 250) // Resize the image to fit marker
+                    .load(imageUrl)
+                    .into(target);
+        }
+    }
 }

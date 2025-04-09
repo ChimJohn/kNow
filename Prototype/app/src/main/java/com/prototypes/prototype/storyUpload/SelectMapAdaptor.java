@@ -1,12 +1,9 @@
-package com.prototypes.prototype.upload;
+package com.prototypes.prototype.storyUpload;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.CustomMap;
-import com.prototypes.prototype.custommap.CustomMapAdaptor;
 
 import java.util.ArrayList;
 

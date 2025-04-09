@@ -1,19 +1,12 @@
 package com.prototypes.prototype.user;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.view.View;
 
-import com.bumptech.glide.Glide;
-import com.google.firebase.Firebase;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.CustomMap;
-import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.story.Story;
+import com.prototypes.prototype.classes.Story;
 
 import java.util.ArrayList;
 import java.util.List;

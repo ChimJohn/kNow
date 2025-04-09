@@ -52,12 +52,12 @@ public class CustomMap {
         this.imageUrl = imageUrl;
     }
 
-    public static void creatMap(Activity activity, Uri file, String mapName) {
+    public static void createMap(Activity activity, Uri file, String mapName) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(activity);
         FirebaseStorageManager firebaseStorageManager = new FirebaseStorageManager();
         FirestoreManager firestoreManager = new FirestoreManager(db, CustomMap.class);
-        String TAG = "Creat Map Function";
+        String TAG = "Create Map Function";
 
         String fileName = UUID.randomUUID().toString();
         // Add photo to storage

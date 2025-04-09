@@ -1,4 +1,4 @@
-package com.prototypes.prototype.upload;
+package com.prototypes.prototype.storyUpload;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -38,7 +38,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.story.StoryUploadFragment;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -67,10 +66,8 @@ public class TakePhotoFragment extends Fragment {
 
     private final Handler videoHandler = new Handler(); // Handler for running video timer
     private TextView timerText;
-
     private static final long MAX_VIDEO_DURATION = 60000; // 60 seconds
     private File videoFile; // Define globally to access after stopping recording
-
     private long videoStartTime;
     private final Handler timerHandler = new Handler();
     private Runnable timerRunnable;
@@ -146,7 +143,7 @@ public class TakePhotoFragment extends Fragment {
                 Recorder recorder = new Recorder.Builder()
                         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
                         .build();
-                videoCapture = VideoCapture.withOutput(recorder); // ✅ Correct
+                videoCapture = VideoCapture.withOutput(recorder);
 
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
@@ -182,14 +179,14 @@ public class TakePhotoFragment extends Fragment {
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
                         Log.d("TakePhotoFragment", "Photo captured: " + savedUri);
-
-                        // Send photo back to EditProfileFragment
-                        Bundle result = new Bundle();
-                        result.putParcelable("profile_image", savedUri);
-                        requireActivity().getSupportFragmentManager().setFragmentResult("profile_image_uri", result);
-
-                        // Go back to EditProfileFragment
-                        requireActivity().getSupportFragmentManager().popBackStack();
+                        openStoryUploadFragment(savedUri);
+//                        // Send photo back to EditProfileFragment
+//                        Bundle result = new Bundle();
+//                        result.putParcelable("profile_image", savedUri);
+//                        requireActivity().getSupportFragmentManager().setFragmentResult("profile_image_uri", result);
+//
+//                        // Go back to EditProfileFragment
+//                        requireActivity().getSupportFragmentManager().popBackStack();
                     }
 
                     @Override
