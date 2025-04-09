@@ -66,10 +66,8 @@ public class TakePhotoFragment extends Fragment {
 
     private final Handler videoHandler = new Handler(); // Handler for running video timer
     private TextView timerText;
-
     private static final long MAX_VIDEO_DURATION = 60000; // 60 seconds
     private File videoFile; // Define globally to access after stopping recording
-
     private long videoStartTime;
     private final Handler timerHandler = new Handler();
     private Runnable timerRunnable;
@@ -145,7 +143,7 @@ public class TakePhotoFragment extends Fragment {
                 Recorder recorder = new Recorder.Builder()
                         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
                         .build();
-                videoCapture = VideoCapture.withOutput(recorder); // ✅ Correct
+                videoCapture = VideoCapture.withOutput(recorder);
 
                 cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK)
