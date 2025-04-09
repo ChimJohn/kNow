@@ -22,6 +22,8 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.storyUpload.TakePhotoFragment;
@@ -34,11 +36,11 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private CurrentLocationViewModel currentLocationViewModel;
+    private static PlacesClient placesClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.main);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         currentLocationViewModel = new ViewModelProvider(this).get(CurrentLocationViewModel.class);
@@ -77,8 +79,14 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         });
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+        }
+        placesClient = Places.createClient(this);
     }
-
+    public static PlacesClient getPlacesClient() {
+        return placesClient;
+    }
     private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 boolean allGranted = true;

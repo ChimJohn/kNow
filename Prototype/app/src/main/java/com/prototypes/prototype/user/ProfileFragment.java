@@ -125,26 +125,28 @@ public class ProfileFragment extends Fragment {
                 profile = user.getProfile();
                 followersList = user.getFollowers();
                 stories = user.getStories();
-
                 // Populate UI Elements
                 if (followersList == null){
                     Log.d(TAG, "User has no followers");
                     tvFollowers.setText("0 followers");
-
-                }else{
+                } else
+                {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
                     tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
                 tvName.setText(name);
                 tvHandle.setText("@"+username);
-                if (profile == null){
-                    Glide.with(ProfileFragment.this)
-                            .load(R.drawable.default_profile)
-                            .into(imgProfile); //TODO: add buffering img
-                }else{
-                    Glide.with(ProfileFragment.this)
-                            .load(profile)
-                            .into(imgProfile); //TODO: add buffering img
+                if (getView() != null && isAdded()) {
+                    if (profile == null){
+                        Glide.with(ProfileFragment.this)
+                                .load(R.drawable.default_profile)
+                                .into(imgProfile); //TODO: add buffering img
+                    }
+                    else {
+                        Glide.with(ProfileFragment.this)
+                                .load(profile)
+                                .into(imgProfile); //TODO: add buffering img
+                    }
                 }
                 // Retrieve all media related to user
                 getMedia();
@@ -164,13 +166,13 @@ public class ProfileFragment extends Fragment {
                 if (customMaps.isEmpty()){
                     galleryGridView.setVisibility(View.GONE);
                     tvNoPhotos.setVisibility(View.VISIBLE);
-                }else{
+                }
+                else {
                     galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
                     galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
                     galleryGridView.setAdapter(galleryAdaptor);
                     setGridViewHeightBasedOnChildren(galleryGridView, 3);
-
                 }
             }
             @Override
@@ -189,16 +191,15 @@ public class ProfileFragment extends Fragment {
                     // Create "Add" map element
                     CustomMap addMap = new CustomMap("Add", null, null, "");
                     customMapAdaptor.addItemToTop(addMap);
-                }else{
+                }
+                else {
                     customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
                     mapRecyclerView.setAdapter(customMapAdaptor);
-
                     // Create "Add" map element
                     CustomMap addMap = new CustomMap("Add", null, null, "");
                     customMapAdaptor.addItemToTop(addMap);
                 }
             }
-
             @Override
             public void onFailure(Exception e) {
                     Log.d(TAG, "firestoreManager failed: "+ e);
@@ -207,6 +208,9 @@ public class ProfileFragment extends Fragment {
     }
 
     public static void setGridViewHeightBasedOnChildren(GridView gridView, int numColumns) {
+        if (gridView == null){
+            return;
+        }
         ListAdapter adapter = gridView.getAdapter();
         if (adapter == null) {
             return;
@@ -218,6 +222,9 @@ public class ProfileFragment extends Fragment {
 
         for (int i = 0; i < rows; i++) {
             View listItem = adapter.getView(i, null, gridView);
+            if (listItem == null){
+                return;
+            }
             listItem.measure(
                     View.MeasureSpec.makeMeasureSpec(gridView.getWidth(), View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)

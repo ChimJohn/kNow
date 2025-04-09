@@ -1,5 +1,6 @@
 package com.prototypes.prototype.user;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.classes.Story;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UserProfileFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
@@ -62,9 +64,13 @@ public class UserProfileFragment extends Fragment {
         if (getArguments() != null) {
             userId = getArguments().getString(ARG_USER_ID);
         }
+    }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         db = FirebaseFirestore.getInstance();
         firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        authManager = new FirebaseAuthManager(getActivity());
+        authManager = new FirebaseAuthManager(requireActivity());
         followManager = new FollowManager(db, authManager);
     }
 
@@ -115,20 +121,22 @@ public class UserProfileFragment extends Fragment {
                 }
 
                 // Load profile image
+                if (!isAdded()){
+                    return;
+                }
                 if (profile == null){
-                    Glide.with(getActivity())
+                    Glide.with(requireActivity())
                             .load(R.drawable.default_profile)
                             .into(imgProfile); //TODO: add buffering img
-                }else{
-                    Glide.with(getActivity())
+                }
+                else {
+                    Glide.with(requireActivity())
                             .load(profile)
                             .into(imgProfile); //TODO: add buffering img
                 }
-
                 // Load user's media
                 loadUserMedia();
             }
-
             @Override
             public void onFailure(Exception e) {
                 Log.e(TAG, "Failed to load user data: " + e.getMessage());
@@ -147,15 +155,17 @@ public class UserProfileFragment extends Fragment {
                         TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.VISIBLE);
                     }
-
                     @Override
                     public void onSuccess(ArrayList<Story> storyList) {
                         galleryGridView.setVisibility(View.VISIBLE);
                         TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.GONE);
-
-                        galleryAdaptor = new GalleryAdaptor(getActivity(), storyList);
-                        galleryGridView.setAdapter(galleryAdaptor);
+                        if (isAdded()) {
+                            galleryAdaptor = new GalleryAdaptor(requireActivity(), storyList);
+                            galleryGridView.setAdapter(galleryAdaptor);
+                        } else {
+                            Log.e("ProfileFragment", "Activity is null, cannot set adapter");
+                        }
                         setGridViewHeightBasedOnChildren(galleryGridView, 3);
                     }
 
@@ -186,8 +196,10 @@ public class UserProfileFragment extends Fragment {
 
             @Override
             public void onSuccess(ArrayList<CustomMap> results) {
-                otherCustomMapAdaptor = new OtherCustomMapAdaptor(getActivity(), results);
-                mapRecyclerView.setAdapter(otherCustomMapAdaptor);
+                if (isAdded()){
+                    otherCustomMapAdaptor = new OtherCustomMapAdaptor(requireActivity(), results);
+                    mapRecyclerView.setAdapter(otherCustomMapAdaptor);
+                }
             }
             @Override
             public void onFailure(Exception e) {

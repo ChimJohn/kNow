@@ -1,5 +1,7 @@
 package com.prototypes.prototype.explorePage;
 
+import static com.prototypes.prototype.MainActivity.getPlacesClient;
+
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -90,11 +92,7 @@ public class ExploreFragment extends Fragment {
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
-
-        if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), getString(R.string.google_maps_key));
-        }
-        placesClient = Places.createClient(requireContext());
+        placesClient =  getPlacesClient();
         db = FirebaseFirestore.getInstance();
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
 
@@ -149,16 +147,13 @@ public class ExploreFragment extends Fragment {
                                 List<UserWithFollowers> matchedUsers = new ArrayList<>();
                                 for (DocumentSnapshot doc : snapshot.getDocuments()) {
                                     if (doc.getId().equals(currentUserId)) continue; // Skip current user
-
                                     String username = doc.getString("username");
                                     List<?> followersList = (List<?>) doc.get("followers");
                                     int followerCount = (followersList != null) ? followersList.size() : 0;
-
                                     if (username != null) {
                                         matchedUsers.add(new UserWithFollowers(username, followerCount));
                                     }
                                 }
-
                                 List<UserWithFollowers> sortedUsers = mergeSort(matchedUsers);
                                 List<String> sortedUsernames = new ArrayList<>();
                                 for (UserWithFollowers user : sortedUsers) {
@@ -205,7 +200,6 @@ public class ExploreFragment extends Fragment {
                                         fetchAndZoomToPlace(placeId);
                                     }
                                 });
-
                                 rvUserSearchResults.setVisibility(locationNames.isEmpty() ? View.GONE : View.VISIBLE);
                             })
                             .addOnFailureListener(e -> {
@@ -218,7 +212,6 @@ public class ExploreFragment extends Fragment {
             }
             @Override public void afterTextChanged(Editable s) {}
         });
-
     }
     @Override
     public void onResume() {
@@ -306,7 +299,9 @@ public class ExploreFragment extends Fragment {
         if (mapView != null) {
             mapView.onDestroy();
         }
-        mapManager.clear();
+        if (mapManager != null) {
+            mapManager.clear();
+        }
     }
 
     @Override
@@ -316,33 +311,27 @@ public class ExploreFragment extends Fragment {
         if (placesClient != null) {
             placesClient = null; // This shuts down the client and associated resources
         }
-        mapManager.clear();
     }
 
     private static class UserWithFollowers {
         String username;
         int followerCount;
-
         UserWithFollowers(String username, int followerCount) {
             this.username = username;
             this.followerCount = followerCount;
         }
     }
-
     private List<UserWithFollowers> mergeSort(List<UserWithFollowers> users) {
         if (users.size() <= 1) return users;
-
         int mid = users.size() / 2;
         List<UserWithFollowers> left = mergeSort(users.subList(0, mid));
         List<UserWithFollowers> right = mergeSort(users.subList(mid, users.size()));
-
         return merge(left, right);
     }
 
     private List<UserWithFollowers> merge(List<UserWithFollowers> left, List<UserWithFollowers> right) {
         List<UserWithFollowers> merged = new ArrayList<>();
         int i = 0, j = 0;
-
         while (i < left.size() && j < right.size()) {
             if (left.get(i).followerCount >= right.get(j).followerCount) {
                 merged.add(left.get(i++));
@@ -350,10 +339,8 @@ public class ExploreFragment extends Fragment {
                 merged.add(right.get(j++));
             }
         }
-
         while (i < left.size()) merged.add(left.get(i++));
         while (j < right.size()) merged.add(right.get(j++));
-
         return merged;
     }
 }
