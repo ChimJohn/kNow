@@ -86,7 +86,7 @@ public class CreateCustomMap extends AppCompatActivity {
                     return;
                 }
                 mapName = etMapName.getText().toString().trim();
-                CustomMap.creatMap(CreateCustomMap.this, image, mapName);
+                CustomMap.createMap(CreateCustomMap.this, image, mapName);
             }
         });
 
