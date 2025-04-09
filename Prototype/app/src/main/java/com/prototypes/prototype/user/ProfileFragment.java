@@ -170,7 +170,9 @@ public class ProfileFragment extends Fragment {
                 else {
                     galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
-                    galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps);
+                    galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps, story -> {
+                        Log.d("HIHIHIHIHI", story.getCaption());
+                    });
                     galleryGridView.setAdapter(galleryAdaptor);
                     setGridViewHeightBasedOnChildren(galleryGridView, 3);
                 }

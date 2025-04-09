@@ -31,7 +31,6 @@ import com.prototypes.prototype.classes.Story;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 public class UserProfileFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String TAG = "UserProfileFragment";
@@ -161,7 +160,9 @@ public class UserProfileFragment extends Fragment {
                         TextView tvNoPhotos = getView().findViewById(R.id.tvNoPhotos);
                         tvNoPhotos.setVisibility(View.GONE);
                         if (isAdded()) {
-                            galleryAdaptor = new GalleryAdaptor(requireActivity(), storyList);
+                            galleryAdaptor = new GalleryAdaptor(getActivity(), storyList, story -> {
+                                Log.d("HIHIHIHIHI", story.getCaption());
+                            });
                             galleryGridView.setAdapter(galleryAdaptor);
                         } else {
                             Log.e("ProfileFragment", "Activity is null, cannot set adapter");

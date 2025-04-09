@@ -1,24 +1,34 @@
 package com.prototypes.prototype.user;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import androidx.fragment.app.FragmentManager;
+
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
 
 public class GalleryAdaptor extends BaseAdapter {
     Context context;
     ArrayList<Story> storyArrayList;
-    public GalleryAdaptor(Context context, ArrayList<Story> storyArrayList) {
+    OnStoryClickListener clickListener;
+    public interface OnStoryClickListener {
+        void onStoryClick(Story story);
+    }
+    public GalleryAdaptor(Context context, ArrayList<Story> storyArrayList, OnStoryClickListener clickListener) {
         this.context = context;
         this.storyArrayList = storyArrayList;
+        this.clickListener = clickListener;
     }
     @Override
     public int getCount() {
@@ -48,5 +58,4 @@ public class GalleryAdaptor extends BaseAdapter {
 
         return convertView;
     }
-
 }
