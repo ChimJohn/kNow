@@ -1,4 +1,4 @@
-package com.prototypes.prototype.story;
+package com.prototypes.prototype.storyView;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,50 +24,44 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.classes.Story;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.StoryViewHolder> {
-    private final ArrayList<Story> storyList;
-    private final Context context;
-
     public interface OnGpsClickListener {
         void onGpsClick(double latitude, double longitude);
     }
+    private final ArrayList<Story> storyList;
+    private final Context context;
     private final OnGpsClickListener gpsClickListener;
-
     public StoryViewAdapter(Context context, ArrayList<Story> stories, OnGpsClickListener gpsClickListener) {
         this.context = context;
         this.storyList = stories;
         this.gpsClickListener = gpsClickListener;
     }
-
     @NonNull
     @Override
     public StoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_view, parent, false);
         return new StoryViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull StoryViewHolder holder, int position) {
         Story story = storyList.get(position);
         holder.bind(story, gpsClickListener, position, storyList.size()); // pass position + total count
     }
-
     @Override
     public int getItemCount() {
         return storyList.size();
     }
-
     @Override
     public void onViewRecycled(@NonNull StoryViewHolder holder) {
         super.onViewRecycled(holder);
         holder.releasePlayer();
     }
-
     @Override
     public void onViewAttachedToWindow(@NonNull StoryViewHolder holder) {
         super.onViewAttachedToWindow(holder);
@@ -85,14 +79,12 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         private final ProgressBar imageLoader;
         private ExoPlayer exoPlayer;
         private Story story;
-
         public StoryViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.story_image);
             playerView = itemView.findViewById(R.id.player_view);
             imageLoader = itemView.findViewById(R.id.image_loader);
         }
-
         public void bind(Story story, OnGpsClickListener gpsClickListener, int position, int totalCount) {
             this.story = story;
             if (!story.isVideo()) {

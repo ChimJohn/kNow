@@ -164,12 +164,11 @@ public class ExploreFragment extends Fragment {
                                 for (UserWithFollowers user : sortedUsers) {
                                     sortedUsernames.add(user.username);
                                 }
-
                                 userSearchAdapter.updateData(sortedUsernames);
                                 rvUserSearchResults.setVisibility(sortedUsernames.isEmpty() ? View.GONE : View.VISIBLE);
                             });
-
-                } else if (!query.isEmpty()) {
+                }
+                else if (!query.isEmpty()) {
                     RectangularBounds bounds = RectangularBounds.newInstance(
                             new LatLng(1.1304753, 103.6920359),
                             new LatLng(1.4504753, 104.0120359)

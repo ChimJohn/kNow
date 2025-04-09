@@ -24,7 +24,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.prototypes.prototype.explorePage.ExploreFragment;
-import com.prototypes.prototype.upload.TakePhotoFragment;
+import com.prototypes.prototype.storyUpload.TakePhotoFragment;
 import com.prototypes.prototype.user.ProfileFragment;
 
 import java.util.Map;

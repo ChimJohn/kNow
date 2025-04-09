@@ -9,7 +9,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.story.Story;
+import com.prototypes.prototype.classes.Story;
 
 import java.util.ArrayList;
 

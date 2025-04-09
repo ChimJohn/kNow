@@ -1,4 +1,4 @@
-package com.prototypes.prototype.story;
+package com.prototypes.prototype.storyUpload;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -29,11 +29,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.CurrentLocationViewModel;
 import com.prototypes.prototype.MediaViewModel;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.classes.Story;
 import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.upload.SelectMapAdaptor;
 import com.prototypes.prototype.user.User;
 
 import java.util.ArrayList;
@@ -86,16 +86,11 @@ public class StoryUploadFragment extends Fragment {
         btnExit = view.findViewById(R.id.btnExit);
         selectMapRecyclerView = view.findViewById(R.id.selectMapRecyclerView);
         selectMapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-
         String userId = firebaseAuthManager.getCurrentUser().getUid();
         assert getArguments() != null;
-        String mediaUriString = getArguments().
-                getString(ARG_MEDIA_URI, "");
+        String mediaUriString = getArguments().getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
-
-        // Display all custom maps in recycler view
-        getMaps();
-
+        getCustomMaps();
         mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
         if (mediaUri.toString().endsWith(".mp4")) {
             try {
@@ -114,20 +109,13 @@ public class StoryUploadFragment extends Fragment {
                     .load(mediaUri)
                     .into(imageView);
         }
-
         Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
         lat = lastKnownLocation.getLatitude();
         lng = lastKnownLocation.getLongitude();
 
         saveButton.setOnClickListener(v -> {
             String caption = captionEditText.getText().toString();
-            String mediaType;
-            if (mediaUri.toString().endsWith(".mp4")) {
-                mediaType = "video";
-            }
-            else{
-                mediaType = "photo";
-            }
+            String mediaType = Story.checkMediaType(mediaUri.toString());
             mediaViewModel.saveMediaToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng, mediaType);
             ExploreFragment exploreFragment = new ExploreFragment();
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -136,12 +124,7 @@ public class StoryUploadFragment extends Fragment {
                     .commit();
             Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
         });
-        btnExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requireActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
+        btnExit.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
     }
 
     private String getSelectedCategory() {
@@ -153,14 +136,14 @@ public class StoryUploadFragment extends Fragment {
         } else if (selectedId == R.id.chipAttraction) {
             return "Attractions";
         }
-        return "None"; // Default category if none is selected
+        return "None";
     }
 
-    public void getMaps(){
-        User.getMaps(getActivity(),firestoreMapManager,new User.UserCallback<CustomMap>() {
+    public void getCustomMaps(){
+        User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
             @Override
             public void onSuccess(ArrayList<CustomMap> customMaps) {
-                if (customMaps.size() > 0) {
+                if (!customMaps.isEmpty()) {
                     SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
                     selectMapRecyclerView.setAdapter(selectMapAdaptor);
                 } else {

@@ -1,11 +1,17 @@
-package com.prototypes.prototype.story;
+package com.prototypes.prototype.classes;
 
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.firebase.Timestamp;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class Story implements Parcelable {
     private String id, userId, caption, category, mediaType, mediaUrl, thumbnailUrl;
@@ -72,6 +78,8 @@ public class Story implements Parcelable {
         return 0;
     }
 
+
+
     public static final Creator<Story> CREATOR = new Creator<>() {
         @Override
         public Story createFromParcel(Parcel in) {
@@ -82,4 +90,31 @@ public class Story implements Parcelable {
             return new Story[size];
         }
     };
+
+    public static String checkMediaType(String mediaUri){
+        String mediaType;
+        if (mediaUri.endsWith(".mp4")) {
+            mediaType = "video";
+        }
+        else{
+            mediaType = "photo";
+        }
+        return mediaType;
+    }
+
+    public static Bitmap fixImageRotation(Bitmap img, Uri uri) throws IOException {
+        ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        Matrix matrix = new Matrix();
+        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            matrix.postRotate(90);
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            matrix.postRotate(180);
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            matrix.postRotate(270);
+        }
+        Bitmap rotatedBitmap = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle(); // Recycle the original bitmap to free memory
+        return rotatedBitmap;
+    }
 }

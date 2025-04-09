@@ -1,4 +1,4 @@
-package com.prototypes.prototype.upload;
+package com.prototypes.prototype.storyUpload;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -38,7 +38,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.story.StoryUploadFragment;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -182,14 +181,14 @@ public class TakePhotoFragment extends Fragment {
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri savedUri = Uri.fromFile(photoFile);
                         Log.d("TakePhotoFragment", "Photo captured: " + savedUri);
-
-                        // Send photo back to EditProfileFragment
-                        Bundle result = new Bundle();
-                        result.putParcelable("profile_image", savedUri);
-                        requireActivity().getSupportFragmentManager().setFragmentResult("profile_image_uri", result);
-
-                        // Go back to EditProfileFragment
-                        requireActivity().getSupportFragmentManager().popBackStack();
+                        openStoryUploadFragment(savedUri);
+//                        // Send photo back to EditProfileFragment
+//                        Bundle result = new Bundle();
+//                        result.putParcelable("profile_image", savedUri);
+//                        requireActivity().getSupportFragmentManager().setFragmentResult("profile_image_uri", result);
+//
+//                        // Go back to EditProfileFragment
+//                        requireActivity().getSupportFragmentManager().popBackStack();
                     }
 
                     @Override

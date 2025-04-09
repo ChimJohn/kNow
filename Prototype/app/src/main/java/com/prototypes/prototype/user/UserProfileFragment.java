@@ -23,11 +23,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.CustomMap;
-import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.custommap.OtherCustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.story.Story;
+import com.prototypes.prototype.classes.Story;
 import java.util.ArrayList;
 import java.util.List;
 
