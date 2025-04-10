@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.Timestamp;
 import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.ClusterItem;
 import com.prototypes.prototype.R;
@@ -87,8 +88,8 @@ public class RouteHandler {
 
     public static class StoryCluster extends Story implements ClusterItem {
 
-        public StoryCluster(String id, String userId, double latitude, double longitude, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType) {
-            super(id, userId, caption, category, mediaUrl, latitude, longitude, mediaType, thumbnailUrl);
+        public StoryCluster(String id, String userId, double latitude, double longitude, String caption, String category, String thumbnailUrl, String mediaUrl, String mediaType, Timestamp timestamp) {
+            super(id, userId, caption, category, mediaUrl, latitude, longitude, mediaType, thumbnailUrl, timestamp);
         }
 
         @NonNull

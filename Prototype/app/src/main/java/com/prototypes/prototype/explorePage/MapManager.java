@@ -21,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -191,8 +192,9 @@ public class MapManager {
                         String mediaType = documentSnapshot.getString("mediaType");
                         Double latitude = documentSnapshot.getDouble("latitude");
                         Double longitude = documentSnapshot.getDouble("longitude");
+                        Timestamp timestamp = documentSnapshot.getTimestamp("timestamp");
                         if (latitude == null || longitude == null) continue;
-                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
+                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType, timestamp);
                         switch (change.getType()) {
                             case ADDED:
                                 allStoryClusters.add(storyCluster);

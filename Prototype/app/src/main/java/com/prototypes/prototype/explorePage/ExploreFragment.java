@@ -267,11 +267,13 @@ public class ExploreFragment extends Fragment {
         if (view == null || mapManager == null) return;
         Chip chipFood = view.findViewById(R.id.chipFood);
         Chip chipAttraction = view.findViewById(R.id.chipAttraction);
+        Chip chipPastDay = view.findViewById(R.id.chipPastDay);
 
         List<String> activeFilters = new ArrayList<>();
 
         if (chipFood.isChecked()) activeFilters.add("Food");
         if (chipAttraction.isChecked()) activeFilters.add("Attractions");
+        if (chipPastDay.isChecked()) activeFilters.add("PastDay");
         mapManager.filterMarkers(activeFilters);
     }
     private void handleUserClick(String username) {

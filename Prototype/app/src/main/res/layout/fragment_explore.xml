@@ -97,7 +97,8 @@
                 android:checkable="true"
                 android:checked="false"
                 android:text="Food"
-                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
+                app:chipBackgroundColor="@color/chip_selector"
+                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />
@@ -109,7 +110,8 @@
                 android:checkable="true"
                 android:checked="false"
                 android:text="Attractions"
-                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
+                app:chipBackgroundColor="@color/chip_selector"
+                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />
@@ -119,10 +121,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="None"
-                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
+                app:chipBackgroundColor="@color/chip_selector"
+                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipPastDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Past 24 hours"
+                app:chipBackgroundColor="@color/chip_selector"
+                android:textColor="@android:color/black"
+                app:chipStrokeColor="@android:color/darker_gray"
+                app:chipStrokeWidth="1dp"
+                app:checkedIconVisible="false" />
+
         </com.google.android.material.chip.ChipGroup>
 
     </androidx.cardview.widget.CardView>
