@@ -1,16 +1,19 @@
 package com.prototypes.prototype.storyView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,6 +22,7 @@ import com.prototypes.prototype.R;
 import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.classes.PhotoStory;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +54,19 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
+    private void goToUserProfile(String userId) {
+        // Now, use the context from the itemView
+        FragmentActivity context = getActivity();  // Get the context from the item view
+        if (context != null) {
+            UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
+            // Replace the current fragment with the user profile fragment
+            context.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, userProfileFragment)
+                    .addToBackStack(null) // Adds the transaction to the back stack
+                    .commit();
+        }
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -61,6 +78,9 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
         TextView storyUsernameText = view.findViewById(R.id.story_username);
         ImageButton gpsButton = view.findViewById(R.id.btnGps);
+        LinearLayout profileLayoutContainer = view.findViewById(R.id.profileLayoutContainer);
+
+
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private boolean isLastPage = false;
             @Override
@@ -84,6 +104,13 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                         userCache.put(userId, user);
                                         String username = (String) user.get("username");
                                         storyUsernameText.setText(username);
+                                        profileLayoutContainer.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                // Handle the click event
+                                                goToUserProfile(userId);
+                                            }
+                                        });
                                     } else{
                                         storyUsernameText.setText("Deleted account");
                                     }
@@ -111,10 +138,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         });
         ImageButton exitBtn = view.findViewById(R.id.btnExit);
         exitBtn.setOnClickListener(v -> {
-            // Instead of replacing the fragment, pop the back stack to go back to the previous fragment.
             requireActivity().getSupportFragmentManager().popBackStack();
         });
-
         PhotoStory.preloadPhotos(requireContext(), storyList);
     }
     @Override

@@ -17,9 +17,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
@@ -28,7 +30,10 @@ import com.prototypes.prototype.custommap.OtherCustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.storyView.StoryViewFragment;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 public class UserProfileFragment extends Fragment {
@@ -64,15 +69,6 @@ public class UserProfileFragment extends Fragment {
             userId = getArguments().getString(ARG_USER_ID);
         }
     }
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        db = FirebaseFirestore.getInstance();
-        firestoreStoriesManager = new FirestoreManager(db, Story.class);
-        authManager = new FirebaseAuthManager(requireActivity());
-        followManager = new FollowManager(db, authManager);
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -92,14 +88,21 @@ public class UserProfileFragment extends Fragment {
 
         followButton = view.findViewById(R.id.btnFollow);
         followButton.setOnClickListener(v -> toggleFollowStatus());
-
+        return view;
+    }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        db = FirebaseFirestore.getInstance();
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
+        authManager = new FirebaseAuthManager(requireActivity());
+        followManager = new FollowManager(db, authManager);
         // Load user data
         loadUserData();
         // Load user maps
         loadUserMaps();
-
-        return view;
     }
+
 
     private void loadUserData() {
         FirestoreManager<User> firestoreManager = new FirestoreManager<>(db, User.class);
@@ -161,9 +164,19 @@ public class UserProfileFragment extends Fragment {
                         tvNoPhotos.setVisibility(View.GONE);
                         if (isAdded()) {
                             galleryAdaptor = new GalleryAdaptor(getActivity(), storyList, story -> {
-                                Log.d("HIHIHIHIHI", story.getCaption());
+                                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                                transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(Collections.singletonList(story)));
+                                transaction.addToBackStack(null);
+                                transaction.commit();
+                                if (getActivity() != null) {
+                                    BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+                                    if (bottomNav != null) {
+                                        bottomNav.setVisibility(View.GONE);
+                                    }
+                                }
                             });
                             galleryGridView.setAdapter(galleryAdaptor);
+
                         } else {
                             Log.e("ProfileFragment", "Activity is null, cannot set adapter");
                         }

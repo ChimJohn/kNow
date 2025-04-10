@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -25,6 +26,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +69,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
         super.onViewAttachedToWindow(holder);
         holder.prepareAndPlayVideo();
     }
-
     @Override
     public void onViewDetachedFromWindow(@NonNull StoryViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
@@ -91,6 +92,12 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 playerView.setVisibility(View.GONE);
                 imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
+                imageView.setOnClickListener(v -> {
+                    if (story.getUserId() != null) {
+                        goToUserProfile(story.getUserId());
+                    }
+                });
+
                 Glide.with(itemView.getContext())
                         .load(story.getMediaUrl())
                         .listener(new RequestListener<Drawable>() {
@@ -108,6 +115,21 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                         .into(imageView);
             }
         }
+        private void goToUserProfile(String userId) {
+            // Now, use the context from the itemView
+            Context context = itemView.getContext();  // Get the context from the item view
+            if (context != null) {
+                UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
+                // Replace the current fragment with the user profile fragment
+                if (context instanceof FragmentActivity) {
+                    ((FragmentActivity) context).getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, userProfileFragment)
+                            .addToBackStack(null) // Adds the transaction to the back stack
+                            .commit();
+                }
+            }
+        }
+
         public void prepareAndPlayVideo() {
             if (!story.isVideo()){
                 return;

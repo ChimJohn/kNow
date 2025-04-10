@@ -103,7 +103,8 @@ public class MapManager {
                 }
             }
             return true;
-        });    }
+        });
+    }
     public GoogleMap getMap(){
         return this.googleMap;
     }
