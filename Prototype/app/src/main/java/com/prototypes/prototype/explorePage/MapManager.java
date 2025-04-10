@@ -222,11 +222,35 @@ public class MapManager {
     }
     public void filterMarkers(@Nullable List<String> filters) {
         clusterManager.clearItems();
+        long nowMillis = System.currentTimeMillis();
+
         if (filters == null || filters.isEmpty()) {
             clusterManager.addItems(allMarkers.values());
         } else {
+            boolean hasCategoryFilter = false;
+            for (String f : filters) {
+                if (!f.equals("PastDay")) {
+                    hasCategoryFilter = true;
+                    break;
+                }
+            }
+
             for (RouteHandler.StoryCluster marker : allMarkers.values()) {
-                if (filters.contains(marker.getCategory())) {
+                boolean matchesTime = true;
+                if (filters.contains("PastDay")) {
+                    Timestamp ts = marker.getTimestamp();
+                    if (ts != null) {
+                        long timestampMillis = ts.toDate().getTime();
+                        long diff = nowMillis - timestampMillis;
+                        matchesTime = diff <= 24 * 60 * 60 * 1000;
+                    } else {
+                        matchesTime = false;
+                    }
+                }
+
+                boolean matchesCategory = !hasCategoryFilter || filters.contains(marker.getCategory());
+
+                if (matchesCategory && matchesTime) {
                     clusterManager.addItem(marker);
                 }
             }

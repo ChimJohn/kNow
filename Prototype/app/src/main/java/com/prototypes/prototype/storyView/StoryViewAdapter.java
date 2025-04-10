@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,7 +93,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 playerView.setVisibility(View.GONE);
                 imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
-
                 Glide.with(itemView.getContext())
                         .load(story.getMediaUrl())
                         .listener(new RequestListener<Drawable>() {
@@ -110,21 +110,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                         .into(imageView);
             }
         }
-        private void goToUserProfile(String userId) {
-            // Now, use the context from the itemView
-            Context context = itemView.getContext();  // Get the context from the item view
-            if (context != null) {
-                UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
-                // Replace the current fragment with the user profile fragment
-                if (context instanceof FragmentActivity) {
-                    ((FragmentActivity) context).getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, userProfileFragment)
-                            .addToBackStack(null) // Adds the transaction to the back stack
-                            .commit();
-                }
-            }
-        }
-
         public void prepareAndPlayVideo() {
             if (!story.isVideo()){
                 return;

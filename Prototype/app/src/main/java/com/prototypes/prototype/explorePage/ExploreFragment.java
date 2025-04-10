@@ -98,9 +98,13 @@ public class ExploreFragment extends Fragment {
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
         Chip chipFood = view.findViewById(R.id.chipFood);
         Chip chipAttraction = view.findViewById(R.id.chipAttraction);
+        Chip chipPastDay = view.findViewById(R.id.chipPastDay);
+
         Chip chipNone = view.findViewById(R.id.chipNone);
         chipFood.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
         chipAttraction.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+        chipPastDay.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+
         chipNone.setOnClickListener(v -> {
             chipFood.setChecked(false);
             chipAttraction.setChecked(false);

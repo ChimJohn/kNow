@@ -34,8 +34,6 @@ public class Story implements Parcelable {
         this.timestamp = timestamp;
     }
 
-
-
     // Getters
     public String getId() { return id; }
     public String getUserId() { return userId; }
@@ -46,6 +44,7 @@ public class Story implements Parcelable {
     public String getMediaType() { return this.mediaType; }
     public String getCategory() { return category; }
     public String getThumbnailUrl() { return thumbnailUrl; }
+    public Timestamp getTimestamp() { return timestamp; }
     public Boolean isVideo(){ return mediaType.equals("video"); }
     protected Story(Parcel in) {
         id = in.readString();
