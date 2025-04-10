@@ -97,8 +97,7 @@
                 android:checkable="true"
                 android:checked="false"
                 android:text="Food"
-                app:chipBackgroundColor="@android:color/transparent"
-                android:textColor="@android:color/black"
+                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />
@@ -110,21 +109,17 @@
                 android:checkable="true"
                 android:checked="false"
                 android:text="Attractions"
-                app:chipBackgroundColor="@android:color/transparent"
-                android:textColor="@android:color/black"
+                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipNews"
+                android:id="@+id/chipNone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checkable="true"
-                android:checked="false"
-                android:text="News"
-                app:chipBackgroundColor="@android:color/transparent"
-                android:textColor="@android:color/black"
+                android:text="None"
+                app:chipBackgroundColor="@color/chip_selector"                android:textColor="@android:color/black"
                 app:chipStrokeColor="@android:color/darker_gray"
                 app:chipStrokeWidth="1dp"
                 app:checkedIconVisible="false" />

@@ -9,4 +9,7 @@
     <color name="inactive">#8E8E93</color>
     <color name="orange">#EB5E28</color>
     <color name="translucent_white">#80FFFFFF</color> <!-- 50% transparent white -->
+    <color name="darkChip">#FFE0E0E0</color>
+    <color name="lightChip">#FFFFFFFF</color>
+
 </resources>
