@@ -214,8 +214,7 @@ public class MapManager {
                         }
                     }
                     clusterManager.cluster();
-                    filterMarkers(null); // <- Add this line
-
+                    filterMarkers(null);
                 });
     }
     public void filterMarkers(@Nullable List<String> filters) {
