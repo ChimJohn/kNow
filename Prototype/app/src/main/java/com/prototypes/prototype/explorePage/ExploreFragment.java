@@ -35,6 +35,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -95,6 +96,17 @@ public class ExploreFragment extends Fragment {
         placesClient =  getPlacesClient();
         db = FirebaseFirestore.getInstance();
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
+        Chip chipFood = view.findViewById(R.id.chipFood);
+        Chip chipAttraction = view.findViewById(R.id.chipAttraction);
+        Chip chipNone = view.findViewById(R.id.chipNone);
+        chipFood.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+        chipAttraction.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+        chipNone.setOnClickListener(v -> {
+            chipFood.setChecked(false);
+            chipAttraction.setChecked(false);
+            mapManager.filterMarkers(null); // Show all markers
+
+        });
 
         mapView.getMapAsync(map -> {
             mapManager = new MapManager(requireActivity(), requireContext(), getParentFragmentManager());
@@ -251,7 +263,18 @@ public class ExploreFragment extends Fragment {
             Log.e("PlaceZoom", "Failed to fetch place", e);
         });
     }
+    private void applyFilters() {
+        View view = getView();
+        if (view == null || mapManager == null) return;
+        Chip chipFood = view.findViewById(R.id.chipFood);
+        Chip chipAttraction = view.findViewById(R.id.chipAttraction);
 
+        List<String> activeFilters = new ArrayList<>();
+
+        if (chipFood.isChecked()) activeFilters.add("Food");
+        if (chipAttraction.isChecked()) activeFilters.add("Attractions");
+        mapManager.filterMarkers(activeFilters);
+    }
     private void handleUserClick(String username) {
         // Query Firestore to get the user ID for this username
         db.collection("Users")

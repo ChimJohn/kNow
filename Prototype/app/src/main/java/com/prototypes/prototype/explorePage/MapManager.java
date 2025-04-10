@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,6 +34,7 @@ import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,6 +51,7 @@ public class MapManager {
     FragmentManager parentFragmentManager;
     private boolean isFirstLocationUpdate = true;
     AtomicLong lastRouteFetchTime = new AtomicLong(); // Stores last fetch timestamp
+    private final ArrayList<RouteHandler.StoryCluster> allStoryClusters = new ArrayList<>();
 
     public MapManager(Activity activity, Context context, FragmentManager parentFragmentManager) {
         this.activity = activity;
@@ -191,21 +194,42 @@ public class MapManager {
                         RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
                         switch (change.getType()) {
                             case ADDED:
-                                clusterManager.addItem(storyCluster);
+                                allStoryClusters.add(storyCluster);
                                 allMarkers.put(id, storyCluster);
                                 break;
                             case MODIFIED:
                                 removeMarkerById(id);
-                                clusterManager.addItem(storyCluster);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    allStoryClusters.removeIf(marker -> marker.getId().equals(id));
+                                }
+                                allStoryClusters.add(storyCluster);
                                 allMarkers.put(id, storyCluster);
                                 break;
                             case REMOVED:
                                 removeMarkerById(id);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    allStoryClusters.removeIf(marker -> marker.getId().equals(id));
+                                }
                                 break;
                         }
                     }
                     clusterManager.cluster();
+                    filterMarkers(null); // <- Add this line
+
                 });
+    }
+    public void filterMarkers(@Nullable List<String> filters) {
+        clusterManager.clearItems();
+        if (filters == null || filters.isEmpty()) {
+            clusterManager.addItems(allMarkers.values());
+        } else {
+            for (RouteHandler.StoryCluster marker : allMarkers.values()) {
+                if (filters.contains(marker.getCategory())) {
+                    clusterManager.addItem(marker);
+                }
+            }
+        }
+        clusterManager.cluster();
     }
     private void removeMarkerById(String id) {
         RouteHandler.StoryCluster marker = allMarkers.remove(id);
