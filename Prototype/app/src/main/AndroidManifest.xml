@@ -58,6 +58,7 @@
         <activity
             android:name=".custommap.CreateCustomMap"
             android:exported="false" />
+        <activity android:name=".settings.BlockedUsersActivity" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
