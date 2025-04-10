@@ -104,8 +104,7 @@ public class ExploreFragment extends Fragment {
         chipNone.setOnClickListener(v -> {
             chipFood.setChecked(false);
             chipAttraction.setChecked(false);
-            mapManager.filterMarkers(null); // Show all markers
-
+            mapManager.filterMarkers(null);
         });
 
         mapView.getMapAsync(map -> {
