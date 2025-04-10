@@ -92,11 +92,6 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 playerView.setVisibility(View.GONE);
                 imageLoader.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.VISIBLE);
-                imageView.setOnClickListener(v -> {
-                    if (story.getUserId() != null) {
-                        goToUserProfile(story.getUserId());
-                    }
-                });
 
                 Glide.with(itemView.getContext())
                         .load(story.getMediaUrl())
