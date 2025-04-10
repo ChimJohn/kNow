@@ -108,6 +108,7 @@ public class ExploreFragment extends Fragment {
         chipNone.setOnClickListener(v -> {
             chipFood.setChecked(false);
             chipAttraction.setChecked(false);
+            chipPastDay.setChecked(false);
             mapManager.filterMarkers(null);
         });
 
