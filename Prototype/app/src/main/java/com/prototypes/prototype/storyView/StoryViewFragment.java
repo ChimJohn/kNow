@@ -104,23 +104,17 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 super.onPageScrollStateChanged(state);
                 if (isLastPage && state == ViewPager2.SCROLL_STATE_DRAGGING) {
                     viewPager2.postDelayed(() -> {
-                        ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
-                        requireActivity().getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, exploreFragment)
-                                .commit();
-                    }, 150);
+                        requireActivity().getSupportFragmentManager().popBackStack();
+                        }, 150);
                 }
             }
         });
         ImageButton exitBtn = view.findViewById(R.id.btnExit);
         exitBtn.setOnClickListener(v -> {
-            ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, exploreFragment)
-                    .commit();
+            // Instead of replacing the fragment, pop the back stack to go back to the previous fragment.
+            requireActivity().getSupportFragmentManager().popBackStack();
         });
+
         PhotoStory.preloadPhotos(requireContext(), storyList);
     }
     @Override

@@ -3,6 +3,7 @@ package com.prototypes.prototype.user;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,11 @@ public class GalleryAdaptor extends BaseAdapter {
         Glide.with(context)
                 .load(story.getMediaUrl())
                 .into(imageView);
-
+        convertView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onStoryClick(story);
+            }
+        });
         return convertView;
     }
 }
