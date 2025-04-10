@@ -71,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp); // Fix: Change Button to TextView
         btnForgotPassword = findViewById(R.id.btnForgotPassword); // Fix: Change Button to TextView
-        btnGoogleSignIn = findViewById(R.id.sign_in_button);
+//        btnGoogleSignIn = findViewById(R.id.sign_in_button);
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);

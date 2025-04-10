@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -154,7 +155,7 @@ public class MediaViewModel extends AndroidViewModel {
                         firestoreManager.writeDocument(
                                 "media",
                                 null,
-                                new Story(null, userId, caption, selectedCategory, pair.first, lat, lng, mediaType, pair.second),
+                                new Story(null, userId, caption, selectedCategory, pair.first, lat, lng, mediaType, pair.second, Timestamp.now()),
                                 new FirestoreManager.FirestoreCallback() {
                                     @Override
                                     public void onSuccess() {}

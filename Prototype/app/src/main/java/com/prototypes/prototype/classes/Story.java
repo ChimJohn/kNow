@@ -21,7 +21,7 @@ public class Story implements Parcelable {
 
     public Story(){}
 
-    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl) {
+    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl, Timestamp timestamp) {
         this.id = id;
         this.userId = userId;
         this.caption = caption;
@@ -31,9 +31,8 @@ public class Story implements Parcelable {
         this.longitude = longitude;
         this.mediaType = mediaType;
         this.thumbnailUrl = thumbnailUrl;
+        this.timestamp = timestamp;
     }
-
-
 
     // Getters
     public String getId() { return id; }
@@ -45,6 +44,7 @@ public class Story implements Parcelable {
     public String getMediaType() { return this.mediaType; }
     public String getCategory() { return category; }
     public String getThumbnailUrl() { return thumbnailUrl; }
+    public Timestamp getTimestamp() { return timestamp; }
     public Boolean isVideo(){ return mediaType.equals("video"); }
     protected Story(Parcel in) {
         id = in.readString();

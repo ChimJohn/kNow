@@ -17,9 +17,11 @@ import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
 import com.prototypes.prototype.custommap.editmaps.EditMaps;
@@ -28,8 +30,11 @@ import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
 import com.prototypes.prototype.firebase.FirestoreManager;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ProfileFragment extends Fragment {
@@ -171,7 +176,16 @@ public class ProfileFragment extends Fragment {
                     galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
                     galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps, story -> {
-                        Log.d("HIHIHIHIHI", story.getCaption());
+                        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                        transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(Collections.singletonList(story)));
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                        if (getActivity() != null) {
+                            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+                            if (bottomNav != null) {
+                                bottomNav.setVisibility(View.GONE);
+                            }
+                        }
                     });
                     galleryGridView.setAdapter(galleryAdaptor);
                     setGridViewHeightBasedOnChildren(galleryGridView, 3);

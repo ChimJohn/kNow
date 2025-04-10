@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,6 +35,7 @@ import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,6 +52,7 @@ public class MapManager {
     FragmentManager parentFragmentManager;
     private boolean isFirstLocationUpdate = true;
     AtomicLong lastRouteFetchTime = new AtomicLong(); // Stores last fetch timestamp
+    private final ArrayList<RouteHandler.StoryCluster> allStoryClusters = new ArrayList<>();
 
     public MapManager(Activity activity, Context context, FragmentManager parentFragmentManager) {
         this.activity = activity;
@@ -100,7 +104,8 @@ public class MapManager {
                 }
             }
             return true;
-        });    }
+        });
+    }
     public GoogleMap getMap(){
         return this.googleMap;
     }
@@ -187,25 +192,70 @@ public class MapManager {
                         String mediaType = documentSnapshot.getString("mediaType");
                         Double latitude = documentSnapshot.getDouble("latitude");
                         Double longitude = documentSnapshot.getDouble("longitude");
+                        Timestamp timestamp = documentSnapshot.getTimestamp("timestamp");
                         if (latitude == null || longitude == null) continue;
-                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType);
+                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(id, userId, latitude, longitude, caption, category, thumbnailUrl, mediaUrl, mediaType, timestamp);
                         switch (change.getType()) {
                             case ADDED:
-                                clusterManager.addItem(storyCluster);
+                                allStoryClusters.add(storyCluster);
                                 allMarkers.put(id, storyCluster);
                                 break;
                             case MODIFIED:
                                 removeMarkerById(id);
-                                clusterManager.addItem(storyCluster);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    allStoryClusters.removeIf(marker -> marker.getId().equals(id));
+                                }
+                                allStoryClusters.add(storyCluster);
                                 allMarkers.put(id, storyCluster);
                                 break;
                             case REMOVED:
                                 removeMarkerById(id);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    allStoryClusters.removeIf(marker -> marker.getId().equals(id));
+                                }
                                 break;
                         }
                     }
                     clusterManager.cluster();
+                    filterMarkers(null);
                 });
+    }
+    public void filterMarkers(@Nullable List<String> filters) {
+        clusterManager.clearItems();
+        long nowMillis = System.currentTimeMillis();
+
+        if (filters == null || filters.isEmpty()) {
+            clusterManager.addItems(allMarkers.values());
+        } else {
+            boolean hasCategoryFilter = false;
+            for (String f : filters) {
+                if (!f.equals("PastDay")) {
+                    hasCategoryFilter = true;
+                    break;
+                }
+            }
+
+            for (RouteHandler.StoryCluster marker : allMarkers.values()) {
+                boolean matchesTime = true;
+                if (filters.contains("PastDay")) {
+                    Timestamp ts = marker.getTimestamp();
+                    if (ts != null) {
+                        long timestampMillis = ts.toDate().getTime();
+                        long diff = nowMillis - timestampMillis;
+                        matchesTime = diff <= 24 * 60 * 60 * 1000;
+                    } else {
+                        matchesTime = false;
+                    }
+                }
+
+                boolean matchesCategory = !hasCategoryFilter || filters.contains(marker.getCategory());
+
+                if (matchesCategory && matchesTime) {
+                    clusterManager.addItem(marker);
+                }
+            }
+        }
+        clusterManager.cluster();
     }
     private void removeMarkerById(String id) {
         RouteHandler.StoryCluster marker = allMarkers.remove(id);

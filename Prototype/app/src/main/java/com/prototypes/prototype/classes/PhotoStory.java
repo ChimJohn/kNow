@@ -3,13 +3,14 @@ package com.prototypes.prototype.classes;
 import android.content.Context;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 
 public class PhotoStory extends Story {
 
-    public PhotoStory(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl) {
-        super(id, userId, caption, category, mediaUrl, latitude, longitude, mediaType, thumbnailUrl);
+    public PhotoStory(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl, Timestamp timestamp) {
+        super(id, userId, caption, category, mediaUrl, latitude, longitude, mediaType, thumbnailUrl, timestamp);
     }
 
     static public void preloadPhotos(Context context, ArrayList<Story> storyList) {
