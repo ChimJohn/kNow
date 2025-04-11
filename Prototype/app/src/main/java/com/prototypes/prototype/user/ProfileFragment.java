@@ -42,9 +42,9 @@ public class ProfileFragment extends Fragment {
     FirebaseFirestore db ;
     FirestoreManager firestoreManager, firestoreMapManager, firestoreStoriesManager;
     String name, username, profile;
-    List<String> followersList, stories;
+    List<String> followersList, stories, followingList;
     ImageView imgProfile;
-    TextView tvName, tvHandle, tvFollowers, tvNoPhotos;
+    TextView tvName, tvHandle, tvFollowers, tvNoPhotos, tvFollowing;
     ImageButton btnMenu;
     RecyclerView mapRecyclerView;
     GridView galleryGridView;
@@ -68,6 +68,7 @@ public class ProfileFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvHandle = view.findViewById(R.id.tvHandle);
         tvFollowers = view.findViewById(R.id.tvFollowers);
+        tvFollowing = view.findViewById(R.id.tvFollowing);
         galleryGridView = view.findViewById(R.id.gallery_recycler_view);
         mapRecyclerView = view.findViewById(R.id.mapsRecyclerView);
         tvNoPhotos = view.findViewById(R.id.tvNoPhotos);
@@ -129,7 +130,9 @@ public class ProfileFragment extends Fragment {
                 username = user.getUsername();
                 profile = user.getProfile();
                 followersList = user.getFollowers();
+                followingList = user.getFollowing();
                 stories = user.getStories();
+
                 // Populate UI Elements
                 if (followersList == null){
                     Log.d(TAG, "User has no followers");
@@ -137,8 +140,18 @@ public class ProfileFragment extends Fragment {
                 } else
                 {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
-                    tvFollowers.setText(String.format("%d followers", followersList.size()));
+                    tvFollowers.setText(String.format("%d followers", followingList.size()));
                 }
+
+                if (followingList == null){
+                    Log.d(TAG, "User does not follow anyone");
+                    tvFollowing.setText("0 following");
+                } else
+                {
+                    Log.d(TAG, "Number of followings: " + Integer.toString(followingList.size()));
+                    tvFollowing.setText(String.format("%d following", followingList.size()));
+                }
+
                 tvName.setText(name);
                 tvHandle.setText("@"+username);
                 if (getView() != null && isAdded()) {
