@@ -93,6 +93,21 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+        tvFollowers.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, FollowersListFragment.newInstance(new ArrayList<>(followersList), "Followers"))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        tvFollowing.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, FollowersListFragment.newInstance(new ArrayList<>(followingList), "Following"))
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         // Edit Maps
         btnEditMap.setOnClickListener(new View.OnClickListener() {
