@@ -140,7 +140,7 @@ public class ProfileFragment extends Fragment {
                 } else
                 {
                     Log.d(TAG, "Number of followers: " + Integer.toString(followersList.size()));
-                    tvFollowers.setText(String.format("%d followers", followingList.size()));
+                    tvFollowers.setText(String.format("%d followers", followersList.size()));
                 }
 
                 if (followingList == null){
