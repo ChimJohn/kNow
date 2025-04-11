@@ -71,6 +71,16 @@
                     android:text="followers"
                     android:textSize="14dp"
                     android:textColor="@color/grey"/>
+
+                <TextView
+                    android:id="@+id/tvFollowing"
+                    android:layout_marginStart="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="followers"
+                    android:textSize="14dp"
+                    android:textColor="@color/grey"/>
             </LinearLayout>
 
             <!-- Action Buttons -->

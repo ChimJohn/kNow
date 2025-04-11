@@ -71,7 +71,11 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="" />
+    <list default="true" id="fbfc3825-d2a7-4096-827a-54ccbcdfd02c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/ProfileFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/java/com/prototypes/prototype/user/ProfileFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Prototype/app/src/main/res/layout/fragment_profile.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -251,12 +255,12 @@
       <map>
         <entry key="com.prototypes.prototype">
           <value>
-            <CheckInfo lastCheckTimestamp="1744110309066" />
+            <CheckInfo lastCheckTimestamp="1744368525417" />
           </value>
         </entry>
         <entry key="com.prototypes.prototype.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1744110309059" />
+            <CheckInfo lastCheckTimestamp="1744368525416" />
           </value>
         </entry>
       </map>
