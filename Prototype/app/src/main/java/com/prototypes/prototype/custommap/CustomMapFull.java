@@ -6,16 +6,20 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.google.android.gms.maps.MapView;
 import com.prototypes.prototype.R;
+import com.prototypes.prototype.explorePage.MapManager;
 
 public class CustomMapFull extends AppCompatActivity {
     ImageButton btnExit;
     private MapView mapView;
     private static final String TAG = "Custom Map Full";
+    MapManager mapManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,10 @@ public class CustomMapFull extends AppCompatActivity {
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
+        mapView.getMapAsync(map -> {
+            mapManager.initMap(map);
+        });
+        mapManager = new MapManager(this, this, getSupportFragmentManager());
 
         btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,7 +42,6 @@ public class CustomMapFull extends AppCompatActivity {
                 finish();
             }
         });
-
-
     }
+
 }
