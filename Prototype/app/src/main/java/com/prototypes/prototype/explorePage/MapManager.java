@@ -60,6 +60,7 @@ public class MapManager {
         this.parentFragmentManager = parentFragmentManager;
     }
     public void initMap(GoogleMap map){
+        Log.d("LOL", "LMAO");
         this.googleMap = map;
         this.routeHandler = new RouteHandler(context, map);
         this.currentLocationMarker = new CurrentLocationMarker(activity, map);

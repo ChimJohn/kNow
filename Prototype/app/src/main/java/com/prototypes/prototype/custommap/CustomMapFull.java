@@ -1,15 +1,10 @@
 package com.prototypes.prototype.custommap;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 
 import com.google.android.gms.maps.MapView;
 import com.prototypes.prototype.R;
@@ -31,10 +26,11 @@ public class CustomMapFull extends AppCompatActivity {
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
+
+        mapManager = new MapManager(this, this, getSupportFragmentManager());
         mapView.getMapAsync(map -> {
             mapManager.initMap(map);
         });
-        mapManager = new MapManager(this, this, getSupportFragmentManager());
 
         btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
