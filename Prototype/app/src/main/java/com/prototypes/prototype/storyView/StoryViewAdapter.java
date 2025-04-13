@@ -95,12 +95,13 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 imageView.setVisibility(View.VISIBLE);
                 Glide.with(itemView.getContext())
                         .load(story.getMediaUrl())
-                        .listener(new RequestListener<Drawable>() {
+                        .listener(new RequestListener<>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                                 imageLoader.setVisibility(View.GONE);
                                 return false;
                             }
+
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 imageLoader.setVisibility(View.GONE);
