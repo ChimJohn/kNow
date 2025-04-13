@@ -49,9 +49,9 @@ public class StoryUploadFragment extends Fragment {
     private ChipGroup categoryChipGroup;
     private MediaViewModel mediaViewModel;
     private static final String TAG = "Story Upload Fragment";
-
-
     double lat, lng;
+    private SelectMapAdaptor selectMapAdaptor;
+
     public static StoryUploadFragment newInstance(Uri mediaUri) {
         StoryUploadFragment fragment = new StoryUploadFragment();
         Bundle args = new Bundle();
@@ -71,14 +71,6 @@ public class StoryUploadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        CurrentLocationViewModel currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
-
-        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
-        firebaseAuthManager = new FirebaseAuthManager(requireActivity());
-        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
-        firestoreStoriesManager = new FirestoreManager(db, Story.class);
-
         ImageView imageView = view.findViewById(R.id.imageView);
         captionEditText = view.findViewById(R.id.captionEditText);
         categoryChipGroup = view.findViewById(R.id.chipGroup);
@@ -86,17 +78,24 @@ public class StoryUploadFragment extends Fragment {
         btnExit = view.findViewById(R.id.btnExit);
         selectMapRecyclerView = view.findViewById(R.id.selectMapRecyclerView);
         selectMapRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        btnExit.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
+
+        firebaseAuthManager = new FirebaseAuthManager(requireActivity());
+        firestoreMapManager = new FirestoreManager(db, CustomMap.class);
+        firestoreStoriesManager = new FirestoreManager(db, Story.class);
+
+        mediaViewModel = new ViewModelProvider(requireActivity()).get(MediaViewModel.class);
         String userId = firebaseAuthManager.getCurrentUser().getUid();
-        assert getArguments() != null;
         String mediaUriString = getArguments().getString(ARG_MEDIA_URI, "");
         Uri mediaUri = Uri.parse(mediaUriString);
-        getCustomMaps();
         mediaViewModel.uploadMediaAndThumbnailInBackground(mediaUri);
+
+        //If video
         if (mediaUri.toString().endsWith(".mp4")) {
             try {
                 MediaMetadataRetriever retriever = new MediaMetadataRetriever();
                 retriever.setDataSource(requireContext(), mediaUri);
-                Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                Bitmap bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //get first frame to use as thumbnail
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
                 }
@@ -109,22 +108,40 @@ public class StoryUploadFragment extends Fragment {
                     .load(mediaUri)
                     .into(imageView);
         }
+
+        //get the exact location when user starts taking photo/video
+        CurrentLocationViewModel currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
         Location lastKnownLocation = currentLocationViewModel.getLastKnownLocation();
         lat = lastKnownLocation.getLatitude();
         lng = lastKnownLocation.getLongitude();
 
-        saveButton.setOnClickListener(v -> {
-            String caption = captionEditText.getText().toString();
-            String mediaType = Story.checkMediaType(mediaUri.toString());
-            mediaViewModel.saveMediaToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng, mediaType);
-            ExploreFragment exploreFragment = new ExploreFragment();
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, exploreFragment) // Replace with the correct container ID
-                    .addToBackStack(null) // Optional, allows going back to previous fragment
-                    .commit();
-            Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
+        User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
+            @Override
+            public void onSuccess(ArrayList<CustomMap> customMaps) {
+                if (!customMaps.isEmpty()) {
+                    selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
+                    selectMapRecyclerView.setAdapter(selectMapAdaptor);
+                } else {
+                    selectMapAdaptor = new SelectMapAdaptor(getActivity(), new ArrayList<>());
+                }
+                saveButton.setOnClickListener(v -> {
+                    String caption = captionEditText.getText().toString();
+                    String mediaType = Story.checkMediaType(mediaUri.toString());
+                    mediaViewModel.saveMediaToFirebaseStorage(userId, caption, getSelectedCategory(), lat, lng, mediaType, selectMapAdaptor.getSelectedCustomMapsId());
+                    ExploreFragment exploreFragment = new ExploreFragment();
+                    requireActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, exploreFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    Toast.makeText(requireContext(), "Uploaded!", Toast.LENGTH_SHORT).show();
+                });
+
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Log.d(TAG, "firestoreMapManager failed: "+ e);
+            }
         });
-        btnExit.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
     }
 
     private String getSelectedCategory() {
@@ -139,21 +156,4 @@ public class StoryUploadFragment extends Fragment {
         return "None";
     }
 
-    public void getCustomMaps(){
-        User.getMaps(getActivity(), firestoreMapManager, new User.UserCallback<CustomMap>() {
-            @Override
-            public void onSuccess(ArrayList<CustomMap> customMaps) {
-                if (!customMaps.isEmpty()) {
-                    SelectMapAdaptor selectMapAdaptor = new SelectMapAdaptor(getActivity(), customMaps);
-                    selectMapRecyclerView.setAdapter(selectMapAdaptor);
-                } else {
-                    Log.d(TAG, "No Maps");
-                }
-            }
-            @Override
-            public void onFailure(Exception e) {
-                Log.d(TAG, "firestoreMapManager failed: "+ e);
-            }
-        });
-    }
 }

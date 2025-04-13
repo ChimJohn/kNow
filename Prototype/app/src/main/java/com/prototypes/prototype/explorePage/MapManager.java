@@ -149,7 +149,6 @@ public class MapManager {
         }
     }
 
-
     public void clear() {
         if (this.mediaListener != null) {
             this.mediaListener.remove();
@@ -221,6 +220,41 @@ public class MapManager {
                     filterMarkers(null);
                 });
     }
+
+    public void getStoriesByMapId(String mapId) {
+        db.collection("media")
+                .whereArrayContains("mapsID", mapId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                        String id = documentSnapshot.getId();
+                        String userId = documentSnapshot.getString("userId");
+                        String caption = documentSnapshot.getString("caption");
+                        String category = documentSnapshot.getString("category");
+                        String mediaUrl = documentSnapshot.getString("mediaUrl");
+                        String thumbnailUrl = documentSnapshot.getString("thumbnailUrl");
+                        String mediaType = documentSnapshot.getString("mediaType");
+                        Double latitude = documentSnapshot.getDouble("latitude");
+                        Double longitude = documentSnapshot.getDouble("longitude");
+                        Timestamp timestamp = documentSnapshot.getTimestamp("timestamp");
+
+                        if (latitude == null || longitude == null) continue;
+
+                        RouteHandler.StoryCluster storyCluster = new RouteHandler.StoryCluster(
+                                id, userId, latitude, longitude, caption, category,
+                                thumbnailUrl, mediaUrl, mediaType, timestamp
+                        );
+
+                        allStoryClusters.add(storyCluster);
+                        allMarkers.put(id, storyCluster);
+                    }
+
+                    clusterManager.cluster();
+                    filterMarkers(null);
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "Error fetching stories by map ID", e));
+    }
+
     public void filterMarkers(@Nullable List<String> filters) {
         clusterManager.clearItems();
         long nowMillis = System.currentTimeMillis();
@@ -235,7 +269,6 @@ public class MapManager {
                     break;
                 }
             }
-
             for (RouteHandler.StoryCluster marker : allMarkers.values()) {
                 boolean matchesTime = true;
                 if (filters.contains("PastDay")) {
@@ -248,9 +281,7 @@ public class MapManager {
                         matchesTime = false;
                     }
                 }
-
                 boolean matchesCategory = !hasCategoryFilter || filters.contains(marker.getCategory());
-
                 if (matchesCategory && matchesTime) {
                     clusterManager.addItem(marker);
                 }

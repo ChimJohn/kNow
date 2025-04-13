@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".custommap.CustomMapFull">
+    tools:context=".custommap.CustomMapFragment">
 
     <!-- Full-Screen Google MapView (Background) -->
     <com.google.android.gms.maps.MapView
-        xmlns:map="http://schemas.android.com/apk/res-auto"
         android:id="@+id/mapView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        map:mapId="@string/map_id"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="MissingConstraints" />
 
-
-
+    <!-- Exit Button in a Circular CardView -->
     <androidx.cardview.widget.CardView
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="28dp"
-        android:layout_marginStart="24dp"
+        android:id="@+id/exitCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
         app:cardCornerRadius="100dp"
-        android:elevation="0dp"
-        app:cardMaxElevation="10dp"
+        app:cardElevation="6dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         android:clickable="true"
-        >
+        android:focusable="true">
+
         <ImageButton
             android:id="@+id/btnExit"
             android:layout_width="36dp"
@@ -40,10 +41,16 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="center"
             android:contentDescription="Exit"
-            android:src="@drawable/ic_close"
-            android:layout_gravity="center" />
+            android:src="@drawable/ic_close" />
     </androidx.cardview.widget.CardView>
-
-
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

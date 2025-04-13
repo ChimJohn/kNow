@@ -7,15 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.login.LoginActivity;
-import com.prototypes.prototype.signup.SignUpActivity;
 
 import java.util.ArrayList;
 
@@ -46,7 +43,7 @@ public class OtherCustomMapAdaptor extends RecyclerView.Adapter<OtherCustomMapAd
 
         // Custom map section Onclick listener
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, CustomMapFull.class);
+            Intent intent = new Intent(context, CustomMapFragment.class);
             context.startActivity(intent);
         });
     }
