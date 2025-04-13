@@ -2,6 +2,8 @@ package com.prototypes.prototype.storyView;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,14 +57,12 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
     private void goToUserProfile(String userId) {
-        // Now, use the context from the itemView
-        FragmentActivity context = getActivity();  // Get the context from the item view
+        FragmentActivity context = getActivity();
         if (context != null) {
             UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
-            // Replace the current fragment with the user profile fragment
             context.getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, userProfileFragment)
-                    .addToBackStack(null) // Adds the transaction to the back stack
+                    .addToBackStack(null)
                     .commit();
         }
     }
@@ -83,6 +83,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private boolean isLastPage = false;
+            boolean isSwipingForward = false;
+            float lastOffset = 0f;
             @Override
             public void onPageSelected(int position) {
                 isLastPage = position == storyList.size() - 1;
@@ -104,12 +106,8 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                         userCache.put(userId, user);
                                         String username = (String) user.get("username");
                                         storyUsernameText.setText(username);
-                                        profileLayoutContainer.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                // Handle the click event
-                                                goToUserProfile(userId);
-                                            }
+                                        profileLayoutContainer.setOnClickListener(v -> {
+                                            goToUserProfile(userId);
                                         });
                                     } else{
                                         storyUsernameText.setText("Deleted account");
@@ -117,7 +115,6 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                 }
                             })
                             .addOnFailureListener(e -> {
-                                // Handle the error (e.g., show a default message)
                                 Log.e("ERR", Objects.requireNonNull(e.getMessage()));
                                 storyUsernameText.setText("Error loading username");
                             });
@@ -126,15 +123,32 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                     onGpsClick(currentStory.getLatitude(), currentStory.getLongitude());
                 });
             }
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
-                if (isLastPage && state == ViewPager2.SCROLL_STATE_DRAGGING) {
-                    viewPager2.postDelayed(() -> {
-                        requireActivity().getSupportFragmentManager().popBackStack();
-                        }, 150);
-                }
-            }
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+//                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                    isSwipingForward = positionOffset == 0.0;
+//                    lastOffset = positionOffset;
+//                }, 50);
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//                super.onPageScrollStateChanged(state);
+//                boolean settled = false;
+//
+//                if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+//                    settled = false;
+//                }
+//                if (state == ViewPager2.SCROLL_STATE_SETTLING) {
+//                    settled = true;
+//                }
+//                if (state == ViewPager2.SCROLL_STATE_IDLE && !settled) {
+//                    viewPager2.postDelayed(() -> {
+//                        requireActivity().getSupportFragmentManager().popBackStack();
+//                    }, 150);
+//                }
+//            }
         });
         ImageButton exitBtn = view.findViewById(R.id.btnExit);
         exitBtn.setOnClickListener(v -> {
