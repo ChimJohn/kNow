@@ -21,7 +21,7 @@ public class Story implements Parcelable {
 
     public Story(){}
 
-    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl) {
+    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl, Timestamp timestamp) {
         this.id = id;
         this.userId = userId;
         this.caption = caption;
@@ -31,11 +31,23 @@ public class Story implements Parcelable {
         this.longitude = longitude;
         this.mediaType = mediaType;
         this.thumbnailUrl = thumbnailUrl;
+        this.timestamp = timestamp;
     }
 
+    public Story(String id, String userId, String caption, String category, String mediaUrl, double latitude, double longitude, String mediaType, String thumbnailUrl, Timestamp timestamp, List<String> mapsID) {
+        this.id = id;
+        this.userId = userId;
+        this.caption = caption;
+        this.category = category;
+        this.mediaUrl = mediaUrl;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.mediaType = mediaType;
+        this.thumbnailUrl = thumbnailUrl;
+        this.timestamp = timestamp;
+        this.mapsID = mapsID;
+    }
 
-
-    // Getters
     public String getId() { return id; }
     public String getUserId() { return userId; }
     public String getCaption() { return caption; }
@@ -45,7 +57,11 @@ public class Story implements Parcelable {
     public String getMediaType() { return this.mediaType; }
     public String getCategory() { return category; }
     public String getThumbnailUrl() { return thumbnailUrl; }
+    public Timestamp getTimestamp() { return timestamp; }
     public Boolean isVideo(){ return mediaType.equals("video"); }
+    public List<String> getMapsID() {
+        return mapsID;
+    }
     protected Story(Parcel in) {
         id = in.readString();
         userId = in.readString();
@@ -58,7 +74,6 @@ public class Story implements Parcelable {
         latitude = in.readDouble();
         longitude = in.readDouble();
     }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
@@ -68,17 +83,14 @@ public class Story implements Parcelable {
         dest.writeString(mediaUrl);
         dest.writeString(thumbnailUrl);
         dest.writeString(mediaType);
-        dest.writeLong(timestamp.getSeconds()); // Firestore Timestamp workaround
+        dest.writeLong(timestamp.getSeconds());
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
     }
-
     @Override
     public int describeContents() {
         return 0;
     }
-
-
 
     public static final Creator<Story> CREATOR = new Creator<>() {
         @Override
@@ -90,7 +102,6 @@ public class Story implements Parcelable {
             return new Story[size];
         }
     };
-
     public static String checkMediaType(String mediaUri){
         String mediaType;
         if (mediaUri.endsWith(".mp4")) {
@@ -101,7 +112,6 @@ public class Story implements Parcelable {
         }
         return mediaType;
     }
-
     public static Bitmap fixImageRotation(Bitmap img, Uri uri) throws IOException {
         ExifInterface exif = new ExifInterface(Objects.requireNonNull(uri.getPath()));
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);

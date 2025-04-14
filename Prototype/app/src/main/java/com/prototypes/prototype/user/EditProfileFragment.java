@@ -159,7 +159,7 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void uploadImageToFirebase() {
-        if (selectedImageUri == null) return;
+        if (selectedImageUri == null || getContext() == null) return;
 
         String filename = "profile_" + currentUserId + ".jpg";
         StorageReference storageRef = FirebaseStorage.getInstance().getReference("profile/" + filename);
@@ -178,6 +178,9 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void updateProfileImageUri(String downloadUrl) {
+        if (getContext() == null){
+            return;
+        }
         db.collection("Users").document(currentUserId)
                 .update("profile", downloadUrl)
                 .addOnSuccessListener(aVoid -> {

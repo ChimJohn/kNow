@@ -1,32 +1,31 @@
 package com.prototypes.prototype.custommap;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.login.LoginActivity;
-import com.prototypes.prototype.signup.SignUpActivity;
 
 import java.util.ArrayList;
 
 public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapViewHolder> {
 
     Context context;
-    ArrayList<CustomMap> customMapArrayList;
+    ArrayList<CustomMap> customMaps;
+    FragmentActivity activity;
 
-    public CustomMapAdaptor(Context context, ArrayList<CustomMap> customMapArrayList) {
+    public CustomMapAdaptor(Context context, ArrayList<CustomMap> customMaps, FragmentActivity activity) {
         this.context = context;
-        this.customMapArrayList = customMapArrayList;
+        this.customMaps = customMaps;
+        this.activity = activity;
     }
 
     @NonNull
@@ -38,7 +37,7 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
 
     @Override
     public void onBindViewHolder(@NonNull CustomMapAdaptor.MapViewHolder holder, int position) {
-        CustomMap customMap = customMapArrayList.get(position);
+        CustomMap customMap = customMaps.get(position);
 
         if (position == 0){
             holder.customMapTxt.setText(customMap.getName());
@@ -52,24 +51,21 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
                     .into(holder.customMapImg); //TODO: add buffering img
         }
 
-        // Custom map section Onclick listener
         holder.itemView.setOnClickListener(v -> {
-            if (position == 0) {
-                // Handle "Add" map click
-//                 Toast.makeText(context, "Add new map clicked", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(context, CreateCustomMap.class);
-                context.startActivity(intent);
-            } else {
-                // Handle normal map click
-                Intent intent = new Intent(context, CustomMapFull.class);
-                context.startActivity(intent);
-            }
+            String mapId = customMap.getId();
+            CustomMapFragment fragment = CustomMapFragment.newInstance(mapId);
+            activity
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
     @Override
     public int getItemCount() {
-        return customMapArrayList.size();
+        return customMaps.size();
     }
 
     public static class MapViewHolder extends  RecyclerView.ViewHolder{
@@ -83,7 +79,7 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
     }
 
     public void addItemToTop(CustomMap map) {
-        customMapArrayList.add(0, map); // Insert at the top
+        customMaps.add(0, map); // Insert at the top
         notifyItemInserted(0);
     }
 }

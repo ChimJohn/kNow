@@ -1,6 +1,7 @@
 package com.prototypes.prototype.storyUpload;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ public class SelectMapAdaptor extends RecyclerView.Adapter<SelectMapAdaptor.MapC
 
     Context context;
     ArrayList<CustomMap> customMapArrayList;
+    private final ArrayList<String> selectedCustomMapsId = new ArrayList<>();
 
     public SelectMapAdaptor(Context context, ArrayList<CustomMap> customMapArrayList) {
         this.context = context;
@@ -35,13 +37,24 @@ public class SelectMapAdaptor extends RecyclerView.Adapter<SelectMapAdaptor.MapC
     public void onBindViewHolder(@NonNull MapChipHolder holder, int position) {
         CustomMap customMap = customMapArrayList.get(position);
         holder.mapChip.setText(customMap.getName());
+        holder.mapChip.setOnClickListener(v -> {
+            if (holder.mapChip.isChecked()) {
+                selectedCustomMapsId.add(customMap.getId());
+                Log.d("SelectMapAdaptor", "Selected: " + customMap.getId());
+            } else {
+                selectedCustomMapsId.remove(customMap.getId());
+                Log.d("SelectMapAdaptor", "Unselected: " + customMap.getId());
+            }
+        });
     }
-
+    public ArrayList<String> getSelectedCustomMapsId() {
+        return selectedCustomMapsId;
+    }
     @Override
     public int getItemCount() {
         return customMapArrayList.size();
     }
-    public static class MapChipHolder extends  RecyclerView.ViewHolder{
+    public static class MapChipHolder extends RecyclerView.ViewHolder{
         Chip mapChip;
         public MapChipHolder(@NonNull View itemView) {
             super(itemView);

@@ -44,7 +44,29 @@ public class SettingsActivity extends AppCompatActivity {
             finish(); // Return to ProfileFragment
         });
 
-        // Handle logout click
+        // Handle Notifications Click
+        TextView tvNotifications = findViewById(R.id.tvNotifications);
+        tvNotifications.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Enable Notifications")
+                    .setMessage("Do you want to enable notifications?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        Toast.makeText(this, "Notifications enabled", Toast.LENGTH_SHORT).show();
+                        // Here you could request permissions or toggle internal settings
+                    })
+                    .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                    .show();
+        });
+
+        // Handle Blocked Click
+        TextView tvBlocked = findViewById(R.id.tvBlocked);
+        tvBlocked.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, BlockedUsersActivity.class);
+            startActivity(intent);
+            Log.d(TAG, "Navigated to BlockedUsersActivity.");
+        });
+
+        // Handle Logout Click
         tvLogout = findViewById(R.id.tvLogout);
         tvLogout.setOnClickListener(v -> {
             authManager.logoutUser();
@@ -57,6 +79,7 @@ public class SettingsActivity extends AppCompatActivity {
             Log.d(TAG, "Navigated to login screen after logout.");
         });
 
+        // Handle Delete Account Click
         tvDeleteAccount = findViewById(R.id.tvDeleteAccount);
         tvDeleteAccount.setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(this)

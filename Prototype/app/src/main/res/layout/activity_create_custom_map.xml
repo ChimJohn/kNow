@@ -1,84 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true"
-    tools:context=".custommap.CreateCustomMap"
-    android:gravity="center_horizontal">
-
+    android:layout_height="match_parent">
     <LinearLayout
+        android:id="@+id/formLayout"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start"
-        android:layout_margin="16dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        tools:context=".custommap.CreateCustomMap"
+        android:gravity="center_horizontal">
 
-        <ImageButton
-            android:id="@+id/btnExit"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginRight="20dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="center"
-            android:contentDescription="Exit"
-            android:src="@drawable/ic_close"
-            android:layout_gravity="start" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:layout_margin="16dp">
+            <ImageButton
+                android:id="@+id/btnExit"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginRight="20dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="center"
+                android:contentDescription="Exit"
+                android:src="@drawable/ic_close"
+                android:layout_gravity="start" />
+            <TextView
+                android:id="@+id/tvAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                android:fontFamily="@font/inter_semibold"
+                android:textColor="@color/black"
+                android:textSize="16dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="end"/>
+        </LinearLayout>
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvCustomMap"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="100dp"
+            app:cardElevation="0dp"
+            app:cardMaxElevation="1dp"
+            android:foreground="@drawable/custom_map_item">
+            <ImageView
+                android:id="@+id/ivCustomMap"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/defult_custom_map"/>
+        </androidx.cardview.widget.CardView>
         <TextView
-            android:id="@+id/tvAdd"
+            android:id="@+id/tvSetCover"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add"
+            android:text="Set cover"
             android:fontFamily="@font/inter_semibold"
+            android:textSize="14dp"
+            android:textColor="@color/orange"
+            android:layout_marginTop="14dp"/>
+        <EditText
+            android:id="@+id/etMapName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Map Name"
+            android:background="@color/white"
+            android:layout_marginHorizontal="24dp"
+            android:paddingHorizontal="16dp"
+            android:textSize="16sp"
             android:textColor="@color/black"
-            android:textSize="16dp"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:gravity="end"/>
+            android:fontFamily="@font/inter_bold"
+            android:layout_marginTop="14dp"
+            android:gravity="center"/>
     </LinearLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cvCustomMap"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        app:cardCornerRadius="100dp"
-        app:cardElevation="0dp"
-        app:cardMaxElevation="1dp"
-        android:foreground="@drawable/custom_map_item">
-
-        <ImageView
-            android:id="@+id/ivCustomMap"
-            android:scaleType="centerCrop"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/defult_custom_map"/>
-    </androidx.cardview.widget.CardView>
-
-    <TextView
-        android:id="@+id/tvSetCover"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set cover"
-        android:fontFamily="@font/inter_semibold"
-        android:textSize="14dp"
-        android:textColor="@color/orange"
-        android:layout_marginTop="14dp"/>
-
-    <EditText
-        android:id="@+id/etMapName"
+    <LinearLayout
+        android:id="@+id/loadingLayout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Map Name"
-        android:background="@color/white"
-        android:layout_marginHorizontal="24dp"
-        android:paddingHorizontal="16dp"
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/inter_bold"
-        android:layout_marginTop="14dp"
-        android:gravity="center"/>
-
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:background="@color/white">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Adding new map, please wait..."
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+    </LinearLayout>
+</RelativeLayout>

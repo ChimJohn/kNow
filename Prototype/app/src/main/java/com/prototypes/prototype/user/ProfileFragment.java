@@ -1,5 +1,6 @@
 package com.prototypes.prototype.user;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,29 +8,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.content.Intent;
-import android.widget.ImageButton;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.custommap.editmaps.EditMaps;
-import com.prototypes.prototype.settings.SettingsActivity;
+import com.prototypes.prototype.classes.Story;
 import com.prototypes.prototype.custommap.CustomMap;
 import com.prototypes.prototype.custommap.CustomMapAdaptor;
+import com.prototypes.prototype.custommap.editmaps.EditMaps;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.settings.SettingsActivity;
+import com.prototypes.prototype.storyView.StoryViewFragment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ProfileFragment extends Fragment {
@@ -171,7 +174,16 @@ public class ProfileFragment extends Fragment {
                     galleryGridView.setVisibility(View.VISIBLE);
                     tvNoPhotos.setVisibility(View.GONE);
                     galleryAdaptor = new GalleryAdaptor(getActivity(), customMaps, story -> {
-                        Log.d("HIHIHIHIHI", story.getCaption());
+                        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                        transaction.replace(R.id.fragment_container, StoryViewFragment.newInstance(Collections.singletonList(story)));
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                        if (getActivity() != null) {
+                            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottomNavigationView);
+                            if (bottomNav != null) {
+                                bottomNav.setVisibility(View.GONE);
+                            }
+                        }
                     });
                     galleryGridView.setAdapter(galleryAdaptor);
                     setGridViewHeightBasedOnChildren(galleryGridView, 3);
@@ -188,14 +200,14 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onSuccess(ArrayList<CustomMap> customMaps) {
                 if (customMaps.isEmpty()){
-                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps, getActivity());
                     mapRecyclerView.setAdapter(customMapAdaptor);
                     // Create "Add" map element
                     CustomMap addMap = new CustomMap("Add", null, null, "");
                     customMapAdaptor.addItemToTop(addMap);
                 }
                 else {
-                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps);
+                    customMapAdaptor = new CustomMapAdaptor(getActivity(), customMaps, getActivity());
                     mapRecyclerView.setAdapter(customMapAdaptor);
                     // Create "Add" map element
                     CustomMap addMap = new CustomMap("Add", null, null, "");

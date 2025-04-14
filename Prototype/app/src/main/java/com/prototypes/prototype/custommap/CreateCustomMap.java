@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,16 +17,9 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
-import com.prototypes.prototype.firebase.FirebaseAuthManager;
-import com.prototypes.prototype.firebase.FirebaseStorageManager;
-import com.prototypes.prototype.firebase.FirestoreManager;
-
-import java.util.UUID;
 
 
 public class CreateCustomMap extends AppCompatActivity {
@@ -34,8 +28,8 @@ public class CreateCustomMap extends AppCompatActivity {
     TextView tvAdd, tvSetCover;
     ImageView imgCover;
     Uri image;
-    String mapName;
-
+    LinearLayout loadingLayout;
+    LinearLayout formLayout;
     private static final String TAG = "Create Custom Map Activity";
 
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -55,50 +49,45 @@ public class CreateCustomMap extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_custom_map);
-        Log.d(TAG, "User page.");
-
         btnExit = findViewById(R.id.btnExit);
         etMapName = findViewById(R.id.etMapName);
         tvAdd = findViewById(R.id.tvAdd);
         tvSetCover = findViewById(R.id.tvSetCover);
         imgCover = findViewById(R.id.ivCustomMap);
+        formLayout = findViewById(R.id.formLayout);
+        loadingLayout = findViewById(R.id.loadingLayout);
 
-        // Destroy activity when x button is pressed
-        btnExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
+        btnExit.setOnClickListener(v -> finish());
+
+        tvAdd.setOnClickListener(v -> {
+            String mapName = etMapName.getText().toString().trim();
+            if (mapName.isEmpty()) {
+                Toast.makeText(CreateCustomMap.this, "Fill in map name!", Toast.LENGTH_SHORT).show();
+                return;
             }
+            if (image == null) {
+                Toast.makeText(CreateCustomMap.this, "Select cover image!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            formLayout.setVisibility(View.GONE);
+            loadingLayout.setVisibility(View.VISIBLE);
+            CustomMap.createMap(CreateCustomMap.this, image, mapName, success -> {
+                if (success) {
+                    Toast.makeText(CreateCustomMap.this, "Map created!", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(CreateCustomMap.this, "Failed to create map.", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
-        // Creates Custom Map
-        tvAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (etMapName.getText().toString().trim().equals("")){
-                    Toast.makeText(CreateCustomMap.this, "Fill in map name!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (image == null){
-                    Toast.makeText(CreateCustomMap.this, "Select cover image!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                mapName = etMapName.getText().toString().trim();
-                CustomMap.createMap(CreateCustomMap.this, image, mapName);
-            }
-        });
-
-        // Select picture for cover img in gallery
-        tvSetCover.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Set cover clicked.");
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                activityResultLauncher.launch(intent);
-            }
+        tvSetCover.setOnClickListener(v -> {
+            Log.d(TAG, "Set cover clicked.");
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            activityResultLauncher.launch(intent);
         });
     }
 }

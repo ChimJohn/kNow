@@ -1,7 +1,6 @@
 package com.prototypes.prototype.custommap;
 
 import android.app.Activity;
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -10,7 +9,6 @@ import com.prototypes.prototype.firebase.FirebaseAuthManager;
 import com.prototypes.prototype.firebase.FirebaseStorageManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
 
-import java.security.acl.Owner;
 import java.util.UUID;
 
 public class CustomMap {
@@ -35,24 +33,26 @@ public class CustomMap {
     public void setName(String name) {
         this.name = name;
     }
-
+    public String getId(){
+        return this.id;
+    }
     public String getOwner() {
         return owner;
     }
-
-    public void setOwner(String owner) {
+    public void getOwner(String owner) {
         this.owner = owner;
     }
-
     public String getImageUrl() {
         return imageUrl;
     }
-
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+    public interface CreateMapCallback {
+        void onComplete(boolean success);
+    }
 
-    public static void createMap(Activity activity, Uri file, String mapName) {
+    public static void createMap(Activity activity, Uri file, String mapName, CreateMapCallback callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuthManager firebaseAuthManager = new FirebaseAuthManager(activity);
         FirebaseStorageManager firebaseStorageManager = new FirebaseStorageManager();

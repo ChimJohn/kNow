@@ -98,12 +98,17 @@ public class ExploreFragment extends Fragment {
         currentLocationViewModel = new ViewModelProvider(requireActivity()).get(CurrentLocationViewModel.class);
         Chip chipFood = view.findViewById(R.id.chipFood);
         Chip chipAttraction = view.findViewById(R.id.chipAttraction);
+        Chip chipPastDay = view.findViewById(R.id.chipPastDay);
+
         Chip chipNone = view.findViewById(R.id.chipNone);
         chipFood.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
         chipAttraction.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+        chipPastDay.setOnCheckedChangeListener((buttonView, isChecked) -> applyFilters());
+
         chipNone.setOnClickListener(v -> {
             chipFood.setChecked(false);
             chipAttraction.setChecked(false);
+            chipPastDay.setChecked(false);
             mapManager.filterMarkers(null);
         });
 
@@ -267,11 +272,13 @@ public class ExploreFragment extends Fragment {
         if (view == null || mapManager == null) return;
         Chip chipFood = view.findViewById(R.id.chipFood);
         Chip chipAttraction = view.findViewById(R.id.chipAttraction);
+        Chip chipPastDay = view.findViewById(R.id.chipPastDay);
 
         List<String> activeFilters = new ArrayList<>();
 
         if (chipFood.isChecked()) activeFilters.add("Food");
         if (chipAttraction.isChecked()) activeFilters.add("Attractions");
+        if (chipPastDay.isChecked()) activeFilters.add("PastDay");
         mapManager.filterMarkers(activeFilters);
     }
     private void handleUserClick(String username) {

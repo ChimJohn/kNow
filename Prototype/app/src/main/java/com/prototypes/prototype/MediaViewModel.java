@@ -1,19 +1,14 @@
 package com.prototypes.prototype;
 
 import android.app.Application;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -21,23 +16,19 @@ import androidx.lifecycle.Observer;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.prototypes.prototype.classes.Story;
 import com.prototypes.prototype.firebase.FirebaseStorageManager;
 import com.prototypes.prototype.firebase.FirestoreManager;
-import com.prototypes.prototype.login.LoginActivity;
-import com.prototypes.prototype.signup.SignUpActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class MediaViewModel extends AndroidViewModel {
@@ -92,24 +83,24 @@ public class MediaViewModel extends AndroidViewModel {
                     final StorageReference mediaRef = storage.getReference("Images/" + UUID.randomUUID().toString());
                     Bitmap originalBitmap = MediaStore.Images.Media.getBitmap(getApplication().getContentResolver(), mediaUri);
                     originalBitmap = Story.fixImageRotation(originalBitmap, mediaUri);
-                    Bitmap fullImageBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);  // Create a mutable copy of the original image
+                    Bitmap fullImageBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    fullImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);  // Compress at 50% quality
+                    fullImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     float aspectRatio = (float) originalBitmap.getWidth() / (float) originalBitmap.getHeight();
                     int newWidth = 250;
-                    int newHeight = (int) (250 / aspectRatio); // Adjust height according to aspect ratio
+                    int newHeight = (int) (250 / aspectRatio);
                     if (newHeight > 250) {
                         newHeight = 250;
-                        newWidth = (int) (250 * aspectRatio); // Adjust width to maintain aspect ratio
+                        newWidth = (int) (250 * aspectRatio);
                     }
                     Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
                     ByteArrayOutputStream thumbBaos = new ByteArrayOutputStream();
-                    thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, thumbBaos);  // Compress at 30% quality
+                    thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, thumbBaos);
                     byte[] thumbData = thumbBaos.toByteArray();
                     Task<Uri> thumbnailUploadTask = thumbnailRef.putBytes(thumbData)
                             .continueWithTask(task -> {
                                 if (!task.isSuccessful()) {
-                                    throw task.getException(); // Prevent silent failure
+                                    throw task.getException();
                                 }
                                 return thumbnailRef.getDownloadUrl();
                             })
@@ -117,14 +108,13 @@ public class MediaViewModel extends AndroidViewModel {
                     Task<Uri> mediaUploadTask = mediaRef.putFile(mediaUri)
                             .continueWithTask(task -> {
                                 if (!task.isSuccessful()) {
-                                    throw task.getException(); // Prevent silent failure
+                                    throw task.getException();
                                 }
                                 return mediaRef.getDownloadUrl();
                             })
                             .addOnFailureListener(e -> Log.e("UploadError", "Media upload failed: " + e.getMessage()));
                     Tasks.whenAllSuccess(mediaUploadTask, thumbnailUploadTask)
                             .addOnSuccessListener(results -> {
-                                Log.d("LOL", "CMON");
                                 setMediaUrl(results.get(0).toString());
                                 setThumbnailUrl(results.get(1).toString());
                             })
@@ -146,7 +136,7 @@ public class MediaViewModel extends AndroidViewModel {
     public void setThumbnailUrl(String url) {
         thumbnailUrlLiveData.postValue(url);
     }
-    public void saveMediaToFirebaseStorage(String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType) {
+    public void saveMediaToFirebaseStorage(String userId, String caption, String selectedCategory, Double lat, Double lng, String mediaType, ArrayList<String> selectedCustomMapsId) {
             Observer<Pair<String, String>> firestoreObserver = new Observer<>() {
                 @Override
                 public void onChanged(Pair<String, String> pair) {
@@ -154,7 +144,7 @@ public class MediaViewModel extends AndroidViewModel {
                         firestoreManager.writeDocument(
                                 "media",
                                 null,
-                                new Story(null, userId, caption, selectedCategory, pair.first, lat, lng, mediaType, pair.second),
+                                new Story(null, userId, caption, selectedCategory, pair.first, lat, lng, mediaType, pair.second, Timestamp.now(), selectedCustomMapsId),
                                 new FirestoreManager.FirestoreCallback() {
                                     @Override
                                     public void onSuccess() {}
@@ -183,10 +173,10 @@ public class MediaViewModel extends AndroidViewModel {
             try (FileOutputStream out = new FileOutputStream(thumbnailFile)) {
                 float aspectRatio = (float) bitmap.getWidth() / (float) bitmap.getHeight();
                 int newWidth = 250;
-                int newHeight = (int) (250 / aspectRatio); // Adjust height according to aspect ratio
+                int newHeight = (int) (250 / aspectRatio);
                 if (newHeight > 250) {
                     newHeight = 250;
-                    newWidth = (int) (250 * aspectRatio); // Adjust width to maintain aspect ratio
+                    newWidth = (int) (250 * aspectRatio);
                 }
                 Bitmap thumbnailBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
                 thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);

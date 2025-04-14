@@ -1,16 +1,21 @@
 package com.prototypes.prototype.storyView;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,6 +24,7 @@ import com.prototypes.prototype.R;
 import com.prototypes.prototype.explorePage.ExploreFragment;
 import com.prototypes.prototype.classes.PhotoStory;
 import com.prototypes.prototype.classes.Story;
+import com.prototypes.prototype.user.UserProfileFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +56,17 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_story_view, container, false);
     }
+    private void goToUserProfile(String userId) {
+        FragmentActivity context = getActivity();
+        if (context != null) {
+            UserProfileFragment userProfileFragment = UserProfileFragment.newInstance(userId);
+            context.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, userProfileFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -61,8 +78,13 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
         TextView storyUsernameText = view.findViewById(R.id.story_username);
         ImageButton gpsButton = view.findViewById(R.id.btnGps);
+        LinearLayout profileLayoutContainer = view.findViewById(R.id.profileLayoutContainer);
+
+
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             private boolean isLastPage = false;
+            boolean isSwipingForward = false;
+            float lastOffset = 0f;
             @Override
             public void onPageSelected(int position) {
                 isLastPage = position == storyList.size() - 1;
@@ -84,13 +106,15 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                         userCache.put(userId, user);
                                         String username = (String) user.get("username");
                                         storyUsernameText.setText(username);
+                                        profileLayoutContainer.setOnClickListener(v -> {
+                                            goToUserProfile(userId);
+                                        });
                                     } else{
                                         storyUsernameText.setText("Deleted account");
                                     }
                                 }
                             })
                             .addOnFailureListener(e -> {
-                                // Handle the error (e.g., show a default message)
                                 Log.e("ERR", Objects.requireNonNull(e.getMessage()));
                                 storyUsernameText.setText("Error loading username");
                             });
@@ -99,27 +123,36 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                     onGpsClick(currentStory.getLatitude(), currentStory.getLongitude());
                 });
             }
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
-                if (isLastPage && state == ViewPager2.SCROLL_STATE_DRAGGING) {
-                    viewPager2.postDelayed(() -> {
-                        ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
-                        requireActivity().getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, exploreFragment)
-                                .commit();
-                    }, 150);
-                }
-            }
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+//                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                    isSwipingForward = positionOffset == 0.0;
+//                    lastOffset = positionOffset;
+//                }, 50);
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//                super.onPageScrollStateChanged(state);
+//                boolean settled = false;
+//
+//                if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+//                    settled = false;
+//                }
+//                if (state == ViewPager2.SCROLL_STATE_SETTLING) {
+//                    settled = true;
+//                }
+//                if (state == ViewPager2.SCROLL_STATE_IDLE && !settled) {
+//                    viewPager2.postDelayed(() -> {
+//                        requireActivity().getSupportFragmentManager().popBackStack();
+//                    }, 150);
+//                }
+//            }
         });
         ImageButton exitBtn = view.findViewById(R.id.btnExit);
         exitBtn.setOnClickListener(v -> {
-            ExploreFragment exploreFragment = new ExploreFragment(); // or use the one with location if needed
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, exploreFragment)
-                    .commit();
+            requireActivity().getSupportFragmentManager().popBackStack();
         });
         PhotoStory.preloadPhotos(requireContext(), storyList);
     }
