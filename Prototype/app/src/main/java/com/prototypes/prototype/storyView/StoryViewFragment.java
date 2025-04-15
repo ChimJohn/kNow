@@ -77,21 +77,19 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         TextView storyPositionText = view.findViewById(R.id.story_position);
         TextView storyCaptionText = view.findViewById(R.id.story_snippet);
         TextView storyUsernameText = view.findViewById(R.id.story_username);
+        TextView storyTimestampText = view.findViewById(R.id.story_timestamp);
         ImageButton gpsButton = view.findViewById(R.id.btnGps);
         LinearLayout profileLayoutContainer = view.findViewById(R.id.profileLayoutContainer);
 
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            private boolean isLastPage = false;
-            boolean isSwipingForward = false;
-            float lastOffset = 0f;
             @Override
             public void onPageSelected(int position) {
-                isLastPage = position == storyList.size() - 1;
                 super.onPageSelected(position);
                 Story currentStory = storyList.get(position);
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
                 storyCaptionText.setText(currentStory.getCaption());
+                storyTimestampText.setText(Story.getTimeAgo(currentStory.getTimestamp()));
                 String userId = currentStory.getUserId();
                 if (userCache.containsKey(userId)) {
                     Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);

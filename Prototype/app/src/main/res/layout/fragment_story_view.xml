@@ -74,34 +74,48 @@
         <!--User profile-->
         <LinearLayout
             android:id="@+id/profileLayoutContainer"
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingVertical="8dp">
-
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:elevation="0dp"
                 app:cardCornerRadius="100dp">
-
                 <ImageView
                     android:layout_width="45dp"
                     android:layout_height="45dp"
+                    android:contentDescription="Profile Picture"
                     android:src="@drawable/default_profile" />
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/story_username"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:fontFamily="@font/inter_semibold"
-                android:text="handle"
-                android:textColor="@color/white"
-                android:textSize="16dp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/story_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_semibold"
+                    android:text="handle"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/story_timestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_semibold"
+                    android:text="2h ago"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
         </LinearLayout>
         <!--Story caption-->
         <TextView

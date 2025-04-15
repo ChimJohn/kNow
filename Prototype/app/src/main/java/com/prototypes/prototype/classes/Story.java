@@ -10,8 +10,12 @@ import android.os.Parcelable;
 import com.google.firebase.Timestamp;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class Story implements Parcelable {
     private String id, userId, caption, category, mediaType, mediaUrl, thumbnailUrl;
@@ -127,4 +131,25 @@ public class Story implements Parcelable {
         img.recycle(); // Recycle the original bitmap to free memory
         return rotatedBitmap;
     }
+    public static String getTimeAgo(Timestamp storyTimestamp) {
+        Date storyDate = storyTimestamp.toDate();
+        Date now = new Date();
+
+        long diffMillis = now.getTime() - storyDate.getTime();
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(diffMillis);
+        long hours = TimeUnit.MILLISECONDS.toHours(diffMillis);
+
+        if (minutes < 1) {
+            return "Just now";
+        } else if (minutes < 60) {
+            return minutes + " min ago";
+        } else if (hours < 24) {
+            return hours + " h ago";
+        } else {
+            SimpleDateFormat oldDates = new SimpleDateFormat("MMM dd", Locale.getDefault());
+            return oldDates.format(storyDate);
+        }
+    }
+
 }
