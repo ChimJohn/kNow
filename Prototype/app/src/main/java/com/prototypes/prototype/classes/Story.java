@@ -134,12 +134,9 @@ public class Story implements Parcelable {
     public static String getTimeAgo(Timestamp storyTimestamp) {
         Date storyDate = storyTimestamp.toDate();
         Date now = new Date();
-
         long diffMillis = now.getTime() - storyDate.getTime();
-
         long minutes = TimeUnit.MILLISECONDS.toMinutes(diffMillis);
         long hours = TimeUnit.MILLISECONDS.toHours(diffMillis);
-
         if (minutes < 1) {
             return "Just now";
         } else if (minutes < 60) {

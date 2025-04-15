@@ -81,6 +81,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         ImageButton gpsButton = view.findViewById(R.id.btnGps);
         LinearLayout profileLayoutContainer = view.findViewById(R.id.profileLayoutContainer);
 
+        storyTimestampText.invalidate();
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -89,7 +90,10 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 Story currentStory = storyList.get(position);
                 storyPositionText.setText((position + 1) + "/" + storyList.size());
                 storyCaptionText.setText(currentStory.getCaption());
+
                 storyTimestampText.setText(Story.getTimeAgo(currentStory.getTimestamp()));
+                Log.d("DEBUG_TIME_AGO", "Time ago: " + Story.getTimeAgo(currentStory.getTimestamp()));
+
                 String userId = currentStory.getUserId();
                 if (userCache.containsKey(userId)) {
                     Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);

@@ -111,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_semibold"
-                    android:text="2h ago"
+                    android:text="2h ago placeholder"
                     android:textColor="@color/white"
                     android:textSize="14sp" />
             </LinearLayout>
