@@ -52,6 +52,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             storyList = getArguments().getParcelableArrayList("stories");
+
         }
     }
     @Override
@@ -105,7 +106,12 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                     if (profilePicUrl != null){
                         Glide.with(profilePictureImageView.getContext())
                                 .load(profilePicUrl)
+                                .override(100, 100)
+                                .circleCrop()
                                 .into(profilePictureImageView);
+                    }
+                    else {
+                        profilePictureImageView.setImageResource(R.drawable.default_profile);
                     }
                     storyUsernameText.setText(username);
                 } else {
@@ -120,7 +126,11 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                         if (profilePicUrl != null){
                                             Glide.with(profilePictureImageView.getContext())
                                                     .load(profilePicUrl)
+                                                    .override(100, 100)
+                                                    .circleCrop()
                                                     .into(profilePictureImageView);
+                                        } else {
+                                            profilePictureImageView.setImageResource(R.drawable.default_profile);
                                         }
                                         storyUsernameText.setText(username);
                                         profileLayoutContainer.setOnClickListener(v -> {
