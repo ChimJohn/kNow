@@ -128,7 +128,7 @@ public class Story implements Parcelable {
             matrix.postRotate(270);
         }
         Bitmap rotatedBitmap = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
-        img.recycle(); // Recycle the original bitmap to free memory
+        img.recycle();
         return rotatedBitmap;
     }
     public static String getTimeAgo(Timestamp storyTimestamp) {

@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.prototypes.prototype.R;
@@ -80,6 +82,7 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
         TextView storyTimestampText = view.findViewById(R.id.story_timestamp);
         ImageButton gpsButton = view.findViewById(R.id.btnGps);
         LinearLayout profileLayoutContainer = view.findViewById(R.id.profileLayoutContainer);
+        ImageView profilePictureImageView = view.findViewById(R.id.profilePicImageView);
 
         storyTimestampText.invalidate();
 
@@ -98,6 +101,12 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                 if (userCache.containsKey(userId)) {
                     Map<String, Object> cachedUser = (Map<String, Object>) userCache.get(userId);
                     String username = (String) cachedUser.get("username");
+                    String profilePicUrl = (String) cachedUser.get("profile");
+                    if (profilePicUrl != null){
+                        Glide.with(profilePictureImageView.getContext())
+                                .load(profilePicUrl)
+                                .into(profilePictureImageView);
+                    }
                     storyUsernameText.setText(username);
                 } else {
                     db.collection("Users").document(userId).get()
@@ -107,6 +116,12 @@ public class StoryViewFragment extends Fragment implements StoryViewAdapter.OnGp
                                     if (user != null) {
                                         userCache.put(userId, user);
                                         String username = (String) user.get("username");
+                                        String profilePicUrl = (String) user.get("profile");
+                                        if (profilePicUrl != null){
+                                            Glide.with(profilePictureImageView.getContext())
+                                                    .load(profilePicUrl)
+                                                    .into(profilePictureImageView);
+                                        }
                                         storyUsernameText.setText(username);
                                         profileLayoutContainer.setOnClickListener(v -> {
                                             goToUserProfile(userId);
