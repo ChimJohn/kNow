@@ -1,6 +1,7 @@
 package com.prototypes.prototype.custommap;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,29 +39,33 @@ public class CustomMapAdaptor extends RecyclerView.Adapter<CustomMapAdaptor.MapV
     @Override
     public void onBindViewHolder(@NonNull CustomMapAdaptor.MapViewHolder holder, int position) {
         CustomMap customMap = customMaps.get(position);
-
         if (position == 0){
             holder.customMapTxt.setText(customMap.getName());
             Glide.with(context)
                     .load(R.drawable.add_map_icon)
                     .into(holder.customMapImg);
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(activity, CreateCustomMap.class);
+                activity.startActivity(intent);
+            });
         }else{
             holder.customMapTxt.setText(customMap.getName());
             Glide.with(context)
                     .load(customMap.getImageUrl())
                     .into(holder.customMapImg); //TODO: add buffering img
+            holder.itemView.setOnClickListener(v -> {
+                String mapId = customMap.getId();
+                CustomMapFragment fragment = CustomMapFragment.newInstance(mapId);
+                activity
+                        .getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            });
         }
 
-        holder.itemView.setOnClickListener(v -> {
-            String mapId = customMap.getId();
-            CustomMapFragment fragment = CustomMapFragment.newInstance(mapId);
-            activity
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
+
     }
 
     @Override
