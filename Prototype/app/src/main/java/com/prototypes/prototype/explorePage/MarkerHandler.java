@@ -81,7 +81,7 @@ public class MarkerHandler {
         }
         @Override
         protected boolean shouldRenderAsCluster(Cluster<RouteHandler.StoryCluster> cluster) {
-            return cluster.getSize() > 1; // Cluster when at least 2 markers exist
+            return cluster.getSize() > 1;
         }
         private void loadMarkerImage(RouteHandler.StoryCluster item) {
             MapManager.StoryMarker storyMarker = new MapManager.StoryMarker(context);
@@ -91,7 +91,6 @@ public class MarkerHandler {
                     Bitmap circularBitmap = getCircularBitmapWithBorder(resource, 8, Color.WHITE);
                     BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(circularBitmap);
                     iconCache.put(item.getId(), icon);
-                    // Directly update the specific marker using the map
                     Marker marker = markerMap.get(item.getId());
                     if (marker != null) {
                         marker.setIcon(icon);
@@ -99,7 +98,6 @@ public class MarkerHandler {
                 }
                 @Override
                 public void onLoadCleared(@Nullable Drawable placeholder) {
-                    // Handle cleanup if needed
                 }
             });
         }
@@ -108,7 +106,6 @@ public class MarkerHandler {
             int maxSize = 400;
             int clusterSize = clusterItems.size();
             int iconSize = Math.min(baseSize + (clusterSize * 10), maxSize);
-            // Check cache first
             if (clusterIconCache.containsKey(clusterItems)) {
                 callback.onIconReady(clusterIconCache.get(clusterItems));
                 return;
@@ -152,16 +149,15 @@ public class MarkerHandler {
             paint.setAntiAlias(true);
             Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(output);
-            paint.setColor(Color.argb(150, 169, 169, 169));  // Gray color (50% opacity)
-            float radius = size / 2f;  // Radius of the circle
-            canvas.drawCircle(radius, radius, radius, paint);  // Draw gray circle background
+            paint.setColor(Color.argb(150, 169, 169, 169));
+            float radius = size / 2f;
+            canvas.drawCircle(radius, radius, radius, paint);
             if (!thumbnails.isEmpty()) {
-                paint.setColor(Color.argb(150, 0, 0, 0));  // Semi-transparent black background
-                canvas.drawCircle(radius, radius, radius, paint);  // Draw dark circle
-                // Draw pie chart sections (thumbnails)
+                paint.setColor(Color.argb(150, 0, 0, 0));
+                canvas.drawCircle(radius, radius, radius, paint);
                 float startAngle = 0;
                 float sweepAngle = 360f / thumbnails.size();
-                RectF bounds = new RectF(0, 0, size, size);  // Circle bounds
+                RectF bounds = new RectF(0, 0, size, size);
                 for (Bitmap thumb : thumbnails) {
                     Bitmap scaledThumb = Bitmap.createScaledBitmap(thumb, size / 2, size / 2, true);
                     BitmapShader shader = new BitmapShader(scaledThumb, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
@@ -170,15 +166,12 @@ public class MarkerHandler {
                     startAngle += sweepAngle;
                 }
             }
-            // Reset shader to ensure the text is white
             paint.setShader(null);
             paint.setColor(Color.WHITE);
             paint.setTextSize(size / 3f * 1.1f);
             paint.setTextAlign(Paint.Align.CENTER);
-            // Calculate the vertical alignment for the text
             float textY = (size / 2f) - ((paint.descent() + paint.ascent()) / 2f);
             String clusterSizeText = String.valueOf(clusterSize);
-            // Draw cluster size number in the center
             canvas.drawText(clusterSizeText, size / 2f, textY, paint);
             Bitmap finalBitmap = getCircularBitmapWithBorder(output, 8, Color.WHITE);
             output.recycle();
